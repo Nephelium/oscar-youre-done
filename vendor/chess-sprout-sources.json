@@ -1,0 +1,26 @@
+{
+  "stockfish": {
+    "version": "19",
+    "source": "https://github.com/official-stockfish/Stockfish/releases/tag/sf_19"
+  },
+  "chesslib": {
+    "version": "1.3.7",
+    "source": "https://github.com/bhlangonijr/chesslib/tree/1.3.7"
+  },
+  "files": {
+    "stockfish\\arm64-v8a\\libstockfish.so": "ffd8fc2004d3d19f9fdab95d84c92709aea92e8d3af405eda0b281b23cf1daf8",
+    "stockfish\\stockfish-android-arm64-universal.tar.gz": "ebb24051aa4a222b4daaf049b882ecf1163d370c128fe02316602643f4d5e426",
+    "stockfish\\stockfish-sf_19-source.zip": "024a509d7af387218bd59c559473a71a1d6b411885010543891495119a671119",
+    "chesslib\\chesslib-1.3.7-source.zip": "2861957cc3d69f5e7d32aabb462a15b5a76da93164a287add3ddf44753d43eed",
+    "stockfish\\x86_64\\libstockfish.so": "d0c20fa6478dc715c70b839e506db665381fedaf036ee565c717d8c4a492f402",
+    "stockfish\\networks\\nn-b1a57edbea57.nnue": "b1a57edbea574ca8b88d6837473845791beb53d885f87f86d5ccdd5659fbf3b2",
+    "stockfish\\networks\\nn-baff1ede1f90.nnue": "baff1ede1f90c1dd1b4f772f1eff29848821801e8186345da7f0eb4121bd6f63",
+    "stockfish\\droidfish-1.90-fdroid.apk": "7c07233fe461a56dbfa6bc83b2c0d0d7cd3cd45a285db6563829d3ceecaa5aa9",
+    "stockfish\\droidfish-1.90-source.tar.gz": "ad634fc42f99e081f6781927e3e9818673a7d60cdb117d257ea1538b0e06a14a"
+  },
+  "x86_64": {
+    "engine": "Stockfish 16.1",
+    "distribution": "DroidFish 1.90 / F-Droid versionCode 100",
+    "source": "https://f-droid.org/repo/org.petero.droidfish_100_src.tar.gz"
+  }
+}

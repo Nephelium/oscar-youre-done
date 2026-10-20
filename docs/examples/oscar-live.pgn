@@ -1,0 +1,10 @@
+[Event "多邻国对局"]
+[Date "2026.10.20"]
+[White "You"]
+[Black "Opponent"]
+[Result "1-0"]
+[Notebook "game"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 d6 5. d4 Nf6 6. dxc5 Bg4 7. h3 O-O
+8. hxg4 Qd7 9. Be2 Rad8 10. Nbd2 d5 11. Nh2 Rde8 12. g5 Ng4 13. Nxg4 b5
+14. exd5 Qe7 15. Ne4 Nb8 16. Qd3 Qxg5 17. Nef6+ gxf6 18. Qxh7# 1-0

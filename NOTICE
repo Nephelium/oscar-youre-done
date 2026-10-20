@@ -1,0 +1,8 @@
+Oscar You Are Done / 奥斯卡你完了
+Copyright (C) 2026 Nephelium. Software source is GPL-3.0.
+
+Third-party code retains its own notices: chess.js BSD-2-Clause; chesslib and commons-lang3 Apache-2.0; AndroidX Apache-2.0; Stockfish GPLv3; Gradle Wrapper Apache-2.0. See vendor/ and upstream repositories for the full component notices.
+
+Duolingo and the Oscar character belong to their respective rights holders. This is an independent project with no affiliation to Duolingo. The generated Oscar-derived icon and Duolingo compatibility screenshots are excluded from the software GPL grant. No rights in the underlying character or trademark are granted by this project.
+
+The icon was generated using the built-in Imagegen tool from a supplied character reference; see review/assets/README.md. Original geometric chess piece SVGs are project artwork distributed with the GPL-covered project.
