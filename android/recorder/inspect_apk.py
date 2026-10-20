@@ -1,6 +1,7 @@
 """Verify the delivered archive contains current shared sources and exact reviewed engines."""
 from pathlib import Path
 import hashlib, json, zipfile, sys, gzip
+from datetime import date
 root=Path(__file__).resolve().parents[2]
 apk=Path(sys.argv[1]) if len(sys.argv)>1 else root/'android/recorder/build/outputs/apk/debug/recorder-debug.apk'
 def digest(stream):
@@ -34,7 +35,7 @@ with zipfile.ZipFile(apk) as archive:
         assert expected==actual, f'Stale package asset: {name}'
         checks[name]=actual
 with apk.open('rb') as stream:sha=digest(stream)
-result={'verifiedDate':'2026-10-20','apk':str(apk.resolve()),'bytes':apk.stat().st_size,'sha256':sha,'matchedFiles':checks}
+result={'verifiedDate':date.today().isoformat(),'apk':str(apk.resolve()),'bytes':apk.stat().st_size,'sha256':sha,'matchedFiles':checks}
 out=root/'android/recorder/build/reports/apk-inspection.json'
 out.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
 print(json.dumps({'bytes':result['bytes'],'MiB':round(result['bytes']/1024**2,1),'sha256':sha,'matchedFiles':len(checks)},indent=2))

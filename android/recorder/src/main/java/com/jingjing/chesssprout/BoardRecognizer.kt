@@ -13,11 +13,21 @@ import org.json.JSONObject
 class BoardRecognizer(var blackBottom: Boolean = false) {
     private var gridReady=false
     var region: RectF? = null
-        set(value) {field=value;gridReady=false}
+        set(value) {field=value;gridReady=false;lastFingerprint=null}
     var calibrated = false
         private set
     private val banks=mutableMapOf<String,MutableMap<Char,MutableList<FloatArray>>>()
     private var appearance="light"
+    private var cachedTemplates: Map<Char,List<FloatArray>>?=null
+    private val cachedFeatures=arrayOfNulls<FloatArray>(64)
+    private val cachedDistances=arrayOfNulls<List<Pair<Char,Double>>>(64)
+    private var lastFingerprint: IntArray?=null
+    private var lastObservation: Observation?=null
+    private var lastBlackBottom=false
+    var reusedFrames=0
+        private set
+    var classifiedFrames=0
+        private set
     private val initial = "rnbqkbnrpppppppp................................PPPPPPPPRNBQKBNR"
     fun reset(rect: RectF? = region) { region = rect; calibrated = false; banks.clear() }
     fun profile(): JSONObject {
@@ -46,7 +56,7 @@ class BoardRecognizer(var blackBottom: Boolean = false) {
             return mode to loaded
         }
         val loaded=mutableMapOf(parse(data));data.optJSONObject("alternate")?.let{loaded+=parse(it)}
-        banks.putAll(loaded);appearance=data.optString("appearance","light");calibrated=true;true
+        banks.putAll(loaded);lastFingerprint=null;appearance=data.optString("appearance","light");calibrated=true;true
     }.getOrDefault(false)
     private fun appearanceOf(image: Bitmap,box: RectF): String {
         val luminance=(0 until 64).map { index ->
@@ -122,6 +132,7 @@ class BoardRecognizer(var blackBottom: Boolean = false) {
         appearance=appearanceOf(image,box)
         val templates=mutableMapOf<Char,MutableList<FloatArray>>()
         banks[appearance]=templates
+        lastFingerprint=null
         for (i in features.indices) templates.getOrPut(labels[i]) { mutableListOf() }.add(features[i])
         calibrated = true
         gridReady=true
@@ -170,12 +181,36 @@ class BoardRecognizer(var blackBottom: Boolean = false) {
         if (!calibrated) return null
         val rough=region?:locate(image)?:return null
         val box=if(gridReady)rough else refineInitialGrid(image,rough,false).also{region=it;gridReady=true}
-        val features = features(image, box)
+        val pixels=IntArray(image.width*image.height)
+        image.getPixels(pixels,0,image.width,0,0,image.width,image.height)
+        // Compare each cell against the last classified frame, never against the
+        // immediately preceding animation frame. Slow cumulative motion must count.
+        val fingerprint=IntArray(64*24*24) { index->
+            val cell=index/576;val sample=index%576
+            val x=((box.left+(cell%8+.04f+(sample%24+.5f)/24*.92f)*box.width()/8)*image.width).toInt().coerceIn(0,image.width-1)
+            val y=((box.top+(cell/8+.04f+(sample/24+.5f)/24*.92f)*box.height()/8)*image.height).toInt().coerceIn(0,image.height-1)
+            pixels[y*image.width+x]
+        }
+        if(lastBlackBottom==blackBottom && lastObservation!=null && unchanged(fingerprint,lastFingerprint)) {
+            reusedFrames++;return lastObservation
+        }
+        classifiedFrames++
+        val features = features(image, box,pixels)
         val templates=banks[appearanceOf(image,box)]?:return null
         val labels = StringBuilder(); var confidence = 0.0
         var uncertain=0
-        for (feature in features) {
-            val distances = templates.map { (piece, variants) -> piece to variants.minOf { distance(feature,it) } }.sortedBy { it.second }
+        if(cachedTemplates!==templates) {
+            cachedTemplates=templates;cachedFeatures.fill(null);cachedDistances.fill(null)
+        }
+        for ((index,feature) in features.withIndex()) {
+            val distances = if(cachedFeatures[index]?.contentEquals(feature)==true)cachedDistances[index]!! else templates.map { (piece, variants) ->
+                var best=Double.POSITIVE_INFINITY
+                for(variant in variants) {
+                    if(best==0.0)break
+                    best=min(best,distance(feature,variant,best))
+                }
+                piece to best
+            }.sortedBy { it.second }.also {cachedFeatures[index]=feature;cachedDistances[index]=it}
             val first = distances[0]; val second = distances[1]
             if (first.second > 0.145 || second.second-first.second < 0.0025) {
                 // One uncertain square is retained only as a mask. The legal tracker
@@ -190,14 +225,40 @@ class BoardRecognizer(var blackBottom: Boolean = false) {
             for (col in 0..7) { val c=logical[row*8+col]; if(c=='.') empty++ else { if(empty>0) {text.append(empty);empty=0}; text.append(c) } }
             if(empty>0) text.append(empty); text.toString()
         }
-        return Observation(placement, confidence/64)
+        return Observation(placement, confidence/64).also {
+            lastObservation=it;lastFingerprint=fingerprint;lastBlackBottom=blackBottom
+        }
     }
-    private fun distance(a: FloatArray,b: FloatArray): Double {
-        var total=0.0; for(i in a.indices) total += abs(a[i]-b[i]); return total/a.size
+    private fun unchanged(current: IntArray,previous: IntArray?): Boolean {
+        if(previous==null || current.size!=previous.size)return false
+        for(cell in 0..63) {
+            var total=0
+            for(i in cell*576 until (cell+1)*576)for(channel in 0..2) {
+                val shift=channel*8
+                val delta=abs(((current[i] shr shift)and 255)-((previous[i] shr shift)and 255))
+                if(delta>12)return false
+                total+=delta
+            }
+            // Tiny codec noise is ignored only when every cell remains unchanged.
+            if(total>576*3)return false
+        }
+        return true
     }
-    private fun features(image: Bitmap, box: RectF): List<FloatArray> {
+    private fun distance(a: FloatArray,b: FloatArray,limit: Double): Double {
+        // L1 terms are non-negative. Abandon a template only when it cannot beat
+        // the same piece's best template; the top-two class margin stays exact.
+        var total=0.0;val bound=limit*a.size
+        for(i in a.indices) {
+            total += abs(a[i]-b[i])
+            if(total>=bound)return limit
+        }
+        return total/a.size
+    }
+    private fun features(image: Bitmap, box: RectF, existingPixels: IntArray?=null): List<FloatArray> {
         val left=box.left*image.width; val top=box.top*image.height; val width=box.width()*image.width; val height=box.height()*image.height
-        fun pixel(x: Float,y: Float)=image.getPixel(x.toInt().coerceIn(0,image.width-1),y.toInt().coerceIn(0,image.height-1))
+        // One native copy replaces tens of thousands of Bitmap.getPixel JNI calls.
+        val pixels=existingPixels?:IntArray(image.width*image.height).also {image.getPixels(it,0,image.width,0,0,image.width,image.height)}
+        fun pixel(x: Float,y: Float)=pixels[y.toInt().coerceIn(0,image.height-1)*image.width+x.toInt().coerceIn(0,image.width-1)]
         return (0 until 64).map { index ->
             val col=index%8; val row=index/8
             // Estimate the dominant edge colour. Four corner averages are unstable near

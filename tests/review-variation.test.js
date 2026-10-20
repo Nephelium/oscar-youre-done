@@ -20,6 +20,20 @@ test('variation timeline preserves mainline and evaluates every branch step from
  assert.equal(JSON.stringify(r.moves),before);
  assert.equal(S.position(r,2,line.slice(0,1)).get('c4').type,'b');
 });
+test('branches keep maximal move paths, preserve real forks and retain shared analysis',()=>{
+ const r=S.importText('1. e4 e5 2. Nf3 Nc6 *')[0];
+ const first=S.addBranch(r,0,['d2d4']),originalId=first.id;
+ const fen=S.position(r,0,['d2d4']).fen();r.analysis[fen]=ev(50);
+ assert.equal(S.addBranch(r,0,['d2d4','d7d5','c2c4']).id,originalId);
+ assert.equal(r.branches.length,1);
+ S.addBranch(r,0,['d2d4','d7d5']);assert.equal(r.branches[0].moves.length,3);
+ S.addBranch(r,0,['d2d4','g8f6']);assert.equal(r.branches.length,2);
+ S.addBranch(r,2,['f1c4']);S.addBranch(r,4,['f1c4']);assert.equal(r.branches.length,4);
+ assert.equal(r.analysis[fen].lines[0].cp,50);
+ const raw=JSON.parse(JSON.stringify(r));raw.branches.push({...first,id:'old-short',moves:['d2d4']});
+ const restored=S.validate(raw);assert.equal(restored.branches.length,4);
+ assert.equal(restored.analysis[fen].lines[0].cp,50);
+});
 test('evaluation deltas preserve perspective, distinguish win percentage points and exclude mate pawn losses',()=>{
  const a=ev(200,[300,600,100]),b=ev(-100,[50,550,400]);
  assert.deepEqual(S.evaluationChange(a,b,'w'),{cp:-300,win:-25,mateChanged:false});

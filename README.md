@@ -7,7 +7,7 @@
     <img alt="Local Stockfish" src="https://img.shields.io/badge/Stockfish-on_device-66899b?style=flat-square" />
     <img alt="GPL v3" src="https://img.shields.io/badge/License-GPL_v3-b29435?style=flat-square" />
   </p>
-  <p><a href="https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.1"><b>下载 Android 安装包</b></a> · <a href="#开始使用">开始使用</a> · <a href="#从源码构建">从源码构建</a></p>
+  <p><a href="https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.2"><b>下载 Android 安装包</b></a> · <a href="#开始使用">开始使用</a> · <a href="#从源码构建">从源码构建</a></p>
 </div>
 
 ---
@@ -50,7 +50,7 @@
 
 ## 开始使用
 
-1. 从 [v1.3.1 Release](https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.1) 下载 APK 并安装。最低 Android 8.0，支持 ARM64 与 x86_64。
+1. 从 [v1.3.2 Release](https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.2) 下载 APK 并安装。最低 Android 8.0，支持 ARM64 与 x86_64。
 2. 点 **记录一局**，选棋盘底部颜色，授权本次屏幕采集。整个屏幕与仅共享多邻国都支持，随后点 **回到多邻国**。
 3. 自动定位棋盘后，确认走子会短暂提示，设置中可关闭。返回 App 可查看最近采集画面、调整识别范围。下完从通知栏、悬浮按钮或 App 内结束记录。
 4. 打开手记，点 **分析整盘**。点推荐变化或直接在棋盘走子，开始自己的推演。
@@ -104,7 +104,7 @@
 
 ## 验证记录
 
-v1.3.1 的计时、后台分析浏览、定时导航、位图外观与横屏验证见 [详细验证记录](docs/oscar-verification-1.3.1.md)。前面的多邻国完整对局证据仍保留在对应版本记录中。
+v1.3.2 优化连续识别、静止画面复用和录屏顺序解码，支持短缺口补齐、大缺口关联续录，以及多分支曲线对比与前缀合并。性能数据、全屏采集回放和设备边界见 [详细验证记录](docs/oscar-verification-1.3.2.md)。此前实际多邻国完整对局的证据保留在对应版本报告中。
 
 v1.2.1 在 Android 16 模拟器的真实多邻国 6.102.3 中完成执黑全屏记录，70 步以黑方将杀结束，零未解决校对项。中途切回本 App 后继续记录，71 个局面的整盘复盘通过。最终包另验中途局面起录、短提示、关闭与设置持久化。10 项 Android 回归覆盖初始模板污染、黑方朝向、晚起录两步、练习多步撤回、带黑边录屏和升变。物理手机兼容性仍需实际复测。[详细验证记录](docs/oscar-verification-1.2.1.md)。
 
@@ -150,6 +150,8 @@ python tests/review-capture-regression-video.py
 node tests/review-capture-regression-ui.js
 .\android\gradlew.bat -p android :recorder:connectedDebugAndroidTest
 ```
+
+日夜及点选棋子验收使用本地自备画面：`official-day.jpg`、`official-night.jpg`、`selected-queen.png`、`unselected-queen.png`，放到测试设备的 `/sdcard/Android/data/com.jingjing.chesssprout/files/`。这些私人画面不随源码或安装包分发。对应测试为 `AppearanceVisionTest` 与 `CapturePerformanceTest` 的选中棋子用例。
 
 ### 目录
 

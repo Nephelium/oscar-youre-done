@@ -123,6 +123,7 @@ input[type=number],input[type=datetime-local]{width:100%;min-width:0;border:1.5p
 
 .branch-item.active{border-color:#b18430;background:#fbf3dc}.branch-item .row{gap:7px}.branch-values{font-size:12px;color:#a67526;font-weight:750;white-space:nowrap}.branch-values small,.branch-item>small{font-size:10px;color:var(--muted);font-weight:400}.branch-item p{font-size:11px}
 
+.capture-segments {margin:0 0 8px;gap:4px;flex-wrap:wrap}
 /* 1.3.1: keep button rows clear and preserve usable landscape workspaces. */
 .review-assessment .analysis-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));height:46px;margin-top:10px;gap:10px}
 .review-assessment .analysis-actions .button{height:42px;min-height:42px;padding:7px 8px;line-height:1.25;font-size:12px;box-sizing:border-box}
@@ -198,3 +199,13 @@ input[type=number],input[type=datetime-local]{width:100%;min-width:0;border:1.5p
 [data-appearance=dark] :is(.curve,.elo-curve) [stroke="#507c3e"]{stroke:#a4d94e}
 [data-appearance=dark] :is(.curve,.elo-curve) [fill="#507c3e"]{fill:#a4d94e}
 [data-appearance=dark] #toast{background:#30434c;color:#f0f5f7}
+.curve-branches{margin:8px 0;font-size:12px}
+.curve-branches summary{cursor:pointer;padding:6px 0;color:var(--ink);font-weight:700}
+.curve-branch-options{display:flex;flex-wrap:wrap;gap:6px;max-height:180px;overflow:auto;padding:4px 0}
+.curve-branch-options button{border:1px solid var(--line);border-left:4px solid var(--branch-color);border-radius:10px;background:var(--white);color:var(--ink);padding:7px 10px;text-align:left;font:inherit;min-height:44px}
+.curve-branch-options button[aria-pressed=true]{background:var(--leaf)}
+.curve-branch-options small{display:block;font-size:10px;color:var(--muted);margin-top:2px}
+.curve-legend{flex-wrap:wrap;align-items:center;gap:6px 12px}
+.curve-legend>button:not(.button){font:inherit;font-weight:700;border:0;background:transparent;min-height:32px;padding:2px;cursor:pointer}
+.curve [data-saved-branch]{cursor:pointer;outline:none}
+.curve [data-saved-branch]:focus-visible circle{stroke:var(--ink);stroke-width:3}

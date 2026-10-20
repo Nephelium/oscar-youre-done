@@ -48,9 +48,10 @@
       });
     }
     (raw.branches || []).slice(0, 200).forEach(b => {
-      if (!Number.isInteger(b.at) || b.at < 0 || b.at > moves.length || !Array.isArray(b.moves) || b.moves.length > 600) return;
+      if (!Number.isInteger(b.at) || b.at < 0 || b.at > moves.length || !Array.isArray(b.moves) || !b.moves.length || b.moves.length > 600) return;
       try { const g = position(record, b.at, b.moves); if (g) record.branches.push({id: String(b.id || id()), at: b.at, name: String(b.name || '新的变化').slice(0,80), moves: b.moves.slice()}); } catch (_) { /* Invalid optional variation is not a valid mainline. */ }
     });
+    compactBranches(record);
     record.issues = (raw.issues || []).slice(0, 500).filter(x => x && typeof x === 'object').map(x => ({...x, message: String(x.message || '请核对这段棋谱').slice(0,300)}));
     record.revisions = Array.isArray(raw.revisions) ? raw.revisions : [];
     record.undoEvents = Array.isArray(raw.undoEvents) ? raw.undoEvents : [];
@@ -80,7 +81,7 @@
       'White', record.side === 'w' ? 'You' : 'Opponent', 'Black', record.side === 'b' ? 'You' : 'Opponent', 'Result', record.result);
     if (record.initialFen !== START) g.header('SetUp', '1', 'FEN', record.initialFen);
     g.header('Notebook',record.notebook==='practice'?'practice':'game');
-    const incomplete = record.issues.some(x => !x.resolved);
+    const incomplete = record.issues.some(x => !x.resolved) || !!record.capture?.previousId;
     if (incomplete) g.header('Annotator', 'Chess Sprout: capture requires correction');
     return g.pgn({max_width: 80}) + (incomplete ? '\n{ Capture has unresolved positions; this is the confirmed segment. }' : '');
   }
@@ -224,10 +225,23 @@
   function addBranch(record, at, moves) {
     position(record, at, moves);
     if (!moves.length) throw Error('先在棋盘上走出一条变化。');
-    const existing=record.branches.find(b=>b.at===at&&JSON.stringify(b.moves)===JSON.stringify(moves));if(existing)return existing;
+    const prefix=(a,b)=>a.length<=b.length&&a.every((m,i)=>m===b[i]);
+    const existing=record.branches.find(b=>b.at===at&&prefix(moves,b.moves));if(existing)return existing;
+    const shorter=record.branches.filter(b=>b.at===at&&prefix(b.moves,moves));
+    if(shorter.length){
+      const kept=shorter[0];kept.moves=moves.slice();
+      record.branches=record.branches.filter(b=>b===kept||!shorter.includes(b));
+      return kept;
+    }
     if(record.branches.length>=200)throw Error('这局已保存 200 条变化，请另存为一局继续推演。');
     const branch = {id: id(), at, moves: moves.slice(), name: '第 ' + position(record,at).fen().split(' ')[5] + ' 回合的变化'};
     record.branches.push(branch); return branch;
+  }
+  function compactBranches(record) {
+    record.branches=record.branches.filter((b,i,all)=>!all.some((other,j)=>b.at===other.at&&
+      (other.moves.length>b.moves.length || other.moves.length===b.moves.length&&j<i)&&
+      b.moves.every((m,k)=>m===other.moves[k])));
+    return record.branches;
   }
   function fromPlacement(placement, turn = 'w', castling = '-', ep = '-') {
     const fen = placement + ' ' + turn + ' ' + castling + ' ' + ep + ' 0 1';
@@ -239,5 +253,5 @@
     if(demoData && JSON.stringify(record.moves)===JSON.stringify(demoData.moves))record.analysis=JSON.parse(JSON.stringify(demoData.analysis));
     return record;
   }
-  return {START, id, uci, move, position, validate, create, importText, toPgn, lineSan, numeric, viewNumeric, displayScore, probabilities, validWdl, assess, timeline, summary, moveFacts, variationRows, evaluationChange, keyMoments, explainMove, addBranch, fromPlacement, moveSymbol, demo};
+  return {START, id, uci, move, position, validate, create, importText, toPgn, lineSan, numeric, viewNumeric, displayScore, probabilities, validWdl, assess, timeline, summary, moveFacts, variationRows, evaluationChange, keyMoments, explainMove, addBranch, compactBranches, fromPlacement, moveSymbol, demo};
 });

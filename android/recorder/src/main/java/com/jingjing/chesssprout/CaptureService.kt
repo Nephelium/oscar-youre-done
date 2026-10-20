@@ -92,6 +92,7 @@ class CaptureService : Service() {
     private val pump=object: Runnable {
         override fun run() {
             if(stopping)return
+            val cycleStart=SystemClock.elapsedRealtime()
             val image=runCatching {reader?.acquireLatestImage()}.getOrNull()
             try {
                 if(paused || appVisible) {
@@ -128,7 +129,9 @@ class CaptureService : Service() {
                 image?.close()
                 val now=SystemClock.elapsedRealtime()
                 if(now-lastNotify>1800) {lastNotify=now;Handler(mainLooper).post {updateNotification()} }
-                if(!stopping)handler.postDelayed(this,200)
+                // A target period includes processing time. Do not append another
+                // 200 ms after a slow frame and silently halve the capture rate.
+                if(!stopping)handler.postDelayed(this,maxOf(16L,120L-(SystemClock.elapsedRealtime()-cycleStart)))
             }
         }
     }
@@ -176,7 +179,7 @@ class CaptureService : Service() {
         .addAction(Notification.Action.Builder(null,"结束记录",action("stop")).build()).build()
     private fun updateNotification() {
         getSystemService(NotificationManager::class.java).notify(NOTIFICATION,notification())
-        overlay?.text=when{paused->"Ⅱ 已暂停";processingError!=null->"◌ 正在重试";pipeline?.awaitingPosition==true->if(pipeline?.pendingFen==null)"◌ 识别题目" else "◌ 请确认局面";pipeline?.game?.getJSONObject("capture")?.optString("state")!="recording"->"◌ 寻找棋盘";pipeline?.message?.contains("校对")==true->"◌ 需校对";pipeline?.tracker?.moves?.isEmpty()!=false->"● 已就绪";else->"● ${pipeline?.tracker?.moves?.size} 步"}
+        overlay?.text=when{paused->"Ⅱ 已暂停";processingError!=null->"◌ 正在重试";pipeline?.awaitingPosition==true->if(pipeline?.pendingFen==null)"◌ 识别题目" else "◌ 请确认局面";pipeline?.game?.getJSONObject("capture")?.optString("state")!="recording"->"◌ 寻找棋盘";pipeline?.message?.contains("校对")==true->"◌ 需校对";pipeline?.tracker?.moves?.isEmpty()!=false->"● 已就绪";else->"● ${pipeline?.confirmedPlies} 步"}
     }
     private fun showOverlay() {
         val density=resources.displayMetrics.density
@@ -189,8 +192,10 @@ class CaptureService : Service() {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,PixelFormat.TRANSLUCENT).apply{gravity=Gravity.TOP or Gravity.END;y=(50*density).toInt();x=(8*density).toInt()})}
     }
     fun snapshot(): JSONObject=synchronized(this) {JSONObject().put("running",true).put("paused",paused).put("gameId",pipeline?.game?.optString("id"))
-        .put("message",if(paused)"记录已暂停" else processingError?:pipeline?.message).put("plies",pipeline?.tracker?.moves?.size?:0).put("calibrated",pipeline?.game?.getJSONObject("capture")?.optString("state")=="recording").put("pendingFen",pipeline?.pendingFen).put("awaitingPosition",pipeline?.awaitingPosition?:false)
+        .put("message",if(paused)"记录已暂停" else processingError?:pipeline?.message).put("plies",pipeline?.confirmedPlies?:0).put("calibrated",pipeline?.game?.getJSONObject("capture")?.optString("state")=="recording").put("pendingFen",pipeline?.pendingFen).put("awaitingPosition",pipeline?.awaitingPosition?:false)
         .put("decodedFrames",decodedFrames).put("repeatedFrames",repeatedFrames).put("ownAppVisible",appVisible)
+        .put("processMs",pipeline?.lastProcessMs?:0).put("classifiedFrames",pipeline?.recognizer?.classifiedFrames?:0)
+        .put("reusedFrames",pipeline?.recognizer?.reusedFrames?:0)
         .put("feedbackSerial",pipeline?.feedbackSerial?:0).put("lastFeedback",pipeline?.feedback?:"")}
     fun preview(): Bitmap?=synchronized(this) {latest?.copy(Bitmap.Config.ARGB_8888,false)}
     override fun onDestroy() {

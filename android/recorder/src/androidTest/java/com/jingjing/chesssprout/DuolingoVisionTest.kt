@@ -16,18 +16,27 @@ import java.io.File
 @RunWith(AndroidJUnit4::class)
 class DuolingoVisionTest {
     @Test fun practiceVideoWithLetterboxingAndRollbackStartsFromConfirmedPosition() {
+        val phases=JSONObject()
+        var phaseStart=System.nanoTime()
+        fun phase(name: String){phases.put(name,(System.nanoTime()-phaseStart)/1e6);phaseStart=System.nanoTime()}
         val context=instrumentation.targetContext
         ThemeStore(context).save(ThemeStore(context).bundled()!!)
         val video=File(context.cacheDir,"practice-rewind-regression.mp4")
         instrumentation.context.assets.open("v121-practice-rewind.mp4").use {input->video.outputStream().use{input.copyTo(it)}}
         VideoImporter.select(context,Uri.fromFile(video))
+        phase("selectMs")
         VideoImporter.seek(context,200)
+        phase("seekMs")
         val detected=VideoImporter.prepare(context,JSONObject().put("side","w"))
+        phase("prepareMs")
         assertEquals("3k4/8/2K5/3P4/8/8/8/8 w - - 0 1",detected.getString("fen"))
         VideoImporter.run(context,JSONObject().put("confirmFen",detected.getString("fen")))
         val until=System.currentTimeMillis()+60_000
         while(VideoImporter.state.optString("state")=="processing" && System.currentTimeMillis()<until)Thread.sleep(100)
         assertEquals(VideoImporter.state.toString(),"done",VideoImporter.state.getString("state"))
+        phase("processMs")
+        phases.put("state",VideoImporter.state)
+        File(context.getExternalFilesDir(null),"video-phases.json").writeText(phases.toString(2))
         val record=GameStore(context).read(VideoImporter.state.getString("gameId"))!!
         assertEquals("practice",record.getString("notebook"))
         val expected=listOf("c6d6","d8c8","d6e7","c8c7","d5d6","c7c8")

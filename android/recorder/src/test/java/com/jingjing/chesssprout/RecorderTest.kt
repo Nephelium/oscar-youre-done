@@ -37,7 +37,43 @@ class RecorderTest {
         val t=CaptureTracker()
         assertEquals("unmatched",t.accept("8/8/8/8/8/8/8/8").kind)
         assertTrue(t.moves.isEmpty())
-        assertEquals("unmatched",t.accept(placement("e4","e5","Nf3","Nc6")).kind)
+        assertEquals("ambiguous",t.accept(placement("e4","e5","Nf3","Nc6")).kind)
+        assertTrue(t.moves.isEmpty())
+    }
+    @Test fun recoversUniqueThreeAndFourPlyGapsAndContinues() {
+        val three=CaptureTracker()
+        assertEquals(listOf("e2e4","d7d5","e4d5"),three.accept(placement("e4","d5","exd5")).moves)
+        val four=CaptureTracker()
+        assertEquals(listOf("e2e4","d7d5","e4d5","d8d5"),four.accept(placement("e4","d5","exd5","Qxd5")).moves)
+        assertEquals(listOf("b1c3"),four.accept(placement("e4","d5","exd5","Qxd5","Nc3")).moves)
+        assertEquals("same",four.accept(placement("e4","d5","exd5","Qxd5","Nc3")).kind)
+    }
+    @Test fun disconnectedPositionResumesWithObservedTurnWithoutInventingHistory() {
+        val anchor=placement("e4","e5","Nf3","Nc6")
+        val recovery=CaptureRecovery(Board().fen,anchor)
+        assertTrue(recovery.valid)
+        assertNull(recovery.follow(anchor))
+        val resumed=recovery.follow(placement("e4","e5","Nf3","Nc6","Bc4"))!!
+        assertEquals(anchor,resumed.initialFen.substringBefore(' '))
+        assertEquals("w",resumed.initialFen.split(' ')[1])
+        assertEquals(listOf("f1c4"),resumed.tracker.moves)
+        assertEquals(listOf("g8f6"),resumed.tracker.accept(placement("e4","e5","Nf3","Nc6","Bc4","Nf6")).moves)
+        assertFalse(CaptureRecovery(Board().fen,anchor.replace('K','?')).valid)
+        // A hint misread as an extra pawn must not become a new recording segment.
+        assertFalse(CaptureRecovery(Board().fen,anchor.replace("/4P3/","/P3P3/")).valid)
+    }
+    @Test fun failedSearchDoesNotMutateBoardOrRepeatCompletedWork() {
+        val tracker=CaptureTracker();val initial=tracker.board.fen
+        val ambiguous=placement("e4","e5","Nf3","Nc6")
+        assertEquals("ambiguous",tracker.accept(ambiguous).kind)
+        assertEquals(initial,tracker.board.fen)
+        assertEquals("ambiguous",tracker.accept(ambiguous).kind)
+        assertEquals(0,tracker.lastSearchNodes)
+        assertEquals("unmatched",tracker.accept(placement("e4","d5","exd5"),nodeBudget=1).kind)
+        assertTrue(tracker.lastSearchLimited)
+        assertEquals(initial,tracker.board.fen)
+        assertTrue(tracker.moves.isEmpty())
+        assertEquals("move",tracker.accept(placement("e4","d5","exd5")).kind)
     }
     @Test fun tracksCastlingEnPassantAndUnderpromotion() {
         val castle=CaptureTracker(moves=listOf("e2e4","e7e5","g1f3","b8c6","f1c4","g8f6"))
