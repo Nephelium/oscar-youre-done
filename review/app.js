@@ -14,7 +14,7 @@
   const allStored = () => records.concat(legacyDemos);
   let records = [], route = 'home', current = null, ply = 0, branch = [], branchAt = 0, branchActive = false, correcting = false;
   let selected = null, flip = false, tab = 'analysis', busy = false, progress = 0, analysisToken = 0, toastTimer, capture = {running:false}, video = {state:'idle'};
-  let cropMode = 'capture', crop = null, cropStart = null;
+  let cropMode = 'capture', crop = null, cropStart = null, cropRequest = 0;
   let imageFen=null,notebook=localStorage.getItem('sprout.notebook')==='practice'?'practice':'game';
   let ratings=[],ratingEditId=null,curveRange=Number(localStorage.getItem('sprout.curveRange'))||2;
   let curveMode=localStorage.getItem('sprout.curveMode')==='win'?'win':'cp',curveDrag=null,rangePointer=null,curveFrame=0,ignoreCurveClickUntil=0,skipMotion=false,frameRows=null;
@@ -25,7 +25,8 @@
   const pending = new Map();
   let settings;
   try { settings = JSON.parse(localStorage.getItem('sprout.settings.v1') || '{}'); } catch (_) { settings = {}; }
-  settings = {budget:600,side:'w',animation:!matchMedia('(prefers-reduced-motion: reduce)').matches,pieceSet:'duo',boardTheme:'duo',...settings};
+  settings = {budget:600,side:'w',moveFeedback:true,animation:!matchMedia('(prefers-reduced-motion: reduce)').matches,pieceSet:'duo',boardTheme:'duo',...settings};
+  if(host){try{const value=JSON.parse(host.status()).moveFeedback;if(typeof value==='boolean')settings.moveFeedback=value;}catch(_){}}
   settings.pieceSet=ChessThemes.piece(settings.pieceSet).id;settings.boardTheme=ChessThemes.board(settings.boardTheme).id;
   const pieceUrl=(color,type)=>ChessThemes.url(settings.pieceSet,color,type);
   const pieceNames = {p:'兵',n:'马',b:'象',r:'车',q:'后',k:'王'};
@@ -81,7 +82,7 @@
     return `<section class="setting-card appearance-card"><h2>你的棋盘，你的风格</h2><p class="setting-intro">棋子和棋盘可以自由搭配。</p><h3 class="setting-label">棋子</h3><div class="piece-choices">${ChessThemes.pieces.map(p=>`<button class="theme-choice ${settings.pieceSet===p.id?'active':''}" data-act="pieceSet" data-value="${p.id}" aria-pressed="${settings.pieceSet===p.id}"><span class="piece-sample">${sample(p.id)}</span><span class="theme-name">${p.name}<small>${p.note}</small></span><span class="theme-check">${settings.pieceSet===p.id?'✓':''}</span></button>`).join('')}</div><h3 class="setting-label">棋盘</h3><div class="board-choices">${ChessThemes.boards.map(b=>`<button class="board-choice ${settings.boardTheme===b.id?'active':''}" data-act="boardTheme" data-value="${b.id}" aria-pressed="${settings.boardTheme===b.id}"><span class="board-sample" style="--sample-light:${b.colors[0]};--sample-dark:${b.colors[1]}">${Array.from({length:8},(_,i)=>`<i>${[1,6].includes(i)?`<img src="${pieceUrl(i===1?'b':'w',i===1?'k':'n')}" alt="">`:''}</i>`).join('')}</span><strong>${b.name}</strong><small>${b.note}${settings.boardTheme===b.id?' · ✓':''}</small></button>`).join('')}</div></section>`;
   }
   function settingsPage() {
-    return `${header()}<main class="page"><div class="page-heading"><div><h1>按自己的节奏</h1><p>棋谱与分析，保存在这台设备里。</p></div></div>${appearanceSettings()}<section class="setting-card"><div class="setting-row"><div class="grow"><strong>走子动画</strong><p>平滑移动棋子，方便看清每一步</p></div><button role="switch" aria-checked="${!!settings.animation}" class="toggle ${settings.animation?'on':''}" data-act="animation" aria-label="走子动画"><span></span></button></div><div class="setting-row"><div class="grow"><strong>分析用时</strong><p>每个局面的搜索时间，越久越充分</p></div><select id="budget" aria-label="分析用时">${[[600,'轻快 · 0.6 秒'],[1500,'细看 · 1.5 秒'],[3500,'深入 · 3.5 秒']].map(([n,t])=>`<option value="${n}" ${settings.budget===n?'selected':''}>${t}</option>`).join('')}</select></div><div class="setting-row"><div class="grow"><strong>记录时的小悬浮按钮</strong><p>可选，也可以从通知栏暂停与结束</p></div>${button('去设置','overlay','small')}</div><div class="setting-row"><div class="grow"><strong>保存一份棋谱备份</strong><p>包含手记、分析、推演与 Elo 历史</p></div><button class="icon-button" data-act="backup" aria-label="导出备份">${icon('export')}</button></div><div class="setting-row"><div class="grow"><strong>恢复备份 / 导入棋谱</strong><p>导入为副本，保留已有对局</p></div><button class="icon-button" data-act="import" aria-label="导入备份">${icon('import')}</button></div></section><section class="setting-card" style="margin-top:18px"><h3>表现分怎样计算？</h3><p class="analysis-copy" style="margin-top:10px">根据自己每步的局面评价损失计算：100 × exp(−平均损失 / 250)，损失以百分之一兵为单位，每步最多计 2000。它是奥斯卡你完了的复盘指标。尚未分析完整时，会显示已分析手数。</p><p class="analysis-copy" style="margin-top:8px">局面分数随棋盘底部颜色切换视角。正数表示该方占优，负数表示该方落后；M 表示将杀距离。翻转棋盘也会切换该方的表现统计。</p><p class="analysis-copy" style="margin-top:8px">棋子角标与棋谱采用同一套评级：书本表示已收录的开局理论走法，★ 表示引擎首选，! 表示好棋，✓ 表示稳健，?! / ? / ?? 表示逐级增加的评价损失。</p></section><div class="about-mark">${brandMark()}</div><p class="about-copy">奥斯卡你完了 1.2.0 · 离线记谱与复盘<br>chess.js · chesslib · Stockfish<br><button class="text-button" data-act="licenses">开源组件与许可</button></p></main>${nav()}`;
+    return `${header()}<main class="page"><div class="page-heading"><div><h1>按自己的节奏</h1><p>棋谱与分析，保存在这台设备里。</p></div></div>${appearanceSettings()}<section class="setting-card"><div class="setting-row"><div class="grow"><strong>走子动画</strong><p>平滑移动棋子，方便看清每一步</p></div><button role="switch" aria-checked="${!!settings.animation}" class="toggle ${settings.animation?'on':''}" data-act="animation" aria-label="走子动画"><span></span></button></div><div class="setting-row"><div class="grow"><strong>走子识别提示</strong><p>每次记到走法或撤回时短暂提示</p>${host&&!JSON.parse(host.status()).overlay?button("开启连续提示权限","overlay","small"):""}</div><button role="switch" aria-checked="${!!settings.moveFeedback}" class="toggle ${settings.moveFeedback?'on':''}" data-act="moveFeedback" aria-label="走子识别提示"><span></span></button></div><div class="setting-row"><div class="grow"><strong>分析用时</strong><p>每个局面的搜索时间，越久越充分</p></div><select id="budget" aria-label="分析用时">${[[600,'轻快 · 0.6 秒'],[1500,'细看 · 1.5 秒'],[3500,'深入 · 3.5 秒']].map(([n,t])=>`<option value="${n}" ${settings.budget===n?'selected':''}>${t}</option>`).join('')}</select></div><div class="setting-row"><div class="grow"><strong>记录时的小悬浮按钮</strong><p>可选，也可以从通知栏暂停与结束</p></div>${button('去设置','overlay','small')}</div><div class="setting-row"><div class="grow"><strong>保存一份棋谱备份</strong><p>包含手记、分析、推演与 Elo 历史</p></div><button class="icon-button" data-act="backup" aria-label="导出备份">${icon('export')}</button></div><div class="setting-row"><div class="grow"><strong>恢复备份 / 导入棋谱</strong><p>导入为副本，保留已有对局</p></div><button class="icon-button" data-act="import" aria-label="导入备份">${icon('import')}</button></div></section><section class="setting-card" style="margin-top:18px"><h3>表现分怎样计算？</h3><p class="analysis-copy" style="margin-top:10px">根据自己每步的局面评价损失计算：100 × exp(−平均损失 / 250)，损失以百分之一兵为单位，每步最多计 2000。它是奥斯卡你完了的复盘指标。尚未分析完整时，会显示已分析手数。</p><p class="analysis-copy" style="margin-top:8px">局面分数随棋盘底部颜色切换视角。正数表示该方占优，负数表示该方落后；M 表示将杀距离。翻转棋盘也会切换该方的表现统计。</p><p class="analysis-copy" style="margin-top:8px">棋子角标与棋谱采用同一套评级：书本表示已收录的开局理论走法，★ 表示引擎首选，! 表示好棋，✓ 表示稳健，?! / ? / ?? 表示逐级增加的评价损失。</p></section><div class="about-mark">${brandMark()}</div><p class="about-copy">奥斯卡你完了 1.2.1 · 离线记谱与复盘<br>chess.js · chesslib · Stockfish<br><button class="text-button" data-act="licenses">开源组件与许可</button></p></main>${nav()}`;
   }
   function viewGame() {return S.position(current,branchActive?branchAt:ply,branchActive?branch:[]);}
   function ratingChart(){
@@ -225,7 +226,7 @@
       squares.push(`<button class="square ${(row+col)%2?'dark':''} ${selected===square?'selected':''} ${legal.includes(square)?'legal':''} ${last&&(last.slice(0,2)===square||last.slice(2,4)===square)?'last':''}" data-square="${square}" aria-label="${square}${p?' '+(p.color==='w'?'白':'黑')+pieceNames[p.type]:' 空格'}">${p?`<img data-piece="${p.color+p.type}" src="${pieceUrl(p.color,p.type)}" alt="" draggable="false">`:''}${p&&last?.slice(2,4)===square?badge:''}${col===0?`<span class="coord rank">${rank}</span>`:''}${row===7?`<span class="coord file">${'abcdefgh'[file]}</span>`:''}</button>`);
     }
     const candidate=current.analysis[g.fen()]?.lines?.[0]?.pv?.[0];
-    if(candidate&&!selected){const coord=s=>{const f='abcdefgh'.indexOf(s[0]),r=8-Number(s[1]);return [((flip?7-f:f)+.5)*100,((flip?7-r:r)+.5)*100];},a=coord(candidate.slice(0,2)),b=coord(candidate.slice(2,4));squares.push(`<svg class="arrows" viewBox="0 0 800 800"><defs><marker id="arrowhead" markerWidth="3" markerHeight="3" refX="2.2" refY="1.5" orient="auto"><path d="M0 0L3 1.5L0 3Z" fill="#d89b36"/></marker></defs><path d="M${a[0]},${a[1]} L${b[0]},${b[1]}" stroke="#d89b36" stroke-width="13" opacity=".8" marker-end="url(#arrowhead)" stroke-linecap="round"/></svg>`);}
+    if(candidate&&!selected){const coord=s=>{const f='abcdefgh'.indexOf(s[0]),r=8-Number(s[1]);return [((flip?7-f:f)+.5)*100,((flip?7-r:r)+.5)*100];},a=coord(candidate.slice(0,2)),b=coord(candidate.slice(2,4)),length=Math.hypot(b[0]-a[0],b[1]-a[1]),angle=Math.atan2(b[1]-a[1],b[0]-a[0])*180/Math.PI;squares.push(`<svg class="arrows" viewBox="0 0 800 800" aria-hidden="true"><path d="M0,-6.5 H${length-31} V-20 L${length},0 L${length-31},20 V6.5 H0 A6.5,6.5 0 0 1 0,-6.5 Z" transform="translate(${a[0]} ${a[1]}) rotate(${angle})" fill="#d89b36" opacity=".85"/></svg>`);}
     element.dataset.fen=g.fen();element.dataset.record=current.id;element.dataset.flip=String(flip);
     element.innerHTML=squares.join('');
   }
@@ -305,24 +306,26 @@
   }
   function recordDialog() {
     if(capture.running){captureControl();return;}
-    const learned=host&&JSON.parse(host.status()).themeReady;
-    modal('让这一局，留下棋谱',`<p class="modal-copy">先开启记录，再进入多邻国。等奥斯卡你完了准备好后再走子。</p><label class="field" for="capture-mode">从哪里开始？</label><select id="capture-mode" class="full"><option value="game">完整对局 · 从初始棋盘开始</option><option value="position">练习题 · 从当前局面开始</option></select><p class="notice">${learned?'已保存棋子样式，可直接识别练习题。识别后回本应用确认局面和先走方。':'首次使用先在标准初始棋盘准备一次棋子样式，之后可直接记录练习题。'}</p><label class="field">棋盘底部是哪一方？</label>${sideOptions()}<label class="check-label"><input type="checkbox" id="overlay-check">显示小悬浮按钮（可选）</label><p class="notice">若未自动定位，可以返回本应用手动框选。录制过程无需声音。</p>`,button(icon('record')+'开启屏幕记录','startCapture','primary'));
+    modal('让这一局，留下棋谱',`<p class="modal-copy">先开启记录，再进入多邻国。等奥斯卡你完了准备好后再走子。</p><label class="field" for="capture-mode">从哪里开始？</label><select id="capture-mode" class="full"><option value="game">完整对局 · 从初始棋盘开始</option><option value="position">练习题 · 从当前局面开始</option></select><p class="notice">已内置多邻国棋子识别。练习题可从当前局面开始，识别后确认棋子和先走方。</p><label class="field">棋盘底部是哪一方？</label>${sideOptions()}<label class="check-label"><input type="checkbox" id="overlay-check">显示小悬浮按钮（可选）</label><p class="notice">若未自动定位，可以返回本应用手动框选。录制过程无需声音。</p>`,button(icon('record')+'开启屏幕记录','startCapture','primary'));
   }
   function sideOptions() {return `<div class="side-options"><label class="side-option"><input type="radio" name="side" value="w" ${settings.side==='w'?'checked':''}><img src="${pieceUrl('w','k')}" alt="">白方在下</label><label class="side-option"><input type="radio" name="side" value="b" ${settings.side==='b'?'checked':''}><img src="${pieceUrl('b','k')}" alt="">黑方在下</label></div>`;}
   function positionDialog(fen,mode='capture') {
       const board=new Chess(fen),cells=board.board().flat();if(settings.side==='b')cells.reverse();
-      modal(mode==='image'?'保存截图里的局面':'从这道题开始记录',`<p class="modal-copy">核对棋子位置，再选择轮到哪一方走。确认后可以复盘或继续推演。</p><div class="position-preview" aria-label="识别到的练习局面">${cells.map((p,i)=>`<div class="${(Math.floor(i/8)+i%8)%2?'dark':''}">${p?`<img src="${pieceUrl(p.color,p.type)}" alt="${p.color==='w'?'白':'黑'}${pieceNames[p.type]}">`:''}</div>`).join('')}</div><label class="field" for="position-turn">轮到谁走？</label><select id="position-turn"><option value="w">白方先走</option><option value="b">黑方先走</option></select><details class="position-details"><summary>题目里的易位与吃过路兵</summary><p class="notice">截图无法确定这两项权利。题目若有说明，可在下方 FEN 补充。默认均关闭。</p><textarea id="position-fen" aria-label="练习局面 FEN" rows="3">${esc(fen)}</textarea></details>`,button(mode==='image'?'保存到小练习':'确认局面，继续记录',mode==='image'?'confirmImage':'confirmPosition','primary'));
+      modal(mode==='video'?'从这个局面开始导入':mode==='image'?'保存截图里的局面':'从这道题开始记录',`<p class="modal-copy">核对棋子位置，再选择轮到哪一方走。确认后可以复盘或继续推演。</p><div class="position-preview" aria-label="识别到的练习局面">${cells.map((p,i)=>`<div class="${(Math.floor(i/8)+i%8)%2?'dark':''}">${p?`<img src="${pieceUrl(p.color,p.type)}" alt="${p.color==='w'?'白':'黑'}${pieceNames[p.type]}">`:''}</div>`).join('')}</div><label class="field" for="position-turn">轮到谁走？</label><select id="position-turn"><option value="w" ${board.turn()==='w'?'selected':''}>白方先走</option><option value="b" ${board.turn()==='b'?'selected':''}>黑方先走</option></select><details class="position-details"><summary>题目里的易位与吃过路兵</summary><p class="notice">截图无法确定这两项权利。题目若有说明，可在下方 FEN 补充。默认均关闭。</p><textarea id="position-fen" aria-label="练习局面 FEN" rows="3">${esc(fen)}</textarea></details>`,(mode==='video'?button('重新框选','cropVideo','soft'):'')+button(mode==='video'?'确认并识别录屏':mode==='image'?'保存到小练习':'确认局面，继续记录',mode==='video'?'confirmVideo':mode==='image'?'confirmImage':'confirmPosition','primary'));
   }
   function captureControl() {
     if(capture.pendingFen){positionDialog(capture.pendingFen);return;}
-    modal('这一局，正在留存',`<div class="live-banner"><span class="live-dot"></span><div><h3>${capture.paused?'已暂停':esc(capture.message)}</h3><p>已确认 ${capture.plies||0} 步</p></div></div><p class="modal-copy">可以继续切回多邻国。若没有识别到棋盘，请保持初始局面，手动框选后重新校准。</p>${button(icon('tune')+'框选棋盘 / 重新校准','cropCapture','full')}<div class="row" style="margin-top:14px">${button(capture.paused?'继续记录':'暂停记录','pauseCapture','full')}</div>`,button('结束并复盘','stopCapture','primary'));
+    const preview=host&&host.capturePreview();
+    modal('这一局，正在留存',`<div class="live-banner"><span class="live-dot"></span><div><h3 id="capture-message">${capture.paused?'已暂停':esc(capture.message)}</h3><p id="capture-count">已确认 ${capture.plies||0} 步</p></div></div>${preview?`<button class="capture-preview" data-act="cropCapture"><img src="${preview}" alt="最近采集到的棋盘画面"><span>查看识别范围 ${icon('next')}</span></button>`:''}<p class="modal-copy">整个屏幕和仅共享多邻国都可以。先看下方预览是否包含完整棋盘，切回多邻国后继续自动记录。</p>${button('回到多邻国','openDuolingo','full primary')}${button(icon('tune')+'查看采集画面 / 调整选框','cropCapture','full')}<div class="row" style="margin-top:14px">${button(capture.paused?'继续记录':'暂停记录','pauseCapture','full')}</div>`,button('结束并复盘','stopCapture','primary'));
   }
   function showCrop(mode) {
     if(!host){toast('请在安卓 App 中使用画面采集。');return;}
-    cropMode=mode;crop=null;
+    cropMode=mode;crop=null;cropStart=null;cropRequest++;
     const data=mode==='video'?host.videoPreview():mode==='image'?host.imagePreview():host.capturePreview();
     if(!data){toast('还没有采集到画面，请先切到多邻国显示棋盘。');return;}
-    modal(mode==='video'?'从这段录屏记谱':mode==='image'?'从截图里读出局面':'框选棋盘',`<p class="modal-copy">拖动框出完整的 8 × 8 棋盘，边缘贴齐棋格。${mode==='image'?'识别后会让你确认棋子和先走方。':'初次准备棋子样式时需显示标准初始棋盘。'}</p><div id="preview-wrap" class="preview-wrap"><img id="crop-image" src="${data}" alt="待定位的棋盘画面"><div id="crop-box" class="crop-box" hidden></div></div><label class="field">棋盘底部</label>${sideOptions()}<p class="tiny muted" style="margin-top:10px">不框选时，将尝试自动定位。</p>`,button(mode==='video'?'开始识别':mode==='image'?'识别截图':'校准棋盘','applyCrop','primary'));
+    modal(mode==='video'?'从这段录屏记谱':mode==='image'?'从截图里读出局面':'框选棋盘',`<p class="modal-copy">自动定位完整棋盘。识别范围不准时，拖动框内可移动，拖动四角可调整大小，框外拖动可重画。${mode==='video'?'选择棋子静止的一帧作为起点，支持练习题和撤回。':''}</p><div id="preview-wrap" class="preview-wrap"><img id="crop-image" src="${data}" alt="待定位的棋盘画面"><div id="crop-box" class="crop-box" hidden>${['nw','ne','sw','se'].map(c=>`<span class="crop-handle ${c}" data-crop-handle="${c}"></span>`).join('')}</div></div>${mode==='video'?`<label class="field" for="video-time">录屏起点 · <span id="video-time-label">${((video.previewTime||0)/1000).toFixed(1)} 秒</span></label><input id="video-time" type="range" min="0" max="${Math.max(0,(video.duration||1)-1)}" step="100" value="${video.previewTime||0}" aria-label="录屏起始时间">`:''}<label class="field">预览棋盘底部是哪一方？</label>${sideOptions()}<p class="tiny muted" style="margin-top:10px">${mode==='capture'?'调整后更新范围，再回到多邻国继续下棋。':'不框选时自动定位。下一步可核对识别结果。'}</p>`,button(mode==='capture'?'更新棋盘范围':'识别起始局面','applyCrop','primary'));
+    $('#crop-image').addEventListener('load',drawCrop);
+    if(typeof host.suggestCrop==='function')host.suggestCrop(mode,cropRequest);
   }
   function cropPoint(event) {const r=$('#crop-image').getBoundingClientRect();return {x:Math.max(0,Math.min(1,(event.clientX-r.left)/r.width)),y:Math.max(0,Math.min(1,(event.clientY-r.top)/r.height))};}
   function drawCrop() {if(!crop)return;const image=$('#crop-image'),wrap=$('#preview-wrap'),box=$('#crop-box');if(!image||!wrap)return;const r=image.getBoundingClientRect(),w=wrap.getBoundingClientRect();box.hidden=false;Object.assign(box.style,{left:(r.left-w.left+crop.left*r.width)+'px',top:(r.top-w.top+crop.top*r.height)+'px',width:(crop.right-crop.left)*r.width+'px',height:(crop.bottom-crop.top)*r.height+'px'});}
@@ -343,6 +346,7 @@
     openRecord(demoRecord.id);toast('已附整盘深度分析，试试下一步查看走法评价。');
   }
   const actions={
+    moveFeedback:()=>{settings.moveFeedback=!settings.moveFeedback;localStorage.setItem('sprout.settings.v1',JSON.stringify(settings));if(host)host.setMoveFeedback(settings.moveFeedback);render();},
     animation:()=>{settings.animation=!settings.animation;localStorage.setItem('sprout.settings.v1',JSON.stringify(settings));render();},
     pieceSet:e=>{settings.pieceSet=ChessThemes.piece(e.dataset.value).id;localStorage.setItem('sprout.settings.v1',JSON.stringify(settings));render();},
     boardTheme:e=>{settings.boardTheme=ChessThemes.board(e.dataset.value).id;localStorage.setItem('sprout.settings.v1',JSON.stringify(settings));render();},
@@ -369,6 +373,12 @@
       if(host){const error=host.deleteGame(id);if(error)throw Error(error);}
       records=records.filter(r=>r.id!==id);legacyDemos=legacyDemos.filter(r=>r.id!==id);if(!host)localStorage.setItem('sprout.games.v1',JSON.stringify(allStored()));
       current=null;branch=[];branchActive=false;route='games';closeModal();render();toast('手记已删除。');
+    },
+    cropVideo:()=>showCrop('video'),
+    confirmVideo:()=>{
+      const fields=$('#position-fen').value.trim().split(/\s+/);fields[1]=$('#position-turn').value;
+      const fen=fields.join(' ');S.validate({initialFen:fen,moves:[]});
+      host.runVideo(JSON.stringify({confirmFen:fen}));closeModal();toast('开始识别录屏。');
     },
     video:()=>host?host.selectVideo():toast('请在安卓 App 中导入录屏。'),
     pickFile:()=>$('#file-input').click(),importText:()=>importRecords($('#import-text').value),
@@ -397,7 +407,6 @@
       settings.side=$('input[name=side]:checked').value;localStorage.setItem('sprout.settings.v1',JSON.stringify(settings));
       const overlay=$('#overlay-check').checked;if(overlay&&!JSON.parse(host.status()).overlay){toast('先开启悬浮窗权限，或取消勾选后从通知栏控制。');host.overlayPermission();return;}
         const mode=$('#capture-mode').value;
-        if(mode==='position'&&!JSON.parse(host.status()).themeReady){toast('先记录一次标准初始棋盘，准备好棋子样式。');return;}
         closeModal();pauseAnalysis();host.startCapture(JSON.stringify({side:settings.side,overlay,mode}));
     },
       confirmPosition:()=>{
@@ -408,12 +417,13 @@
       },
     pauseCapture:()=>{host.captureAction('pause','{}');closeModal();setTimeout(()=>{poll();captureControl();},400);},
     stopCapture:()=>{const gameId=capture.gameId;host.captureAction('stop','{}');closeModal();setTimeout(()=>{poll();refresh();if(gameId)openRecord(gameId);},650);},
+    openDuolingo:()=>host&&host.openDuolingo(),
     cropCapture:()=>showCrop('capture'),applyCrop:()=>{
       const side=$('input[name=side]:checked').value;settings.side=side;localStorage.setItem('sprout.settings.v1',JSON.stringify(settings));
       if(crop&&(crop.right-crop.left<.15||crop.bottom-crop.top<.08))throw Error('框选区域太小，请重新拖动。');
       const options=JSON.stringify({side,region:crop});
-      if(cropMode==='video')host.runVideo(options);else if(cropMode==='image')host.recognizeImage(options);else host.captureAction('configure',options);
-      closeModal();toast(cropMode==='video'?'开始识别录屏，可以在这里查看进度。':cropMode==='image'?'正在识别图片里的局面。':'已更新棋盘范围，请切回题目或初始棋盘稍候。');
+      if(cropMode==='video')host.prepareVideo(options);else if(cropMode==='image')host.recognizeImage(options);else host.captureAction('configure',options);
+      if(cropMode==='capture')closeModal();toast(cropMode==='video'?'正在识别起始局面。':cropMode==='image'?'正在识别图片里的局面。':'已更新棋盘范围，请切回多邻国稍候。');
     },cancelVideo:()=>host&&host.cancelVideo(),overlay:()=>host?host.overlayPermission():toast('安卓 App 可设置悬浮窗。'),
     issues:issuesDialog,issue:e=>issueDetail(Number(e.dataset.index)),
     beginCorrection:e=>{const issue=current.issues[Number(e.dataset.index)];pauseAnalysis();branchAt=Math.min(current.moves.length,issue.at||0);ply=branchAt;branch=[];branchActive=true;correcting=true;selected=null;closeModal();window.scrollTo(0,0);render();},
@@ -449,9 +459,29 @@
     } catch(error){if($('#modal').open)$('#modal-error').textContent=error.message;else toast(error.message);}
   });
   document.addEventListener('change',event=>{if(event.target.id==='budget'){settings.budget=Number(event.target.value);localStorage.setItem('sprout.settings.v1',JSON.stringify(settings));}});
-  document.addEventListener('pointerdown',event=>{if(event.target.closest('#preview-wrap')){cropStart=cropPoint(event);event.target.setPointerCapture(event.pointerId);event.preventDefault();}});
-  document.addEventListener('pointermove',event=>{if(cropStart&&$('#crop-image')){const end=cropPoint(event);crop={left:Math.min(cropStart.x,end.x),top:Math.min(cropStart.y,end.y),right:Math.max(cropStart.x,end.x),bottom:Math.max(cropStart.y,end.y)};drawCrop();}});
-  document.addEventListener('pointerup',()=>{cropStart=null;});
+  document.addEventListener('change',event=>{if(event.target.id==='video-time'){const time=Number(event.target.value);$('#video-time-label').textContent=(time/1000).toFixed(1)+' 秒';host.seekVideo(time);}});
+  document.addEventListener('pointerdown',event=>{
+    const wrap=event.target.closest('#preview-wrap');if(!wrap)return;
+    const point=cropPoint(event),handle=event.target.dataset.cropHandle;
+    const inside=crop&&point.x>=crop.left&&point.x<=crop.right&&point.y>=crop.top&&point.y<=crop.bottom;
+    cropStart={point,original:crop?{...crop}:null,mode:handle|| (inside?'move':'new')};
+    wrap.setPointerCapture(event.pointerId);event.preventDefault();
+  });
+  document.addEventListener('pointermove',event=>{
+    if(!cropStart||!$('#crop-image'))return;
+    const end=cropPoint(event),{point,original:o,mode}=cropStart;
+    if(mode==='new')crop={left:Math.min(point.x,end.x),top:Math.min(point.y,end.y),right:Math.max(point.x,end.x),bottom:Math.max(point.y,end.y)};
+    else if(mode==='move'){
+      const dx=Math.max(-o.left,Math.min(1-o.right,end.x-point.x)),dy=Math.max(-o.top,Math.min(1-o.bottom,end.y-point.y));
+      crop={left:o.left+dx,right:o.right+dx,top:o.top+dy,bottom:o.bottom+dy};
+    }else{
+      crop={...o};if(mode.includes('w'))crop.left=Math.min(o.right-.03,end.x);else crop.right=Math.max(o.left+.03,end.x);
+      if(mode.includes('n'))crop.top=Math.min(o.bottom-.03,end.y);else crop.bottom=Math.max(o.top+.03,end.y);
+    }
+    drawCrop();event.preventDefault();
+  });
+  for(const type of ['pointerup','pointercancel','lostpointercapture'])document.addEventListener(type,()=>{cropStart=null;});
+  window.addEventListener('resize',drawCrop);
   function scrubTo(n){
     if(route!=='review'||!current)return;
     if(!branchActive&&ply===n)return;
@@ -518,7 +548,9 @@
     if(!host)return;
     try {
       const status=JSON.parse(host.status());capture=status.capture;video=status.video;
-      const key=JSON.stringify(status);
+      const key=JSON.stringify({...status,capture:{...capture,decodedFrames:undefined,repeatedFrames:undefined}});
+      if($('#capture-message'))$('#capture-message').textContent=capture.paused?'已暂停':capture.message;
+      if($('#capture-count'))$('#capture-count').textContent='已确认 '+(capture.plies||0)+' 步';
       if(key!==lastStatus){lastStatus=key;if(route!=='review'&&!$('#modal').open){refresh();render();}}
       if(video.state==='ready'&&lastVideoState!=='ready'&&!$('#modal').open)showCrop('video');
       if(video.state==='done'&&lastVideoState!=='done'&&localStorage.getItem('sprout.lastVideo')!==video.gameId){refresh();if(video.gameId){localStorage.setItem('sprout.lastVideo',video.gameId);openRecord(video.gameId);}}
@@ -529,11 +561,14 @@
   window.App={
     hostEvent(event){
       if(event.type==='analysis'){const task=pending.get(event.id);if(task){clearTimeout(task.timer);pending.delete(event.id);event.error?task.reject(Error(event.error)):task.resolve(event.result);}}
-      if(event.type==='captureStarted'){setTimeout(()=>{poll();toast('记录已开启，请切到多邻国的初始棋盘。');},600);}
+      if(event.type==='captureStarted'){setTimeout(()=>{poll();captureControl();toast('记录已开启，可以回到多邻国。');},600);}
+      if(event.type==='cropSuggested'&&event.requestId===cropRequest&&!crop&&!cropStart&&$('#crop-image')){crop=event.region;drawCrop();}
+      if(event.type==='videoRecognized'){settings.side=event.side;positionDialog(event.fen,'video');}
+      if(event.type==='videoPreviewUpdated'){poll();const img=$('#crop-image');if(img){img.src=host.videoPreview();if(!crop&&typeof host.suggestCrop==='function')host.suggestCrop('video',cropRequest);}}
       if(event.type==='videoReady'){poll();if(!$('#modal').open)showCrop('video');}
       if(event.type==='imageReady')showCrop('image');
       if(event.type==='imageRecognized'){imageFen=event.fen;positionDialog(imageFen,'image');}
-      if(event.type==='imageError'){toast(event.message);showCrop('image');$('#modal-error').textContent=event.message;}
+      if(event.type==='imageError'||event.type==='videoError'){toast(event.message);if(!$('#modal').open)showCrop(event.type==='videoError'?'video':'image');$('#modal-error').textContent=event.message;}
     },
     pause(){pauseAnalysis();persistView();},resume(){poll();refresh();if(route==='review'&&current&&!busy){const fresh=allStored().find(r=>r.id===current.id);if(fresh){current=fresh;ply=Math.min(ply,current.moves.length);}}render();},
     back(){if($('#modal').open){closeModal();return true;}if(route==='review'){leave();return true;}if(route!=='home'){route='home';render();return true;}return false;},

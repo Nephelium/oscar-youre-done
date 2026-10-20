@@ -5,6 +5,16 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class RecorderTest {
+    @Test fun confirmationLabelsIncludeBothPlayersAndPromotion() {
+        assertEquals("白兵e4 · 黑马f6",CaptureTracker.describeMoves(Board().fen,listOf("e2e4","g8f6")))
+        assertEquals("白兵a8升马",CaptureTracker.describeMoves("7k/P7/8/8/8/8/8/7K w - - 0 1",listOf("a7a8n")))
+    }
+    @Test fun legalRepetitionIsNotMistakenForExerciseRollback() {
+        val tracker=CaptureTracker()
+        val line=listOf("Nf3","Nf6","Ng1","Ng8")
+        for(index in line.indices)assertEquals("move",tracker.accept(placement(*line.take(index+1).toTypedArray())).kind)
+        assertEquals(4,tracker.moves.size)
+    }
     @Test fun parserKeepsWhiteWdlAndSwapsBlackWithoutLosingDraws() {
         val info="info depth 20 multipv 1 score cp 91 wdl 470 510 20 nodes 100 pv e7e5 g1f3"
         assertEquals(listOf(470,510,20),UciParser.parse(info,true)!!.wdl)

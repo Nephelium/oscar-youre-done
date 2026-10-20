@@ -33,9 +33,17 @@ class CaptureService : Service() {
     private var reader: ImageReader?=null
     private var pipeline: CapturePipeline?=null
     private var overlay: TextView?=null
-    private var paused=false
+    private var feedbackView: TextView?=null
+    private var feedbackToast: android.widget.Toast?=null
+    private val mainHandler=Handler(android.os.Looper.getMainLooper())
+    private var feedbackSeen=0
+    private val hideFeedback=Runnable {clearFeedback()}
+    @Volatile private var paused=false
     @Volatile private var stopping=false
-    private var lastFrame=0L
+    private var frameEligible=false
+    private var decodedFrames=0
+    private var repeatedFrames=0
+    private var processingError: String?=null
     private var lastNotify=0L
     @Volatile private var latest: Bitmap?=null
     private var finishMessage="已保存，可以复盘"
@@ -69,6 +77,7 @@ class CaptureService : Service() {
             val r=makeReader(size.width(),size.height())
             display=mp.createVirtualDisplay("ChessSprout",size.width(),size.height(),resources.displayMetrics.densityDpi,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,r.surface,null,handler)
+            handler.post(pump)
             if(options.optBoolean("overlay") && Settings.canDrawOverlays(this))showOverlay()
         } catch(_: Exception) { finishMessage="无法开始屏幕采集，请重新授权";stopSelf() }
         return START_NOT_STICKY
@@ -76,45 +85,98 @@ class CaptureService : Service() {
     private fun makeReader(width: Int,height: Int): ImageReader {
         val r=ImageReader.newInstance(width,height,PixelFormat.RGBA_8888,2)
         reader=r
-        r.setOnImageAvailableListener({ source ->
-            val image=runCatching { source.acquireLatestImage() }.getOrNull()?:return@setOnImageAvailableListener
+        return r
+    }
+    // Surface producers need not send duplicate static frames. Poll the latest
+    // queue entry, then re-observe that unchanged screen at a bounded cadence.
+    private val pump=object: Runnable {
+        override fun run() {
+            if(stopping)return
+            val image=runCatching {reader?.acquireLatestImage()}.getOrNull()
             try {
-                val now=SystemClock.elapsedRealtime()
-                if(stopping || paused || now-lastFrame<230)return@setOnImageAvailableListener
-                lastFrame=now
+                if(paused || appVisible) {
+                    frameEligible=false
+                    synchronized(this@CaptureService){pipeline?.onInterrupted()}
+                    return
+                }
+                if(image!=null) {
                 val plane=image.planes[0];val paddedWidth=plane.rowStride/plane.pixelStride
                 val buffer=Bitmap.createBitmap(paddedWidth,image.height,Bitmap.Config.ARGB_8888)
-                buffer.copyPixelsFromBuffer(plane.buffer)
-                val factor=minOf(1f,720f/image.width)
-                val cropped=Bitmap.createBitmap(buffer,0,0,image.width,image.height)
-                val frame=Bitmap.createScaledBitmap(cropped,(image.width*factor).toInt(),(image.height*factor).toInt(),true)
-                synchronized(this) {
-                    latest?.recycle();latest=frame
-                    pipeline?.process(frame)
+                var cropped: Bitmap?=null
+                var frame: Bitmap?=null
+                try {
+                    buffer.copyPixelsFromBuffer(plane.buffer)
+                    val factor=minOf(1f,720f/image.width)
+                    cropped=Bitmap.createBitmap(buffer,0,0,image.width,image.height)
+                    frame=Bitmap.createScaledBitmap(cropped,(image.width*factor).toInt(),(image.height*factor).toInt(),true)
+                    synchronized(this@CaptureService) {latest?.recycle();latest=frame;frameEligible=true;decodedFrames++}
+                } finally {
+                    if(cropped!==frame && cropped!==buffer)cropped?.recycle()
+                    if(buffer!==frame)buffer.recycle()
                 }
-                if(cropped!==frame && cropped!==buffer)cropped.recycle()
-                if(buffer!==frame)buffer.recycle()
+                } else if(frameEligible)repeatedFrames++
+                synchronized(this@CaptureService) {if(frameEligible)latest?.let {pipeline?.process(it)}}
+                pipeline?.let {p->if(p.feedbackSerial!=feedbackSeen) {
+                    feedbackSeen=p.feedbackSerial
+                    val text=p.feedback;mainHandler.post{showFeedback(text)}
+                }}
+                processingError=null
+            } catch(error: Exception) {
+                processingError="这帧未能识别，正在重试"
+                android.util.Log.w("ChessSprout","Capture processing failed: ${error.javaClass.simpleName}")
+            } finally {
+                image?.close()
+                val now=SystemClock.elapsedRealtime()
                 if(now-lastNotify>1800) {lastNotify=now;Handler(mainLooper).post {updateNotification()} }
-            } catch(_: Exception) { finishMessage="记录暂时中断，已保存确认的走法" } finally {image.close()}
-        },handler)
-        return r
+                if(!stopping)handler.postDelayed(this,200)
+            }
+        }
+    }
+    private fun showFeedback(text: String) {
+        if(stopping || appVisible || !getSharedPreferences("capture",MODE_PRIVATE).getBoolean("moveFeedback",true))return
+        clearFeedback()
+        if(Settings.canDrawOverlays(this)) {
+            val density=resources.displayMetrics.density
+            val view=TextView(this).apply {
+                this.text=text;setTextColor(0xffffffff.toInt());textSize=14f;gravity=Gravity.CENTER
+                maxWidth=(320*density).toInt();setPadding((18*density).toInt(),(12*density).toInt(),(18*density).toInt(),(12*density).toInt())
+                background=android.graphics.drawable.GradientDrawable().apply{setColor(0xf0315629.toInt());cornerRadius=18*density}
+            }
+            runCatching {
+                getSystemService(WindowManager::class.java).addView(view,WindowManager.LayoutParams(-2,-2,WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,PixelFormat.TRANSLUCENT).apply {
+                    gravity=Gravity.TOP or Gravity.CENTER_HORIZONTAL;y=(100*density).toInt()
+                    // Android 12+ requires pass-through overlays to stay within this opacity.
+                    alpha=0.8f
+                })
+                feedbackView=view;mainHandler.postDelayed(hideFeedback,1800)
+            }.onFailure {showSystemFeedback(text)}
+        }else showSystemFeedback(text)
+    }
+    private fun showSystemFeedback(text: String) {
+        feedbackToast=android.widget.Toast.makeText(this,text,android.widget.Toast.LENGTH_SHORT).also {it.show()}
+    }
+    fun clearFeedback() {
+        mainHandler.removeCallbacks(hideFeedback)
+        feedbackView?.let {view->runCatching{getSystemService(WindowManager::class.java).removeView(view)}}
+        feedbackView=null;feedbackToast?.cancel();feedbackToast=null
     }
     private fun resize(width: Int,height: Int) {
         if(width<=0 || height<=0 || display==null)return
         if(reader?.width==width && reader?.height==height)return
         val old=reader;val current=makeReader(width,height)
-        synchronized(this){pipeline?.onResize()}
+        synchronized(this){pipeline?.onResize();frameEligible=false}
         display?.resize(width,height,resources.displayMetrics.densityDpi);display?.surface=current.surface;old?.close()
     }
     private fun action(action: String)=PendingIntent.getService(this,if(action=="stop")2 else 3,Intent(this,CaptureService::class.java).setAction(action),PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     private fun open()=PendingIntent.getActivity(this,1,Intent(this,MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     private fun notification(): Notification=Notification.Builder(this,CHANNEL).setSmallIcon(R.drawable.ic_sprout).setContentTitle(if(paused)"奥斯卡你完了 · 已暂停" else "奥斯卡你完了 · 正在记录")
-        .setContentText(pipeline?.message?:"等待棋盘").setContentIntent(open()).setOngoing(true).setOnlyAlertOnce(true)
+        .setContentText(processingError?:pipeline?.message?:"等待棋盘").setContentIntent(open()).setOngoing(true).setOnlyAlertOnce(true)
         .addAction(Notification.Action.Builder(null,if(paused)"继续" else "暂停",action("pause")).build())
         .addAction(Notification.Action.Builder(null,"结束记录",action("stop")).build()).build()
     private fun updateNotification() {
         getSystemService(NotificationManager::class.java).notify(NOTIFICATION,notification())
-        overlay?.text=when{paused->"Ⅱ 已暂停";pipeline?.awaitingPosition==true->if(pipeline?.pendingFen==null)"◌ 识别题目" else "◌ 请确认局面";pipeline?.recognizer?.calibrated!=true->"◌ 待校准";pipeline?.tracker?.moves?.isEmpty()!=false->"● 已就绪";else->"● ${pipeline?.tracker?.moves?.size} 步"}
+        overlay?.text=when{paused->"Ⅱ 已暂停";processingError!=null->"◌ 正在重试";pipeline?.awaitingPosition==true->if(pipeline?.pendingFen==null)"◌ 识别题目" else "◌ 请确认局面";pipeline?.game?.getJSONObject("capture")?.optString("state")!="recording"->"◌ 寻找棋盘";pipeline?.message?.contains("校对")==true->"◌ 需校对";pipeline?.tracker?.moves?.isEmpty()!=false->"● 已就绪";else->"● ${pipeline?.tracker?.moves?.size} 步"}
     }
     private fun showOverlay() {
         val density=resources.displayMetrics.density
@@ -127,10 +189,14 @@ class CaptureService : Service() {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,PixelFormat.TRANSLUCENT).apply{gravity=Gravity.TOP or Gravity.END;y=(50*density).toInt();x=(8*density).toInt()})}
     }
     fun snapshot(): JSONObject=synchronized(this) {JSONObject().put("running",true).put("paused",paused).put("gameId",pipeline?.game?.optString("id"))
-        .put("message",if(paused)"记录已暂停" else pipeline?.message).put("plies",pipeline?.tracker?.moves?.size?:0).put("calibrated",pipeline?.recognizer?.calibrated?:false).put("pendingFen",pipeline?.pendingFen).put("awaitingPosition",pipeline?.awaitingPosition?:false)}
+        .put("message",if(paused)"记录已暂停" else processingError?:pipeline?.message).put("plies",pipeline?.tracker?.moves?.size?:0).put("calibrated",pipeline?.game?.getJSONObject("capture")?.optString("state")=="recording").put("pendingFen",pipeline?.pendingFen).put("awaitingPosition",pipeline?.awaitingPosition?:false)
+        .put("decodedFrames",decodedFrames).put("repeatedFrames",repeatedFrames).put("ownAppVisible",appVisible)
+        .put("feedbackSerial",pipeline?.feedbackSerial?:0).put("lastFeedback",pipeline?.feedback?:"")}
     fun preview(): Bitmap?=synchronized(this) {latest?.copy(Bitmap.Config.ARGB_8888,false)}
     override fun onDestroy() {
         stopping=true
+        clearFeedback()
+        handler.removeCallbacks(pump)
         runCatching {overlay?.let {getSystemService(WindowManager::class.java).removeView(it)}}
         // The ImageReader owns the native memory currently read by the capture callback.
         // Close it on that same handler only after an in-flight copy has completed.
@@ -147,6 +213,7 @@ class CaptureService : Service() {
         super.onDestroy()
     }
     companion object {
+        @Volatile var appVisible=false
         const val CHANNEL="chesssprout-capture";const val NOTIFICATION=401
         @Volatile private var active: java.lang.ref.WeakReference<CaptureService>?=null
         var instance: CaptureService?

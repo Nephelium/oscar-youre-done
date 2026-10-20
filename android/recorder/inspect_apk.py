@@ -1,6 +1,6 @@
 """Verify the delivered archive contains current shared sources and exact reviewed engines."""
 from pathlib import Path
-import hashlib, json, zipfile, sys
+import hashlib, json, zipfile, sys, gzip
 root=Path(__file__).resolve().parents[2]
 apk=Path(sys.argv[1]) if len(sys.argv)>1 else root/'android/recorder/build/outputs/apk/debug/recorder-debug.apk'
 def digest(stream):
@@ -9,6 +9,10 @@ def digest(stream):
     return sha.hexdigest()
 checks={}
 with zipfile.ZipFile(apk) as archive:
+    profile='assets/review/assets/duolingo-board-profile.json'
+    expected=gzip.decompress((root/'review/assets/duolingo-board-profile.json.gz').read_bytes())
+    assert archive.read(profile)==expected, 'Missing/stale packaged recognition profile'
+    checks[profile]=hashlib.sha256(expected).hexdigest()
     pairs={f'assets/review/{name}':root/'review'/name for name in ['index.html','core.js','ratings.js','demo-analysis.js','app.js','themes.js','board-motion.js','style.css','assets/oscar-panic.png']}
     for piece in (root/'review/assets/pieces').glob('*.svg'):pairs['assets/review/assets/pieces/'+piece.name]=piece
     pairs['res/drawable-nodpi-v4/oscar_panic.png']=root/'review/assets/oscar-panic.png'

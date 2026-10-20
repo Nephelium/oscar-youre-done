@@ -116,7 +116,11 @@ class MainActivity: ComponentActivity() {
             runOnUiThread{runCatching{startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(url)))}.onFailure{message("未找到可用的浏览器")}}
         }
         @JavascriptInterface fun status(): String=JSONObject().put("capture",CaptureService.instance?.snapshot()?:JSONObject().put("running",false))
-            .put("video",VideoImporter.state).put("engine",engine.name).put("version",packageManager.getPackageInfo(packageName,0).versionName).put("themeReady",ThemeStore(this@MainActivity).exists()).put("overlay",Settings.canDrawOverlays(this@MainActivity)).toString()
+            .put("video",VideoImporter.state).put("engine",engine.name).put("version",packageManager.getPackageInfo(packageName,0).versionName).put("themeReady",ThemeStore(this@MainActivity).exists()).put("moveFeedback",getSharedPreferences("capture",MODE_PRIVATE).getBoolean("moveFeedback",true)).put("overlay",Settings.canDrawOverlays(this@MainActivity)).toString()
+        @JavascriptInterface fun setMoveFeedback(enabled: Boolean) {
+            getSharedPreferences("capture",MODE_PRIVATE).edit().putBoolean("moveFeedback",enabled).apply()
+            if(!enabled)runOnUiThread{CaptureService.instance?.clearFeedback()}
+        }
         @JavascriptInterface fun saveGame(content: String): String=runCatching {
             require(content.length<=12*1024*1024)
             val record=JSONObject(content);val moves=record.getJSONArray("moves");require(moves.length()<=6000)
@@ -152,12 +156,34 @@ class MainActivity: ComponentActivity() {
                 startService(Intent(this@MainActivity,CaptureService::class.java).setAction(action).putExtra("options",options.take(4000)))
         } }
         @JavascriptInterface fun capturePreview(): String=imageData(CaptureService.instance?.preview())
+        @JavascriptInterface fun suggestCrop(mode: String,requestId: Int) {executor.execute {
+            val bitmap=when(mode){"video"->VideoImporter.previewCopy();"image"->ScreenshotImporter.previewCopy();else->CaptureService.instance?.preview()}
+            if(bitmap!=null)try {
+                val region=runCatching{BoardRecognizer().locate(bitmap)}.getOrNull()
+                if(region!=null)emit(JSONObject().put("type","cropSuggested").put("requestId",requestId)
+                    .put("region",JSONObject().put("left",region.left.toDouble()).put("top",region.top.toDouble())
+                        .put("right",region.right.toDouble()).put("bottom",region.bottom.toDouble())))
+            } finally {bitmap.recycle()}
+        }}
+        @JavascriptInterface fun openDuolingo() {runOnUiThread {
+            val intent=packageManager.getLaunchIntentForPackage("com.duolingo")
+            if(intent!=null)runCatching{startActivity(intent)}.onFailure{message("请手动切回多邻国")}
+            else message("请先安装多邻国，或从最近任务切回棋盘")
+        }}
         @JavascriptInterface fun overlayPermission() {runOnUiThread {runCatching {startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:$packageName")))}.onFailure{message("系统未提供悬浮窗设置，可使用通知栏控制")}}}
         @JavascriptInterface fun selectVideo() {runOnUiThread {
             if(CaptureService.instance!=null){message("请先结束屏幕记录");return@runOnUiThread}
             runCatching {startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT).apply{addCategory(Intent.CATEGORY_OPENABLE);type="video/*"},PICK_VIDEO)}.onFailure{message("无法打开文件选择器")}
         } }
         @JavascriptInterface fun videoPreview(): String=imageData(VideoImporter.previewCopy())
+        @JavascriptInterface fun seekVideo(time: Long) {executor.execute {
+            runCatching {VideoImporter.seek(applicationContext,time)}
+                .onSuccess{emit(JSONObject().put("type","videoPreviewUpdated"))}.onFailure{message(it.message?:"无法读取这一帧")}
+        }}
+        @JavascriptInterface fun prepareVideo(options: String) {executor.execute {
+            runCatching {VideoImporter.prepare(applicationContext,JSONObject(options))}
+                .onSuccess{emit(it.put("type","videoRecognized"))}.onFailure{emit(JSONObject().put("type","videoError").put("message",it.message?:"无法识别起始局面"))}
+        }}
         @JavascriptInterface fun runVideo(options: String) {runCatching {check(CaptureService.instance==null){"请先结束屏幕记录"};VideoImporter.run(applicationContext,JSONObject(options))}.onFailure{message(it.message?:"导入失败")}}
         @JavascriptInterface fun cancelVideo() {VideoImporter.cancel()}
         @JavascriptInterface fun selectImage() {runOnUiThread {
@@ -222,6 +248,8 @@ class MainActivity: ComponentActivity() {
         }
     }
     override fun onSaveInstanceState(state: Bundle) {state.putString("captureOptions",captureOptions);state.putBoolean("exporting",exporting);super.onSaveInstanceState(state)}
+    override fun onStart() {super.onStart();CaptureService.appVisible=true}
+    override fun onStop() {CaptureService.appVisible=false;super.onStop()}
     override fun onPause() {if(::web.isInitialized){web.evaluateJavascript("window.App && App.pause()",null);web.onPause()};super.onPause()}
     override fun onResume() {super.onResume();if(::web.isInitialized){web.onResume();web.evaluateJavascript("window.App && App.resume()",null)}}
     override fun onDestroy() {destroyed=true;ready=false;chooser?.onReceiveValue(null);engine.cancel();executor.shutdownNow();engine.close()

@@ -11,19 +11,22 @@ import org.json.JSONObject
 
 /** Theme templates are learned from this user's standard initial board, not from a guessed piece font. */
 class BoardRecognizer(var blackBottom: Boolean = false) {
+    private var gridReady=false
     var region: RectF? = null
+        set(value) {field=value;gridReady=false}
     var calibrated = false
         private set
     private val templates = mutableMapOf<Char, MutableList<FloatArray>>()
     private val initial = "rnbqkbnrpppppppp................................PPPPPPPPRNBQKBNR"
     fun reset(rect: RectF? = region) { region = rect; calibrated = false; templates.clear() }
-    fun profile(): JSONObject = JSONObject().put("schema",1).put("templates",JSONObject().also { data ->
+    fun profile(): JSONObject = JSONObject().put("schema",2).put("templates",JSONObject().also { data ->
         templates.forEach { (piece,variants) -> data.put(piece.toString(),JSONArray().also { list ->
             variants.forEach { feature -> list.put(JSONArray().also { values -> feature.forEach { values.put(it.toDouble()) } }) }
         }) }
     })
     fun loadProfile(data: JSONObject): Boolean = runCatching {
-        require(data.getInt("schema")==1)
+        // v1 allowed moved boards to poison labels. Keep the file, but never reuse it.
+        require(data.getInt("schema")==2)
         val saved=data.getJSONObject("templates");val loaded=mutableMapOf<Char,MutableList<FloatArray>>()
         for(piece in ".prnbqkPRNBQK") {
             val variants=saved.getJSONArray(piece.toString());require(variants.length() in 1..32)
@@ -83,17 +86,23 @@ class BoardRecognizer(var blackBottom: Boolean = false) {
         val rough = region ?: locate(image) ?: return false
         val box = refineInitialGrid(image,rough).also{region=it}
         val features = features(image, box)
-        val arranged = if (blackBottom) initial.reversed() else initial
+        val arranged = initial
         val empties = features.indices.filter { arranged[it]=='.' }.map { features[it].map { v -> abs(v) }.average() }
         val occupied = features.indices.filter { arranged[it]!='.' }.map { features[it].map { v -> abs(v) }.average() }
         // A moved or obstructed board must not silently become a labelled calibration dataset.
-        if (empties.count { it > 0.045 } > 2 || occupied.count { it < 0.025 } > 2 || occupied.average() < empties.average()*1.7) {
+        if (empties.any { it > 0.025 } || occupied.any { it < 0.025 } || occupied.average() < empties.average()*1.7) {
             if(original==null)region=null
             return false
         }
+        val topInk=features.take(16).map{it.average()}.average()
+        val bottomInk=features.takeLast(16).map{it.average()}.average()
+        if(abs(topInk-bottomInk)<0.04) {if(original==null)region=null;return false}
+        blackBottom=bottomInk<topInk
+        val labels=if(blackBottom)initial.reversed() else initial
         templates.clear()
-        for (i in features.indices) templates.getOrPut(arranged[i]) { mutableListOf() }.add(features[i])
+        for (i in features.indices) templates.getOrPut(labels[i]) { mutableListOf() }.add(features[i])
         calibrated = true
+        gridReady=true
         return true
     }
     private fun refineInitialGrid(image: Bitmap,rough: RectF,initialPosition: Boolean=true): RectF {
@@ -137,7 +146,8 @@ class BoardRecognizer(var blackBottom: Boolean = false) {
     data class Observation(val placement: String, val confidence: Double)
     fun recognize(image: Bitmap): Observation? {
         if (!calibrated) return null
-        val box=region?:locate(image)?.let{refineInitialGrid(image,it,false)}?.also{region=it}?:return null
+        val rough=region?:locate(image)?:return null
+        val box=if(gridReady)rough else refineInitialGrid(image,rough,false).also{region=it;gridReady=true}
         val features = features(image, box)
         val labels = StringBuilder(); var confidence = 0.0
         var uncertain=0

@@ -43,11 +43,11 @@ object ScreenshotImporter {
             val store=ThemeStore(context)
             val learned=store.load()?.let{recognizer.loadProfile(it)}?:false
             var modelUpdated=!learned
-            if(!learned)require(recognizer.calibrate(frame)){"请先在标准初始棋盘准备一次棋子样式，再导入练习截图"}
+            if(!learned)require(recognizer.calibrate(frame)){"未能读取棋子样式，请重新打开应用"}
             var observation=recognizer.recognize(frame)
             if(observation==null || '?' in observation.placement) {
                 recognizer.reset(requested)
-                require(recognizer.calibrate(frame)){"棋子或标记未能识别清楚，请重新框选，或先准备当前主题的初始棋盘"}
+                require(recognizer.calibrate(frame)){"棋子或标记未能识别清楚，请调整选框，选择棋子静止且没有提示遮挡的截图"}
                 modelUpdated=true
                 observation=recognizer.recognize(frame)
             }

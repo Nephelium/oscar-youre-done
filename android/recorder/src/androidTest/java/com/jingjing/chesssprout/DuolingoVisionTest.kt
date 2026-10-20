@@ -15,6 +15,102 @@ import java.io.File
 
 @RunWith(AndroidJUnit4::class)
 class DuolingoVisionTest {
+    @Test fun practiceVideoWithLetterboxingAndRollbackStartsFromConfirmedPosition() {
+        val context=instrumentation.targetContext
+        ThemeStore(context).save(ThemeStore(context).bundled()!!)
+        val video=File(context.cacheDir,"practice-rewind-regression.mp4")
+        instrumentation.context.assets.open("v121-practice-rewind.mp4").use {input->video.outputStream().use{input.copyTo(it)}}
+        VideoImporter.select(context,Uri.fromFile(video))
+        VideoImporter.seek(context,200)
+        val detected=VideoImporter.prepare(context,JSONObject().put("side","w"))
+        assertEquals("3k4/8/2K5/3P4/8/8/8/8 w - - 0 1",detected.getString("fen"))
+        VideoImporter.run(context,JSONObject().put("confirmFen",detected.getString("fen")))
+        val until=System.currentTimeMillis()+60_000
+        while(VideoImporter.state.optString("state")=="processing" && System.currentTimeMillis()<until)Thread.sleep(100)
+        assertEquals(VideoImporter.state.toString(),"done",VideoImporter.state.getString("state"))
+        val record=GameStore(context).read(VideoImporter.state.getString("gameId"))!!
+        assertEquals("practice",record.getString("notebook"))
+        val expected=listOf("c6d6","d8c8","d6e7","c8c7","d5d6","c7c8")
+        assertEquals(expected,(0 until record.getJSONArray("moves").length()).map{record.getJSONArray("moves").getString(it)})
+        assertEquals(1,record.getJSONArray("undoEvents").length())
+        assertEquals(4,record.getJSONArray("branches").getJSONObject(0).getJSONArray("moves").length())
+        assertEquals(0,record.getJSONArray("issues").length())
+    }
+    // Synthetic orientation transform of actual screen pixels: keep each piece
+    // upright, move the whole cell to the opposing square (not a rotated glyph).
+    private fun blackView(bitmap: Bitmap): Bitmap {
+        val reference=frame("duolingo-auto-initial.png")
+        val locator=BoardRecognizer();assertTrue(locator.calibrate(reference));reference.recycle()
+        val box=locator.region!!
+        val result=bitmap.copy(Bitmap.Config.ARGB_8888,true);val canvas=android.graphics.Canvas(result)
+        for(i in 0..63) {
+            fun square(index: Int)=android.graphics.Rect(
+                ((box.left+index%8*box.width()/8)*bitmap.width).toInt(),
+                ((box.top+index/8*box.height()/8)*bitmap.height).toInt(),
+                ((box.left+(index%8+1)*box.width()/8)*bitmap.width).toInt(),
+                ((box.top+(index/8+1)*box.height()/8)*bitmap.height).toInt())
+            canvas.drawBitmap(bitmap,square(i),square(63-i),null)
+        }
+        return result
+    }
+    @Test fun blackBottomCanStartAfterFirstPairWithoutCalibration() {
+        val context=instrumentation.targetContext
+        val bundled=ThemeStore(context).bundled()!!
+        val detector=BoardRecognizer(true);assertTrue(detector.loadProfile(bundled))
+        val initial=frame("duolingo-auto-initial.png")
+        val flippedInitial=blackView(initial)
+        val learned=BoardRecognizer(false);assertTrue(learned.calibrate(flippedInitial))
+        assertTrue(learned.blackBottom)
+        ThemeStore(context).save(bundled)
+        val pipeline=CapturePipeline(context,JSONObject().put("side","b"),"黑方晚起录回归")
+        val data=JSONObject(instrumentation.context.assets.open("duolingo-reference.json").bufferedReader().use{it.readText()})
+        val frames=data.getJSONArray("frames")
+        for(index in 0 until frames.length()) {
+            val item=frames.getJSONObject(index);val source=frame(item.getString("image"));val flipped=blackView(source)
+            repeat(3){pipeline.process(flipped)}
+            assertEquals(item.getString("image"),item.getInt("plies"),pipeline.tracker.moves.size)
+            source.recycle();flipped.recycle()
+        }
+        assertEquals(0,pipeline.game.getJSONArray("issues").length())
+        assertEquals("b",pipeline.game.getString("side"))
+        initial.recycle();flippedInitial.recycle();pipeline.finish()
+    }
+    @Test fun bundledProfileRecognizesPracticeAndLongRollbackKeepsAttempt() {
+        val context=instrumentation.targetContext
+        ThemeStore(context).save(ThemeStore(context).bundled()!!)
+        val fen="3k4/8/2K5/3P4/8/8/8/8 w - - 0 1"
+        val pipeline=CapturePipeline(context,JSONObject().put("mode","position").put("initialFen",fen),"练习撤回回归")
+        frame("duolingo-promotion-live-03.png").also{b->repeat(3){pipeline.process(b)};b.recycle()}
+        frame("duolingo-promotion-live-05.png").also{b->repeat(3){pipeline.process(b)};b.recycle()}
+        assertEquals(4,pipeline.tracker.moves.size)
+        frame("duolingo-promotion-start.png").also{b->repeat(3){pipeline.process(b)};b.recycle()}
+        assertEquals(0,pipeline.tracker.moves.size)
+        assertEquals(4,pipeline.game.getJSONArray("branches").getJSONObject(0).getJSONArray("moves").length())
+        frame("duolingo-promotion-live-03.png").also{b->repeat(3){pipeline.process(b)};b.recycle()}
+        assertEquals(2,pipeline.tracker.moves.size)
+        assertEquals("practice",pipeline.game.getString("notebook"))
+        pipeline.finish()
+    }
+    @Test fun incorrectSideChoiceMustNotPoisonInitialTemplates() {
+        val pipeline=CapturePipeline(instrumentation.targetContext,JSONObject().put("side","b"),"方向回归")
+        frame("duolingo-auto-initial.png").also {bitmap->repeat(3){pipeline.process(bitmap)};bitmap.recycle()}
+        assertTrue(pipeline.recognizer.calibrated)
+        assertFalse("The actual initial board has white at the bottom",pipeline.recognizer.blackBottom)
+        val data=JSONObject(instrumentation.context.assets.open("duolingo-reference.json").bufferedReader().use{it.readText()})
+        val frames=data.getJSONArray("frames")
+        for(index in 0 until frames.length()){
+            val item=frames.getJSONObject(index)
+            frame(item.getString("image")).also{bitmap->repeat(3){pipeline.process(bitmap)};bitmap.recycle()}
+            assertEquals(item.getString("image"),item.getInt("plies"),pipeline.tracker.moves.size)
+        }
+        assertEquals("w",pipeline.game.getString("side"))
+    }
+    @Test fun movedBoardMustNotBeLearnedAsInitialPosition() {
+        frame("duolingo-game-01.png").also{bitmap->
+            assertFalse("Moved pawns must never be labelled as initial empty squares",BoardRecognizer().calibrate(bitmap))
+            bitmap.recycle()
+        }
+    }
     private val instrumentation=InstrumentationRegistry.getInstrumentation()
     private fun frame(name: String): Bitmap {
         val full=instrumentation.context.assets.open(name).use {BitmapFactory.decodeStream(it)}
@@ -58,6 +154,16 @@ class DuolingoVisionTest {
         val initial=frame("duolingo-auto-initial.png");val recognizer=BoardRecognizer()
         assertTrue(recognizer.calibrate(initial));initial.recycle()
         ThemeStore(instrumentation.targetContext).save(recognizer.profile())
+    }
+    @Test fun exportVerifiedReferenceProfile() {
+        val bitmap=frame("duolingo-auto-initial.png")
+        val recognizer=BoardRecognizer()
+        assertTrue(recognizer.calibrate(bitmap))
+        assertEquals(Board().fen.substringBefore(' '),recognizer.recognize(bitmap)!!.placement)
+        bitmap.recycle()
+        File(instrumentation.targetContext.getExternalFilesDir(null),"verified-board-profile.json.gz").outputStream().use { out ->
+            java.util.zip.GZIPOutputStream(out).use { it.write(recognizer.profile().toString().toByteArray()) }
+        }
     }
     @Test fun realPromotionChooserAndQueenPromotionAreRecovered() {
         prepareTheme()

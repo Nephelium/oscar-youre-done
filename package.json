@@ -1,6 +1,6 @@
 {
   "name": "oscar-youre-done",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
   "description": "Offline Android chess recorder and Stockfish review companion",
   "license": "GPL-3.0",

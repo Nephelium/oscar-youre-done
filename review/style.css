@@ -96,3 +96,8 @@ input[type=number],input[type=datetime-local]{width:100%;min-width:0;border:1.5p
 .compare-hint .icon{width:16px;height:16px}
 .progress-slot{height:5px}.progress-slot .tiny{display:none}
 @media(max-width:700px){.board-choices{grid-template-columns:repeat(2,minmax(0,1fr))}.appearance-card{padding:18px}.theme-choice{padding:10px;gap:9px}.piece-sample{max-width:49%}.theme-name{font-size:13px}.theme-check{width:12px}}
+
+/* Capture selection stays editable after the first drag. */
+.crop-box{pointer-events:auto;cursor:move}.crop-box[hidden]{display:none}.crop-handle{position:absolute;width:23px;height:23px;background:#fff;border:3px solid #7b9c3e;border-radius:50%;z-index:2;touch-action:none}.crop-handle.nw{left:-12px;top:-12px;cursor:nwse-resize}.crop-handle.ne{right:-12px;top:-12px;cursor:nesw-resize}.crop-handle.sw{left:-12px;bottom:-12px;cursor:nesw-resize}.crop-handle.se{right:-12px;bottom:-12px;cursor:nwse-resize}#video-time{width:100%;min-height:36px;accent-color:var(--green)}
+
+.capture-preview{display:flex;align-items:center;justify-content:center;gap:18px;width:100%;border:1px solid var(--line);border-radius:16px;background:var(--paper);padding:10px;margin:12px 0;color:var(--green);font:inherit;font-size:12px}.capture-preview img{max-height:165px;max-width:50%;border-radius:6px}.capture-preview span{display:flex;align-items:center;gap:6px}

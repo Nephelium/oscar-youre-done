@@ -11,7 +11,7 @@ async function main(){
  try{
   await page.goto(pathToFileURL(path.resolve(__dirname,'../review/index.html')).href);
   await page.locator('[data-route="settings"]').click();
-  assert.equal(await page.locator('[role=switch]').getAttribute('aria-checked'),'true');
+  assert.equal(await page.locator('[data-act=animation]').getAttribute('aria-checked'),'true');
   for(const width of [320,390,844]){
    await page.setViewportSize({width,height:844});
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
@@ -76,7 +76,7 @@ async function main(){
   await act('home');await page.locator('[data-route="settings"]').click();
   await act('animation');await page.locator('[data-act="boardTheme"][data-value="duo"]').click();await page.reload();
   await page.locator('[data-route="settings"]').click();
-  assert.equal(await page.locator('[role=switch]').getAttribute('aria-checked'),'false');
+  assert.equal(await page.locator('[data-act=animation]').getAttribute('aria-checked'),'false');
   await page.locator('[data-route="home"]').click();await act('demo');await trigger('next');
   assert.equal(await page.locator('#chessboard').evaluate(e=>e.getAnimations({subtree:true}).length),0);
   await act('home');await page.locator('[data-route="settings"]').click();await act('animation');await page.locator('[data-route="home"]').click();

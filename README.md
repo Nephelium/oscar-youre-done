@@ -7,7 +7,7 @@
     <img alt="Local Stockfish" src="https://img.shields.io/badge/Stockfish-on_device-66899b?style=flat-square" />
     <img alt="GPL v3" src="https://img.shields.io/badge/License-GPL_v3-b29435?style=flat-square" />
   </p>
-  <p><a href="https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.2.0"><b>下载 Android 安装包</b></a> · <a href="#开始使用">开始使用</a> · <a href="#从源码构建">从源码构建</a></p>
+  <p><a href="https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.2.1"><b>下载 Android 安装包</b></a> · <a href="#开始使用">开始使用</a> · <a href="#从源码构建">从源码构建</a></p>
 </div>
 
 ---
@@ -30,7 +30,7 @@
 | --- | --- |
 | 自动记谱 | 下棋前手动开启系统屏幕采集，记录双方走法，结束后保存棋谱 |
 | 练习题手记 | 从题目当前局面开始，确认先走方后只记录后续走法 |
-| 截图与录屏 | 选择棋盘截图识别局面，或导入从初始局面开始的录屏 |
+| 截图与录屏 | 选择棋盘截图识别局面，或选择录屏起点，确认开局 / 练习局面后记谱 |
 | 本地 Stockfish | 整盘 / 单局面分析、三条推荐变化、着法评价、将杀距离 |
 | 看得见的评价 | 棋子右上角与棋谱同步显示书本、★、!、✓、?!、?、??，曲线切换兵值 / 胜率，拖动游标连续回看 |
 | 棋盘外观 | 三套棋子、四种棋盘独立搭配，默认圆润的多邻国风格；走子动画可开关 |
@@ -44,14 +44,14 @@
 
 ## 开始使用
 
-1. 从 [v1.2.0 Release](https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.2.0) 下载 APK 并安装。最低 Android 8.0，支持 ARM64 与 x86_64。
-2. 点 **记录一局**，选棋盘底部颜色，授权本次屏幕采集，再切到多邻国初始棋盘。
-3. 等通知显示棋盘已就绪，再开始走子。下完从通知栏、悬浮按钮或 App 内结束记录。
+1. 从 [v1.2.1 Release](https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.2.1) 下载 APK 并安装。最低 Android 8.0，支持 ARM64 与 x86_64。
+2. 点 **记录一局**，选棋盘底部颜色，授权本次屏幕采集。整个屏幕与仅共享多邻国都支持，随后点 **回到多邻国**。
+3. 自动定位棋盘后，确认走子会短暂提示，设置中可关闭。返回 App 可查看最近采集画面、调整识别范围。下完从通知栏、悬浮按钮或 App 内结束记录。
 4. 打开手记，点 **分析整盘**。点推荐变化或直接在棋盘走子，开始自己的推演。
 
 ### 记一道练习题
 
-先用标准初始棋盘准备一次当前主题的棋子样式。以后可选 **从当前练习局面开始**，也可在 **导入棋谱 → 导入棋盘截图** 中选图。确认棋子位置和先走方后，保存到小练习手记。
+已内置多邻国棋子识别，无需先录完整对局。可选 **从当前练习局面开始**，也可在 **导入棋谱 → 导入棋盘截图** 中选图。确认棋子位置和先走方后，保存到小练习手记。
 
 截图看不出易位与吃过路兵权利，需要时在高级 FEN 中填写。识别疑点会保留对应棋盘画面，供补走校对。删除手记仅移除该手记与内部裁剪，外部原图保留。
 
@@ -70,7 +70,15 @@
 
 <p align="center"><img src="docs/images/board-duo.png" width="38%" alt="默认圆润棋子与云朵棋盘" /> <img src="docs/images/appearance.png" width="38%" alt="棋子与棋盘搭配设置" /></p>
 
+### 记录时能看见进度
+
+每次确认走子或撤回会短暂显示中文提示。设置中的 **走子识别提示** 默认开启。授权悬浮窗后可连续显示，未授权时使用 Android 系统文字提示，系统可能[限制后台提示频率](https://developer.android.com/reference/android/widget/Toast)。棋盘自动定位后仍可整体移动选框或拖动四角微调。
+
+录屏可拖动时间选择起点，先核对识别出的局面及先走方，再开始导入。支持从练习题中途开始，也会将撤回的尝试保存为变化。
+
 ## 验证记录
+
+v1.2.1 在 Android 16 模拟器的真实多邻国 6.102.3 中完成执黑全屏记录，70 步以黑方将杀结束，零未解决校对项。中途切回本 App 后继续记录，71 个局面的整盘复盘通过。最终包另验中途局面起录、短提示、关闭与设置持久化。10 项 Android 回归覆盖初始模板污染、黑方朝向、晚起录两步、练习多步撤回、带黑边录屏和升变。物理手机兼容性仍需实际复测。[详细验证记录](docs/oscar-verification-1.2.1.md)。
 
 v1.2.0 新增概率解析、动画、易位与升变、连续快点、鼠标 / 触摸 / 键盘拖动、36 个局面评价区高度、外观选择和持久化检查。安卓模拟器另验本地引擎 WDL 与触摸滑块连续性。
 
@@ -107,10 +115,12 @@ npm run test:ui
 
 UI 测试使用 Playwright，Windows 默认运行已安装的 Edge。设备测试脚本会操作连接的测试模拟器。
 
-Android 真实画面回归所需样本单独附在 Release 的 `duolingo-vision-fixtures.zip` 中，解压到 `android/recorder/build/reports/`，再执行：
+Android 真实画面回归所需样本单独附在 [1.1.0 Release](https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.1.0) 的 `duolingo-vision-fixtures.zip` 中，解压到 `android/recorder/build/reports/`。本轮新增的录屏样本可用 FFmpeg 生成，再执行：
 
 ```powershell
-.\gradlew.bat :recorder:connectedDebugAndroidTest
+python tests/review-capture-regression-video.py
+node tests/review-capture-regression-ui.js
+.\android\gradlew.bat -p android :recorder:connectedDebugAndroidTest
 ```
 
 ### 目录

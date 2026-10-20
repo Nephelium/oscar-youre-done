@@ -9,8 +9,8 @@ android {
         applicationId = "com.jingjing.chesssprout"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.2.0"
+        versionCode = 6
+        versionName = "1.2.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -53,7 +53,7 @@ android.sourceSets["main"].assets.directories.add(webAssets.get().asFile.absolut
 android.sourceSets["main"].jniLibs.directories.add(engineLibraries.get().asFile.absolutePath)
 val visionFixtures=layout.buildDirectory.dir("generated/visionFixtures")
 val syncVisionFixtures by tasks.registering(Sync::class) {
-    from(layout.buildDirectory.dir("reports")) {include("duolingo-auto-initial.png", "duolingo-game-??.png", "duolingo-reference.json", "duolingo-promotion-start.png", "duolingo-promotion-live-??.png")}
+    from(layout.buildDirectory.dir("reports")) {include("duolingo-auto-initial.png", "duolingo-game-??.png", "duolingo-reference.json", "duolingo-promotion-start.png", "duolingo-promotion-live-??.png","v121-practice-rewind.mp4")}
     into(visionFixtures)
 }
 android.sourceSets["androidTest"].assets.directories.add(visionFixtures.get().asFile.absolutePath)

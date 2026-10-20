@@ -10,12 +10,13 @@ import java.util.UUID
 
 class CapturePipeline(private val context: Context, options: JSONObject, val source: String) {
     val store = GameStore(context)
-    var tracker = CaptureTracker()
+    var tracker = CaptureTracker(options.optString("initialFen").ifBlank { com.github.bhlangonijr.chesslib.Board().fen })
         private set
     val recognizer = BoardRecognizer(options.optString("side") == "b")
     private val themeStore=ThemeStore(context)
     private val positionMode=options.optString("mode")=="position"
-    private var positionConfirmed=!positionMode
+    private var positionConfirmed=!positionMode || options.has("initialFen")
+    private var attemptCalibration=!positionMode && !options.has("initialFen")
     var pendingFen: String?=null
         private set
     val awaitingPosition: Boolean get()=!positionConfirmed
@@ -27,13 +28,17 @@ class CapturePipeline(private val context: Context, options: JSONObject, val sou
     private var lastIssue = ""
     var message = "等待标准初始棋盘，请先不要走子"
         private set
+    var feedbackSerial=0
+        private set
+    var feedback=""
+        private set
     init {
-        if(positionMode)themeStore.load()?.let { recognizer.loadProfile(it) }
+        themeStore.load()?.let { recognizer.loadProfile(it) }
         if(positionMode)message="切回练习题，保持当前局面，识别后回本应用确认"
         options.optJSONObject("region")?.let { recognizer.region = rect(it) }
         val now=System.currentTimeMillis()
         game=JSONObject().put("schema",1).put("id","g"+UUID.randomUUID().toString().replace("-",""))
-            .put("title", if(positionMode) "多邻国练习题" else if(source=="录屏导入") "录屏对局" else "多邻国对局")
+            .put("title", if(positionMode) {if(source=="录屏导入")"录屏练习题" else "多邻国练习题"} else if(source=="录屏导入") "录屏对局" else "多邻国对局")
             .put("createdAt",now).put("updatedAt",now).put("source",source).put("side",options.optString("side","w"))
             .put("initialFen",tracker.board.fen).put("moves",JSONArray()).put("result","*")
             .put("notebook",if(positionMode)"practice" else "game")
@@ -54,24 +59,45 @@ class CapturePipeline(private val context: Context, options: JSONObject, val sou
         }
         recognizer.blackBottom=options.optString("side","w")=="b"
         recognizer.reset(options.optJSONObject("region")?.let { rect(it) })
-        if(positionMode)themeStore.load()?.let { recognizer.loadProfile(it) }
+        themeStore.load()?.let { recognizer.loadProfile(it) }
+        attemptCalibration=!positionMode && tracker.moves.isEmpty()
         pendingFen=null
-        previous="";stable=0; message="正在重新定位初始棋盘"
+        previous="";stable=0; message="正在重新定位棋盘"
     }
     fun onResize() {recognizer.region=null;previous="";stable=0}
+    fun onInterrupted() {previous="";stable=0}
     fun process(image: Bitmap) {
         frames++
+        // Prefer a verified initial-board calibration, but never label an opening
+        // move as an empty square. A ready profile can recover a unique 1–2 ply start.
+        if(attemptCalibration) {
+            attemptCalibration=false
+            val learner=BoardRecognizer(recognizer.blackBottom).apply {region=recognizer.region}
+            if(learner.calibrate(image)) {
+                recognizer.loadProfile(learner.profile());recognizer.region=learner.region
+                recognizer.blackBottom=learner.blackBottom
+                game.put("side",if(recognizer.blackBottom)"b" else "w")
+                themeStore.save(learner.profile())
+            }
+        }
         if(!recognizer.calibrated) {
-            if(positionMode) {message="先在标准初始棋盘准备一次棋子样式，再记录练习题";return}
+            if(positionMode) {message="棋子样式无法读取，请重新打开应用";return}
             if(frames%3 != 1) return
             if(!recognizer.calibrate(image)) { message="等待初始棋盘，可返回本应用框选棋盘"; return }
             themeStore.save(recognizer.profile())
+            game.put("side",if(recognizer.blackBottom)"b" else "w")
             game.getJSONObject("capture").put("region", JSONObject().put("left",recognizer.region!!.left.toDouble()).put("top",recognizer.region!!.top.toDouble())
                 .put("right",recognizer.region!!.right.toDouble()).put("bottom",recognizer.region!!.bottom.toDouble()))
             message="棋盘已就绪，可以开始下棋"; game.getJSONObject("capture").put("state","recording");store.save(game)
         }
         val observation=recognizer.recognize(image)
-        if(observation==null) { badFrames++; if(badFrames>16) message="棋盘被遮挡或识别不清，等待清晰画面";return }
+        if(observation==null) {
+            badFrames++
+            if(badFrames%8==0)recognizer.region=null
+            if(badFrames%16==0 && !positionMode && tracker.moves.isEmpty())attemptCalibration=true
+            if(badFrames>8)message="暂未看清棋盘，请等动画结束或框选棋盘"
+            return
+        }
         badFrames=0
         if(observation.placement==previous) stable++ else {previous=observation.placement;stable=1}
         if(stable<2) return
@@ -82,18 +108,32 @@ class CapturePipeline(private val context: Context, options: JSONObject, val sou
             message="练习局面已识别，请回本应用确认谁先走";return
         }
         var placement=observation.placement
+        val beforeFen=tracker.board.fen
         var change=tracker.accept(placement)
         if(change.kind in listOf("unmatched","ambiguous")) {
             val rotated=rotatePlacement(placement);val alternate=tracker.accept(rotated)
-            if(alternate.kind in listOf("same","move","undo")){recognizer.blackBottom=!recognizer.blackBottom;change=alternate;placement=rotated}
+            if(alternate.kind in listOf("same","move","undo")){recognizer.blackBottom=!recognizer.blackBottom;game.put("side",if(recognizer.blackBottom)"b" else "w");change=alternate;placement=rotated}
         }
         when(change.kind) {
-            "same" -> {message=if(tracker.moves.isEmpty())"棋盘已就绪，可以开始下棋" else "已记录 ${tracker.moves.size} 步"}
+            "same" -> {
+                message=if(tracker.moves.isEmpty())"棋盘已就绪，可以开始下棋" else "已记录 ${tracker.moves.size} 步"
+                if(game.getJSONObject("capture").optString("state")!="recording") {
+                    game.getJSONObject("capture").put("state","recording");store.save(game)
+                }
+            }
             "move","undo" -> {
+                feedback=if(change.kind=="undo")"已识别撤回 ${change.removed.size} 步" else
+                    "已记录 ${tracker.moves.size} 步 · "+CaptureTracker.describeMoves(beforeFen,change.moves)
+                feedbackSerial++
                 if(change.kind=="undo") {
                     val events=game.optJSONArray("undoEvents")?:JSONArray()
                     events.put(JSONObject().put("at",tracker.moves.size).put("removed",JSONArray(change.removed)))
                     game.put("undoEvents",events)
+                    // Preserve the rejected attempt as a playable variation.
+                    val branches=game.getJSONArray("branches")
+                    if(branches.length()<200)branches.put(JSONObject().put("id",UUID.randomUUID().toString()).put("at",tracker.moves.size)
+                        .put("moves",JSONArray(change.removed)).put("name","练习中撤回的尝试"))
+                    game.put("result","*")
                 }
                 game.put("moves",JSONArray(tracker.moves)).put("updatedAt",System.currentTimeMillis())
                 val issues=game.getJSONArray("issues")
@@ -122,7 +162,7 @@ class CapturePipeline(private val context: Context, options: JSONObject, val sou
         }
     }
     fun finish(reason: String="已保存，可以复盘") {
-        if(!recognizer.calibrated || !positionConfirmed) game.getJSONArray("issues").put(JSONObject().put("at",0).put("message","尚未确认起始棋盘，请重新记录或导入棋谱").put("resolved",false))
+        if(!recognizer.calibrated || !positionConfirmed || game.getJSONObject("capture").optString("state")!="recording") game.getJSONArray("issues").put(JSONObject().put("at",0).put("message","尚未确认起始棋盘，请重新记录或导入棋谱").put("resolved",false))
         else if(badFrames>16 && !tracker.board.isMated && !tracker.board.isDraw) game.getJSONArray("issues").put(JSONObject().put("at",tracker.moves.size).put("message","结束前的画面未能确认，请核对最后几步是否完整").put("resolved",false))
         game.getJSONObject("capture").put("state","stopped").put("frames",frames).put("message",reason)
         game.put("updatedAt",System.currentTimeMillis()); store.save(game);message=reason
