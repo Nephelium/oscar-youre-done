@@ -139,7 +139,37 @@ class MainActivity: ComponentActivity() {
                 catch(error: Exception){emit(JSONObject().put("type","analysis").put("id",request).put("error",error.message?:"分析失败"))}
             }
         }
+        @JavascriptInterface fun analyzeLive(request: String, gameId: String, fen: String, options: String) {
+            if(!request.matches(Regex("[A-Za-z0-9_-]{1,100}")) || options.length>1000)return
+            val token=engine.generation.get()
+            executor.execute {
+                try {
+                    check(CaptureService.instance==null){"请先结束屏幕记录"}
+                    check(VideoImporter.state.optString("state")!="processing"){"请等待录屏识别完成"}
+                    val config=JSONObject(options);val infinite=config.optBoolean("infinite",false)
+                    val result=engine.analyze(fen,config.optInt("budget",200).coerceIn(200,5000),token,
+                        if(infinite)null else config.optInt("depth",20).coerceIn(1,40),infinite) { partial ->
+                        emit(JSONObject().put("type","analysisUpdate").put("id",request).put("fen",fen).put("result",partial))
+                    }
+                    // The UI retains deeper cached results and saves accepted updates on completion/pause.
+                    emit(JSONObject().put("type","analysis").put("id",request).put("fen",fen).put("result",result))
+                }catch(error: Exception){emit(JSONObject().put("type","analysis").put("id",request).put("error",error.message?:"分析失败"))}
+            }
+        }
         @JavascriptInterface fun cancelAnalysis() {engine.cancel()}
+        @JavascriptInterface fun playMove(request: String, content: String) {
+            if(!request.matches(Regex("[A-Za-z0-9_-]{1,100}")) || content.length>60000)return
+            val token=engine.generation.get()
+            executor.execute {
+                try {
+                    check(CaptureService.instance==null){"请先结束屏幕记录"}
+                    check(VideoImporter.state.optString("state")!="processing"){"请等待录屏识别完成"}
+                    val options=JSONObject(content);val input=options.getJSONArray("moves")
+                    val result=engine.play(options.getString("initialFen"),List(input.length()){input.getString(it)},options.getInt("skill"),token)
+                    emit(JSONObject().put("type","playMove").put("id",request).put("result",result))
+                } catch(error: Exception) {emit(JSONObject().put("type","playMove").put("id",request).put("error",error.message?:"引擎应手失败"))}
+            }
+        }
         @JavascriptInterface fun startCapture(options: String) {runOnUiThread {
             if(!ready)return@runOnUiThread
             if(CaptureService.instance!=null){message("已有一局正在记录");return@runOnUiThread}
@@ -242,15 +272,16 @@ class MainActivity: ComponentActivity() {
             }
             PICK_VIDEO -> if(resultCode==RESULT_OK && data?.data!=null) {
                 val uri=data.data!!
+                emit(JSONObject().put("type","videoLoading"))
                 Thread {runCatching {VideoImporter.select(applicationContext,uri);emit(JSONObject().put("type","videoReady"))}
-                    .onFailure{message(it.message?:"无法读取录屏")}}.start()
+                    .onFailure{emit(JSONObject().put("type","videoLoadError").put("message",it.message?:"无法读取录屏"))}}.start()
             }
         }
     }
     override fun onSaveInstanceState(state: Bundle) {state.putString("captureOptions",captureOptions);state.putBoolean("exporting",exporting);super.onSaveInstanceState(state)}
     override fun onStart() {super.onStart();CaptureService.appVisible=true}
     override fun onStop() {CaptureService.appVisible=false;super.onStop()}
-    override fun onPause() {if(::web.isInitialized){web.evaluateJavascript("window.App && App.pause()",null);web.onPause()};super.onPause()}
+    override fun onPause() {engine.cancel();if(::web.isInitialized){web.evaluateJavascript("window.App && App.pause()",null);web.onPause()};super.onPause()}
     override fun onResume() {super.onResume();if(::web.isInitialized){web.onResume();web.evaluateJavascript("window.App && App.resume()",null)}}
     override fun onDestroy() {destroyed=true;ready=false;chooser?.onReceiveValue(null);engine.cancel();executor.shutdownNow();engine.close()
         web.removeJavascriptInterface("SproutHost");web.destroy();super.onDestroy()}

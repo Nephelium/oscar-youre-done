@@ -9,8 +9,8 @@ android {
         applicationId = "com.jingjing.chesssprout"
         minSdk = 26
         targetSdk = 36
-        versionCode = 6
-        versionName = "1.2.1"
+        versionCode = 7
+        versionName = "1.3.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -34,7 +34,7 @@ android.sourceSets["main"].res.directories.add(iconResources.get().asFile.absolu
 tasks.matching {it.name!="syncIconResources" && (it.name.contains("Resources") || it.name.contains("lint",ignoreCase=true))}.configureEach {dependsOn(syncIconResources)}
 val syncReviewAssets by tasks.registering(Sync::class) {
     from(projectRoot) {
-        include("review/**", "vendor/chess.min.js", "vendor/chess.js-LICENSE.txt", "vendor/pieces/**")
+        include("review/**", "src/controlMap.js", "vendor/chess.min.js", "vendor/chess.js-LICENSE.txt", "vendor/pieces/**")
     }
     from(projectRoot.resolve("vendor/stockfish")) {
         include("Copying.txt", "README-upstream.md")

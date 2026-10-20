@@ -13,11 +13,12 @@ with zipfile.ZipFile(apk) as archive:
     expected=gzip.decompress((root/'review/assets/duolingo-board-profile.json.gz').read_bytes())
     assert archive.read(profile)==expected, 'Missing/stale packaged recognition profile'
     checks[profile]=hashlib.sha256(expected).hexdigest()
-    pairs={f'assets/review/{name}':root/'review'/name for name in ['index.html','core.js','ratings.js','demo-analysis.js','app.js','themes.js','board-motion.js','style.css','assets/oscar-panic.png']}
+    pairs={f'assets/review/{name}':root/'review'/name for name in ['index.html','core.js','library.js','analysis-policy.js','ratings.js','demo-analysis.js','app.js','themes.js','board-motion.js','style.css','assets/oscar-panic.png']}
     for piece in (root/'review/assets/pieces').glob('*.svg'):pairs['assets/review/assets/pieces/'+piece.name]=piece
     pairs['res/drawable-nodpi-v4/oscar_panic.png']=root/'review/assets/oscar-panic.png'
     forbidden=[name for name in archive.namelist() if any(x in name.lower() for x in ['duolingo-game','duolingo-promotion','duolingo-install','.xapk','oscar-screenshot-fixture'])]
     assert not forbidden, f'Test material in main APK: {forbidden}'
+    pairs['assets/src/controlMap.js']=root/'src/controlMap.js'
     pairs['assets/vendor/chess.min.js']=root/'vendor/chess.min.js'
     for piece in (root/'vendor/pieces').glob('*.svg'):pairs['assets/vendor/pieces/'+piece.name]=piece
     for abi in ['arm64-v8a','x86_64']:pairs[f'lib/{abi}/libstockfish.so']=root/f'vendor/stockfish/{abi}/libstockfish.so'

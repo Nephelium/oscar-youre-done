@@ -40,6 +40,7 @@ async function main(){
   await page.screenshot({path:path.join(out,'v121-editable-crop.png')});
   await act('applyCrop');await page.locator('#position-turn').selectOption('b');await act('confirmVideo');
   assert.equal(await page.evaluate(()=>window.confirmed.confirmFen),'3k4/8/2K5/3P4/8/8/8/8 b - - 0 1');
+  assert.equal(await page.locator('#video-stage').count(),1);await act('close');
   await act('demo');
   for(let i=0;i<6;i++)await act('next');
   assert.equal(await page.locator('.arrows path').count(),1);

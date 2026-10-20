@@ -137,7 +137,7 @@
       book = book && OPENING[i] === uci(m);
       const review = assess(record.analysis[before], record.analysis[g.fen()], m.color, input);
       if(book && review && review.loss < 90)Object.assign(review,{book:true,label:'理论走法',tone:'book'});
-      rows.push({ply: i+1, moveNumber, move: input, san: m.san, color: m.color, piece:m.piece, captured:m.captured, flags:m.flags, check:g.in_check(), mate:g.in_checkmate(), fen: g.fen(), evaluation: record.analysis[g.fen()], review});
+      rows.push({ply: i+1, moveNumber, move: input, san: m.san, color: m.color, piece:m.piece, from:m.from, to:m.to, promotion:m.promotion, captured:m.captured, flags:m.flags, check:g.in_check(), mate:g.in_checkmate(), fen: g.fen(), evaluation: record.analysis[g.fen()], review});
     });
     return rows;
   }
@@ -158,6 +158,69 @@
     if(next?.captured)facts.push('实战下一手，'+(next.color==='w'?'白方':'黑方')+'的'+names[next.piece]+'吃掉了'+(row.color==='w'?'白方':'黑方')+'的'+names[next.captured]+'。');
     return facts;
   }
+  function variationRows(record, at, moves) {
+    return timeline({...record,moves:record.moves.slice(0,at).concat(moves)}).map(r=>({...r,variation:r.ply>at}));
+  }
+  function evaluationChange(before, after, side='w') {
+    if(!before || !after || (before.engine&&after.engine&&before.engine!==after.engine))return null;
+    const a=before.lines?.[0],b=after.lines?.[0],sign=side==='b'?-1:1;
+    const cp=a&&b&&!Number.isFinite(a.mate)&&!Number.isFinite(b.mate)&&Number.isFinite(a.cp)&&Number.isFinite(b.cp)?(b.cp-a.cp)*sign:null;
+    const pa=probabilities(before,side),pb=probabilities(after,side);
+    const win=pa&&pb?pb.win-pa.win:null;
+    return {cp,win,mateChanged:!!a&&!!b&&((Number.isFinite(a.mate)!==Number.isFinite(b.mate))||(Number.isFinite(a.mate)&&Number.isFinite(b.mate)&&Math.sign(a.mate)!==Math.sign(b.mate)))};
+  }
+  function keyMoments(rows) {
+    return rows.slice(1).flatMap((r,i)=>{
+      const delta=evaluationChange(rows[i].evaluation,r.evaluation);
+      if(!delta || !(Math.abs(delta.cp??0)>=150 || Math.abs(delta.win??0)>=15 || delta.mateChanged || r.mate))return [];
+      return [{ply:r.ply,san:r.san,...delta,reason:r.mate?'将杀':delta.mateChanged?'将杀转折':Math.abs(delta.win??0)>=15?'胜率转折':'兵值转折'}];
+    });
+  }
+  const PIECES={p:'兵',n:'马',b:'象',r:'车',q:'后',k:'王'},VALUES={p:1,n:3,b:3,r:5,q:9,k:0};
+  const sideName=c=>c==='w'?'白方':'黑方';
+  function describeMove(m) {
+    if(m.flags?.includes('k'))return sideName(m.color)+'短易位，王与车同时调位';
+    if(m.flags?.includes('q'))return sideName(m.color)+'长易位，王与车同时调位';
+    return sideName(m.color)+PIECES[m.piece]+'从 '+m.from+' 到 '+m.to+
+      (m.captured?'，吃掉'+(m.flags?.includes('e')?'途经兵':PIECES[m.captured]):'')+
+      (m.promotion?'，升变为'+PIECES[m.promotion]:'');
+  }
+  function explainMove(rows,index,side='w') {
+    const row=rows[index],before=rows[index-1],paragraphs=[];
+    if(!row)return {paragraphs:[],delta:null,key:null};
+    const game=new Chess(row.fen),delta=before?evaluationChange(before.evaluation,row.evaluation,side):null;
+    if(row.move) {
+      paragraphs.push(describeMove(row)+'。'+(row.mate?'这一手完成将杀。':row.check?'同时形成将军，对手须先解将。':''));
+      if(row.review)paragraphs.push(row.review.label+'。'+(row.review.book?'符合已收录的意大利开局理论走序。':row.review.best?'这是当前搜索的首选走法。':row.review.loss<90?'与引擎首选的评价差距较小。':''));
+    }else paragraphs.push('这是'+(row.variation?'变化':'记录')+'的起始局面，轮到'+sideName(game.turn())+'走。');
+    if(delta) {
+      const parts=[];
+      if(delta.cp!==null)parts.push(sideName(side)+'兵值 '+displayScore(before.evaluation,side)+' → '+displayScore(row.evaluation,side)+'，'+(delta.cp>=0?'增加':'减少')+' '+(Math.abs(delta.cp)/100).toFixed(2)+' 兵');
+      if(delta.win!==null)parts.push('胜率 '+probabilities(before.evaluation,side).win.toFixed(1)+'% → '+probabilities(row.evaluation,side).win.toFixed(1)+'%，'+(delta.win>=0?'上升':'下降')+' '+Math.abs(delta.win).toFixed(1)+' 个百分点');
+      if(parts.length)paragraphs.push(parts.join('；')+'。');
+      if(delta.mateChanged)paragraphs.push('引擎的将杀判断发生变化：'+sideName(side)+'视角 '+displayScore(before.evaluation,side)+' → '+displayScore(row.evaluation,side)+'。');
+    }else if(row.move&&!row.review)paragraphs.push('补齐走子前后的同版本分析后，会显示评级、兵值与胜率变化。');
+    if(delta?.cp!==null&&delta?.cp!==undefined&&row.review&&!row.review.best){const loss=evaluationChange(before.evaluation,row.evaluation,row.color)?.cp;if(loss<0)paragraphs.push('这一步使'+sideName(row.color)+'的局面评价损失 '+(-loss/100).toFixed(2)+' 兵。');}
+    if(row.review && before && !row.review.best) {
+      const pv=before.evaluation?.lines?.[0]?.pv||[],best=lineSan(before.fen,pv,3);
+      if(best.length)paragraphs.push('当时优先考虑 '+best[0]+'，推荐线为 '+best.join(' → ')+'。');
+    }
+    if(game.in_checkmate())paragraphs.push(sideName(game.turn())+'王已无合法解法，对局结束。');
+    else if(game.in_draw())paragraphs.push(game.in_stalemate()?'当前无合法走法且未被将军，形成逼和。':'当前局面满足和棋条件。');
+    else {
+      const captures=game.moves({verbose:true}).filter(m=>m.captured&&m.captured!=='k').sort((a,b)=>VALUES[b.captured]-VALUES[a.captured]);
+      const seen=new Set(),danger=[];
+      for(const m of captures) {if(seen.has(m.to))continue;seen.add(m.to);danger.push(sideName(m.color)+PIECES[m.piece]+'可从 '+m.from+' 吃 '+m.to+' 的'+PIECES[m.captured]);if(danger.length===2)break;}
+      if(danger.length)paragraphs.push('当前可合法吃子：'+danger.join('，')+'。能吃到不等于值得吃，还要看接下来的交换。');
+      const pv=row.evaluation?.lines?.[0]?.pv||[],g=new Chess(row.fen),continuation=[];
+      for(const input of pv.slice(0,3)){const m=move(g,input);if(!m)break;continuation.push(m.san+'（'+describeMove(m)+'）');if(g.in_checkmate())break;}
+      if(continuation.length)paragraphs.push('引擎预计的应对：'+continuation.join(' → ')+'。');
+    }
+    if(rows[index+1]?.captured)paragraphs.push('这条棋谱下一步：'+describeMove(rows[index+1])+'。');
+    const key=keyMoments(rows).find(k=>k.ply===row.ply)||null;
+    if(key){const changes=[];if(delta?.cp!==null&&delta?.cp!==undefined)changes.push(sideName(side)+'评价'+(delta.cp>=0?'上升':'下降')+(Math.abs(delta.cp)/100).toFixed(2)+'兵');if(delta?.win!==null&&delta?.win!==undefined)changes.push('获胜概率'+(delta.win>=0?'上升':'下降')+Math.abs(delta.win).toFixed(1)+'个百分点');paragraphs.unshift('关键节点 · '+key.reason+'。'+(changes.length?changes.join('，')+'。':'')+(row.captured?'这一步涉及吃'+PIECES[row.captured]+'，结合后续应手看交换结果。':row.mate?'对方已无法解除将军。':row.check?'这步带将军，先看对方有哪些合法解将。':'建议对照推荐线，检查这一手留下的机会。'));}
+    return {paragraphs,delta,key};
+  }
   function addBranch(record, at, moves) {
     position(record, at, moves);
     if (!moves.length) throw Error('先在棋盘上走出一条变化。');
@@ -176,5 +239,5 @@
     if(demoData && JSON.stringify(record.moves)===JSON.stringify(demoData.moves))record.analysis=JSON.parse(JSON.stringify(demoData.analysis));
     return record;
   }
-  return {START, id, uci, move, position, validate, create, importText, toPgn, lineSan, numeric, viewNumeric, displayScore, probabilities, validWdl, assess, timeline, summary, moveFacts, addBranch, fromPlacement, moveSymbol, demo};
+  return {START, id, uci, move, position, validate, create, importText, toPgn, lineSan, numeric, viewNumeric, displayScore, probabilities, validWdl, assess, timeline, summary, moveFacts, variationRows, evaluationChange, keyMoments, explainMove, addBranch, fromPlacement, moveSymbol, demo};
 });

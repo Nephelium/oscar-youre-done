@@ -17,6 +17,7 @@ object VideoImporter {
     private var pendingFen: String?=null
     fun select(context: Context,uri: Uri) {
         if(state.optString("state")=="processing")error("请先结束当前导入")
+        state=JSONObject().put("state","loading").put("message","正在读取录屏与预览")
         val retriever=MediaMetadataRetriever()
         try {
             retriever.setDataSource(context,uri)
@@ -28,6 +29,9 @@ object VideoImporter {
             synchronized(this) {preview?.recycle();preview=frame;selected=uri;previewTime=0L;prepared=null;pendingFen=null}
             if(first!==frame)first.recycle()
             state=JSONObject().put("state","ready").put("duration",duration).put("message","框选棋盘，然后开始识别")
+        } catch(error: Exception) {
+            state=JSONObject().put("state","error").put("message",error.message?:"无法读取录屏")
+            throw error
         } finally {retriever.release()}
     }
     fun previewCopy(): Bitmap?=synchronized(this) {preview?.copy(Bitmap.Config.ARGB_8888,false)}
@@ -95,15 +99,18 @@ object VideoImporter {
                         if(small!==frame)small.recycle();frame.recycle()
                     }
                     time+=200
-                    state=JSONObject().put("state","processing").put("progress",(100*time/duration).coerceAtMost(100))
+                    val start=captureOptions.optLong("startMs")
+                    state=JSONObject().put("state","processing").put("progress",(100*(time-start)/maxOf(1,duration-start)).coerceIn(0,100))
+                        .put("processedMs",minOf(time,duration)-start).put("duration",duration-start).put("plies",pipeline.tracker.moves.size)
                         .put("message",pipeline.message).put("gameId",pipeline.game.getString("id"))
                 }
                 pipeline.finish(if(cancelled)"导入已停止，已保留确认的棋谱" else "录屏识别完成")
                 state=JSONObject().put("state","done").put("gameId",pipeline.game.getString("id")).put("message",pipeline.message)
-                    .put("plies",pipeline.tracker.moves.size)
+                    .put("plies",pipeline.tracker.moves.size).put("cancelled",cancelled).put("progress",100)
             } catch(error: Exception) {
                 pipeline?.finish("导入中断，已保留确认的走法")
                 state=JSONObject().put("state","error").put("message",error.message?:"录屏无法读取")
+                    .put("gameId",pipeline?.game?.optString("id")).put("plies",pipeline?.tracker?.moves?.size?:0)
             } finally {retriever.release()}
         },"chesssprout-video").start()
     }

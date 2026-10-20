@@ -6,6 +6,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedWriter
 import java.io.File
+import java.io.IOException
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -44,7 +45,14 @@ class StockfishEngine(private val context: Context) {
         val launched=ProcessBuilder(binary.absolutePath).redirectErrorStream(true).start()
         process=launched
         writer = launched.outputStream.bufferedWriter()
-        Thread({ launched.inputStream.bufferedReader().useLines { stream -> stream.forEach { queue.offer(it) } }; queue.offer("__closed__") }, "stockfish-output").apply { isDaemon = true; start() }
+        Thread({
+            try {
+                launched.inputStream.bufferedReader().useLines { stream -> stream.forEach { queue.offer(it) } }
+            } catch (_: IOException) {
+                // Closing/restarting the process interrupts this read. Notify the
+                // waiting request through its queue instead of crashing the app.
+            } finally { queue.offer("__closed__") }
+        }, "stockfish-output").apply { isDaemon = true; start() }
         send("uci")
         val options = mutableListOf<String>()
         waitUntil(25000) { line ->
@@ -66,7 +74,8 @@ class StockfishEngine(private val context: Context) {
         }
         send("isready"); waitUntil(25000) { it == "readyok" }
     }
-    fun analyze(fen: String, budget: Int, token: Int): JSONObject {
+    fun analyze(fen: String, budget: Int, token: Int, depthLimit: Int? = null, infinite: Boolean = false, onUpdate: ((JSONObject)->Unit)? = null): JSONObject {
+        require(depthLimit == null || depthLimit in 1..40)
         require(fen.length < 140 && !fen.contains('\n') && !fen.contains('\r'))
         val board = Board().apply { loadFromFen(fen) }
         if (board.isMated || board.isStaleMate || board.isDraw) {
@@ -78,24 +87,64 @@ class StockfishEngine(private val context: Context) {
         try {
             start()
             check(token == generation.get()) { "分析已暂停" }
+            send("setoption name Skill Level value 20")
+            send("setoption name UCI_LimitStrength value false")
+            send("setoption name MultiPV value 3")
             send("isready"); waitUntil(5000) { it == "readyok" }
             send("position fen $fen")
-            send("go movetime ${budget.coerceIn(200, 5000)}")
+            send(if(infinite) "go infinite" else "go movetime ${budget.coerceIn(200, 5000)}${depthLimit?.let { " depth $it" } ?: ""}")
             val results = sortedMapOf<Int, UciLine>()
-            waitUntil(budget.toLong() + 15000) { line ->
-                UciParser.parse(line, fen.split(' ')[1] == "w")?.let { results[it.rank] = it }
+            val started=System.nanoTime();var lastUpdate=0L
+            fun result(elapsed: Int): JSONObject = JSONObject().put("engine", name).put("budget", elapsed).put("lines", JSONArray(results.values.take(3).map { l ->
+                JSONObject().put("depth", l.depth).put("cp", l.cp ?: JSONObject.NULL).put("mate", l.mate ?: JSONObject.NULL).put("pv", JSONArray(l.pv))
+                    .apply { l.wdl?.let { put("wdl", JSONArray(it)) } }
+            }))
+            waitUntil(if(infinite)0 else budget.coerceIn(200,5000).toLong() + 15000) { line ->
+                UciParser.parse(line, fen.split(' ')[1] == "w")?.let {
+                    results[it.rank] = it
+                    val elapsed=TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-started)
+                    if(onUpdate!=null && token==generation.get() && results.containsKey(1) && elapsed-lastUpdate>=400){
+                        lastUpdate=elapsed;onUpdate(result(elapsed.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()))
+                    }
+                }
                 line.startsWith("bestmove ")
             }
             check(token == generation.get()) { "分析已暂停" }
             check(results.isNotEmpty()) { "引擎未返回分析结果，请重试" }
-            return JSONObject().put("engine", name).put("budget", budget).put("lines", JSONArray(results.values.take(3).map { l ->
-                JSONObject().put("depth", l.depth).put("cp", l.cp ?: JSONObject.NULL).put("mate", l.mate ?: JSONObject.NULL).put("pv", JSONArray(l.pv))
-                    .apply { l.wdl?.let { put("wdl", JSONArray(it)) } }
-            }))
+            return result(if(infinite)TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-started).coerceAtMost(Int.MAX_VALUE.toLong()).toInt() else budget)
+
+        } catch (error: Exception) { if (token == generation.get()) close(); throw error }
+    }
+    // Use the complete played line so repetition and the fifty-move rule remain meaningful.
+    // Skill Level may choose a move other than the top PV: consume bestmove itself.
+    fun play(initialFen: String, moves: List<String>, skill: Int, token: Int): JSONObject {
+        require(initialFen.length < 140 && !initialFen.contains('\n') && !initialFen.contains('\r'))
+        require(moves.size <= 6000 && moves.all { it.matches(Regex("[a-h][1-8][a-h][1-8][qrbn]?")) })
+        require(skill in 0..20)
+        val board = Board().apply { loadFromFen(initialFen) }
+        for (move in moves) check(board.doMove(com.github.bhlangonijr.chesslib.move.Move(move, board.sideToMove), true)) { "对局走法无法重放" }
+        check(!board.isMated && !board.isDraw && !board.isStaleMate) { "对局已经结束" }
+        try {
+            start()
+            check(token == generation.get()) { "对战已暂停" }
+            send("setoption name UCI_LimitStrength value false")
+            send("setoption name Skill Level value $skill")
+            send("setoption name MultiPV value 1")
+            send("isready"); waitUntil(5000) { it == "readyok" }
+            send("position fen $initialFen${if(moves.isEmpty()) "" else " moves ${moves.joinToString(" ")}"}")
+            send("go movetime ${350 + skill * 25}")
+            var best = ""
+            waitUntil(16000) { line ->
+                if (line.startsWith("bestmove ")) { best=line.split(' ').getOrElse(1){""};true } else false
+            }
+            check(token == generation.get()) { "对战已暂停" }
+            check(best.matches(Regex("[a-h][1-8][a-h][1-8][qrbn]?")) &&
+                board.doMove(com.github.bhlangonijr.chesslib.move.Move(best, board.sideToMove), true)) { "引擎未返回合法应手，请重试" }
+            return JSONObject().put("move",best).put("skill",skill).put("engine",name)
         } catch (error: Exception) { if (token == generation.get()) close(); throw error }
     }
     private fun waitUntil(timeout: Long, done: (String)->Boolean) {
-        val deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeout)
+        val deadline = if(timeout==0L)Long.MAX_VALUE else System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeout)
         while (System.nanoTime() < deadline) {
             val line = lines.poll(250, TimeUnit.MILLISECONDS) ?: continue
             check(line != "__closed__") { "本地引擎已退出，请重试" }
