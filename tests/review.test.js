@@ -46,8 +46,42 @@ test('terminal scores, engine version boundaries and revision roundtrip',()=>{
 });
 test('facts describe actual captures and mate, duplicate variations are idempotent',()=>{
  const r=S.importText('1. e4 d5 2. exd5 Qxd5 *')[0],rows=S.timeline(r);
- assert.match(S.moveFacts(rows[3],rows[4]).join(''),/对手的后吃掉了你的兵/);
+ assert.match(S.moveFacts(rows[3],rows[4]).join(''),/黑方的后吃掉了白方的兵/);
  const m=S.timeline(S.importText('1. f3 e5 2. g4 Qh4# 0-1')[0]);assert.match(S.moveFacts(m[4]).join(''),/将杀/);
  S.addBranch(r,0,['d2d4']);S.addBranch(r,0,['d2d4']);assert.equal(r.branches.length,1);
  assert.throws(()=>S.importText('8/8/8/8/8/8/8/8 w - - 0 1'),/白王/);
+});
+test('display perspective flips cp and mate without changing cached analysis or move assessment',()=>{
+ const r=S.importText('1. e4 e5 *')[0],rows=S.timeline(r);
+ r.analysis[rows[0].fen]=ev(40,['e2e4']);r.analysis[rows[1].fen]=ev(125);r.analysis[rows[2].fen]=ev(425);
+ const stored=JSON.stringify(r);
+ assert.equal(S.displayScore(ev(125),'w'),'+1.3');assert.equal(S.displayScore(ev(125),'b'),'-1.3');
+ assert.equal(S.displayScore(ev(-1),'b'),'0.0');assert.equal(S.viewNumeric(ev(425),'b'),-425);
+ assert.equal(S.displayScore({lines:[{mate:-3}]},'b'),'M3');
+ assert.equal(S.summary(r,'w').mistakes,0);assert.equal(S.summary(r,'b').mistakes,1);
+ assert.equal(S.viewNumeric({lines:[{mate:0,terminal:true,cp:-100000}]},'b'),100000);
+ assert.equal(JSON.stringify(r),stored);
+});
+test('long demo reaches a real checkmate, and practice rows retain their original turn numbers',()=>{
+ const r=S.demo();assert.equal(r.moves.length,35);assert.equal(r.result,'1-0');
+ assert.equal(S.position(r).in_checkmate(),true);assert.equal(S.timeline(r).at(-1).san,'Qxh7#');
+ const practice=S.importText('7k/8/8/8/8/8/8/KR6 b - - 0 23')[0];practice.moves=['h8g8','b1b2','g8f8'];
+ assert.deepEqual(S.timeline(practice).slice(1).map(r=>[r.moveNumber,r.color]),[[23,'b'],[24,'w'],[24,'b']]);
+});
+test('demo includes complete deep analysis, legal PVs and immediate move badges',()=>{
+ const r=S.demo(),rows=S.timeline(r);
+ assert.equal(Object.keys(r.analysis).length,36);
+ assert.equal(S.summary(r).analyzed,18);
+ assert.ok(rows.slice(1).every(row=>row.review));
+ assert.equal(S.moveSymbol(rows[1].review),'▤');
+ assert.equal(S.moveSymbol(rows.at(-1).review),'★');
+ for(const row of rows) {
+  const e=row.evaluation;assert.equal(e.engine,'Stockfish 19');assert.ok(e.precomputed);
+  for(const line of e.lines){
+   assert.ok(line.terminal||line.depth>=20);
+   assert.doesNotThrow(()=>S.position({...r,initialFen:row.fen,moves:line.pv}));
+  }
+ }
+ const copy=S.demo();copy.analysis[rows[0].fen].lines[0].cp=12345;
+ assert.notEqual(S.demo().analysis[rows[0].fen].lines[0].cp,12345);
 });

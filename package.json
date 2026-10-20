@@ -1,12 +1,12 @@
 {
   "name": "oscar-youre-done",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "description": "Offline Android chess recorder and Stockfish review companion",
   "license": "GPL-3.0",
   "scripts": {
     "test": "node --test tests/review.test.js tests/review-growth.test.js",
-    "test:ui": "node tests/review-mobile-smoke.js && node tests/review-notebooks-smoke.js && node tests/review-growth-smoke.js"
+    "test:ui": "node tests/review-mobile-smoke.js && node tests/review-notebooks-smoke.js && node tests/review-growth-smoke.js && node tests/review-perspective-smoke.js"
   },
   "devDependencies": {
     "playwright": "1.62.1"

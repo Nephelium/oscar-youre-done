@@ -18,7 +18,7 @@ async function main(){
   await page.locator('[data-route="home"]').first().click();assert.match(await page.locator('.elo-home').textContent(),/825 Elo/);await page.screenshot({path:path.join(out,'oscar-home-elo-390.png'),fullPage:true});
   await action('import');await page.locator('#import-text').fill('1. e4 e5 2. Nf3 Nc6');await action('importText');
   await page.evaluate(()=>{const r=App.state.current,values=[0,0,120,-120,400];Sprout.timeline(r).forEach((row,i)=>{r.analysis[row.fen]={engine:'UI fixture',lines:[{cp:values[i],mate:null,depth:10,pv:i===0?['e2e4']:[]}]};});});
-  const squares=['e4','e5','f3','c6'],symbols=['!','?!','?','??'];
+  const squares=['e4','e5','f3','c6'],symbols=['','?!','?','??'];
   for(let i=0;i<4;i++){await action('next');assert.equal(await page.locator(`[data-square="${squares[i]}"] .piece-review`).textContent(),symbols[i]);}
   assert.ok((await page.locator('.curve').first().boundingBox()).height>=200);await page.locator('[data-scale="5"]').first().click();assert.match(await page.locator('.curve').first().getAttribute('aria-label'),/5 兵/);
   await action('flip');assert.equal(await page.locator('[data-square="c6"] .piece-review').textContent(),'??');await page.screenshot({path:path.join(out,'oscar-review-annotations-390.png'),fullPage:true});

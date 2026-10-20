@@ -35,3 +35,11 @@ input[type=number],input[type=datetime-local]{width:100%;min-width:0;border:1.5p
 @media(min-width:900px){.bottom-nav{width:390px;gap:26px}.curve{height:230px}}
 @media(max-width:700px){.bottom-nav{gap:20px}.offline{display:none}.elo-panel{padding:19px}.elo-current{font-size:43px}.growth-page .page-heading h1{font-size:28px}.curve{height:205px}.curve text{font-size:15px}.elo-curve text{font-size:16px}}
 @media(max-width:355px){.bottom-nav{gap:12px}.square .piece-review{min-width:18px;height:18px;font-size:11px}.elo-panel{padding:15px}.elo-panel .button{padding:10px;font-size:12px}.curve-tools{font-size:10px}}
+.curve text{font-size:12px;font-variant-numeric:tabular-nums}
+.analysis-title{flex:1;min-width:0}.analysis-heading>.score-chip{flex-shrink:0;margin-left:auto}
+.analysis-heading h2{overflow-wrap:anywhere}.analysis-depth{flex-wrap:wrap}
+.evaluation-bar.black-view{background:#f4f3df}.black-view .evaluation-white{background:#354332}
+.move-list{display:block}.move-pair{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr);gap:4px;align-items:center;margin-bottom:4px}
+.move-placeholder{padding:8px;color:var(--muted)}.legacy-demos{margin-top:16px}
+
+.square .piece-review.book,.analysis-badge.book{background:#66899b;color:#fffefb}.piece-review .icon{width:13px;height:13px;stroke-width:2.2}.mark.book{color:#66899b}.mark .icon{width:14px;height:14px;vertical-align:middle}

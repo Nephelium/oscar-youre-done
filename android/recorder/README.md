@@ -1,13 +1,15 @@
 # 奥斯卡你完了 · 独立 Android App
 
-版本 1.1.0（3），包名 `com.jingjing.chesssprout`。Android 8.0+，支持 ARM64 与 x86_64。与原开局研习室独立安装和存储，更新保留棋芽原有数据。
+版本 1.1.1（4），包名 `com.jingjing.chesssprout`。Android 8.0+，支持 ARM64 与 x86_64。与原开局研习室独立安装和存储，更新保留棋芽原有数据。
 
 ## 记录与复盘
 
 1. 下棋前点“记录一局”，选棋盘底部颜色并授权本次屏幕采集。切到多邻国标准初始棋盘，等通知显示已就绪后开始走子。
 2. 下完从通知栏、悬浮按钮或应用内结束记录，再分析整盘或当前局面。推荐变化可以直接点击推演，也可以自由走子、要求引擎应手并保存分支。
-3. 局面曲线采用白方视角，默认 ±2 兵，可切换 ±5 / ±10 兵并点选回到对应步。边缘箭头表示超出范围或将杀。已分析走法在棋子右上角和棋谱中同步显示：`!` 最佳、`✓` 好棋 / 稳健、`?!` 不够准确、`?` 失误、`??` 严重失误。
+3. 局面曲线、分数、候选和表现统计采用棋盘底部一方视角，翻转时同步切换，默认 ±2 兵，可切换 ±5 / ±10 兵并点选回到对应步。边缘箭头表示超出范围或将杀。已分析走法在棋子右上角和棋谱中同步显示：书本为已收录理论走法、`★` 引擎首选、`!` 好棋、`✓` 稳健、`?!` 不够准确、`?` 失误、`??` 严重失误。
 4. 识别疑点保留棋盘裁剪，允许从最后确认的一步补走校对，修订前主线保留在完整备份中。
+
+首页 18 回合演示内置 Stockfish 19 深度 20 的整盘三候选分析。演示不写入手记，分析与推演保留到关闭应用。旧版已保存演示位于首页独立入口，原有变化保留。分析来源与生成方法见 `review/demo-analysis.md`。
 
 ## 练习与截图
 
@@ -27,10 +29,10 @@
 
 ```powershell
 npm test
-npm run test:review
-npm run test:mobile
+npm run test:ui
 node tests/review-notebooks-smoke.js
 node tests/review-growth-smoke.js
+node tests/review-perspective-smoke.js
 Set-Location android
 .\gradlew.bat :recorder:testDebugUnitTest :recorder:lintDebug :recorder:assembleDebug
 ```

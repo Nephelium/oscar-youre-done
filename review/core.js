@@ -1,9 +1,12 @@
 (function (root, factory) {
-  const api = factory(typeof module === 'object' ? require('../vendor/chess.min.js').Chess : root.Chess);
+  const api = factory(typeof module === 'object' ? require('../vendor/chess.min.js').Chess : root.Chess,
+    typeof module === 'object' ? require('./demo-analysis.js') : root.OscarDemo);
   if (typeof module === 'object') module.exports = api; else root.Sprout = api;
-})(typeof window !== 'undefined' ? window : globalThis, function (Chess) {
+})(typeof window !== 'undefined' ? window : globalThis, function (Chess, demoData) {
   'use strict';
   const START = new Chess().fen();
+  // Lichess chess-openings, C53 Classical Variation (CC0), pinned in demo-analysis.md.
+  const OPENING = ['e2e4','e7e5','g1f3','b8c6','f1c4','f8c5','c2c3'];
   const id = () => 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
   const uci = m => m.from + m.to + (m.promotion || '');
   function move(game, input) {
@@ -92,12 +95,19 @@
     if (Number.isFinite(l.mate)) return l.mate > 0 ? 100000 - Math.min(1000, Math.abs(l.mate)) : -100000 + Math.min(1000, Math.abs(l.mate));
     return Number.isFinite(l.cp) ? l.cp : null;
   }
-  function displayScore(evaluation) {
+  function viewNumeric(evaluation, side = 'w') {
+    const value = numeric(evaluation);
+    return value === null ? null : value * (side === 'b' ? -1 : 1);
+  }
+  function displayScore(evaluation, side = 'w') {
     const l = evaluation?.lines?.[0];
     if (!l) return '—';
     if (l.terminal && l.mate === 0) return '将死';
-    if (Number.isFinite(l.mate)) return (l.mate < 0 ? '−' : '') + 'M' + Math.abs(l.mate);
-    return Number.isFinite(l.cp) ? (l.cp > 0 ? '+' : '') + (l.cp / 100).toFixed(1) : '—';
+    if (Number.isFinite(l.mate)) return (l.mate * (side === 'b' ? -1 : 1) < 0 ? '−' : '') + 'M' + Math.abs(l.mate);
+    const value = viewNumeric(evaluation, side);
+    if(value===null)return '—';
+    const rounded=Number((value/100).toFixed(1));
+    return (rounded>0?'+':'')+rounded.toFixed(1);
   }
   function assess(before, after, side, played) {
     if (before?.engine && after?.engine && before.engine !== after.engine) return null;
@@ -111,16 +121,19 @@
   }
   function timeline(record) {
     const g = new Chess(record.initialFen), rows = [{ply: 0, fen: g.fen(), evaluation: record.analysis[g.fen()]}];
+    let book = record.initialFen === START;
     record.moves.forEach((input, i) => {
-      const before = g.fen(), m = move(g, input); if (!m) throw Error('棋谱无法重放。');
-      rows.push({ply: i+1, move: input, san: m.san, color: m.color, piece:m.piece, captured:m.captured, flags:m.flags, check:g.in_check(), mate:g.in_checkmate(), fen: g.fen(), evaluation: record.analysis[g.fen()],
-        review: assess(record.analysis[before], record.analysis[g.fen()], m.color, input)});
+      const before = g.fen(), moveNumber = Number(before.split(' ')[5]), m = move(g, input); if (!m) throw Error('棋谱无法重放。');
+      book = book && OPENING[i] === uci(m);
+      const review = assess(record.analysis[before], record.analysis[g.fen()], m.color, input);
+      if(book && review && review.loss < 90)Object.assign(review,{book:true,label:'理论走法',tone:'book'});
+      rows.push({ply: i+1, moveNumber, move: input, san: m.san, color: m.color, piece:m.piece, captured:m.captured, flags:m.flags, check:g.in_check(), mate:g.in_checkmate(), fen: g.fen(), evaluation: record.analysis[g.fen()], review});
     });
     return rows;
   }
-  function moveSymbol(review) {return !review?'':review.best?'!':review.loss>=350?'??':review.loss>=180?'?':review.loss>=90?'?!':'✓';}
-  function summary(record) {
-    const rows = timeline(record).slice(1), own = rows.filter(r => r.color === record.side), ready = own.filter(r => r.review);
+  function moveSymbol(review) {return !review?'':review.book?'▤':review.best?'★':review.loss>=350?'??':review.loss>=180?'?':review.loss>=90?'?!':review.loss<30?'!':'✓';}
+  function summary(record, side = record.side) {
+    const rows = timeline(record).slice(1), own = rows.filter(r => r.color === side), ready = own.filter(r => r.review);
     return {plies: rows.length, analyzed: ready.length, total: own.length,
       score: ready.length ? Math.round(100 * Math.exp(-ready.reduce((n,r) => n + Math.min(2000,r.review.loss), 0) / ready.length / 250)) : null,
       mistakes: ready.filter(r => r.review.loss >= 180).length};
@@ -132,7 +145,7 @@
     else if(row.check)facts.push('这一步形成将军，对方必须先解除将军。');
     if(row.flags?.includes('k')||row.flags?.includes('q'))facts.push('这一步完成王车易位。');
     if(row.captured)facts.push('这一步吃掉了对手的'+names[row.captured]+'。');
-    if(next?.captured)facts.push('实战下一手，对手的'+names[next.piece]+'吃掉了你的'+names[next.captured]+'。');
+    if(next?.captured)facts.push('实战下一手，'+(next.color==='w'?'白方':'黑方')+'的'+names[next.piece]+'吃掉了'+(row.color==='w'?'白方':'黑方')+'的'+names[next.captured]+'。');
     return facts;
   }
   function addBranch(record, at, moves) {
@@ -140,12 +153,18 @@
     if (!moves.length) throw Error('先在棋盘上走出一条变化。');
     const existing=record.branches.find(b=>b.at===at&&JSON.stringify(b.moves)===JSON.stringify(moves));if(existing)return existing;
     if(record.branches.length>=200)throw Error('这局已保存 200 条变化，请另存为一局继续推演。');
-    const branch = {id: id(), at, moves: moves.slice(), name: '第 ' + (Math.floor(at / 2)+1) + ' 回合的变化'};
+    const branch = {id: id(), at, moves: moves.slice(), name: '第 ' + position(record,at).fen().split(' ')[5] + ' 回合的变化'};
     record.branches.push(branch); return branch;
   }
   function fromPlacement(placement, turn = 'w', castling = '-', ep = '-') {
     const fen = placement + ' ' + turn + ' ' + castling + ' ' + ep + ' 0 1';
     const test = new Chess(); if (!test.validate_fen(fen).valid) throw Error('局面格式不正确。'); return fen;
   }
-  return {START, id, uci, move, position, validate, create, importText, toPgn, lineSan, numeric, displayScore, assess, timeline, summary, moveFacts, addBranch, fromPlacement, moveSymbol};
+  function demo() {
+    const record = importText('[Event "18 回合的王翼攻势"]\n[Result "1-0"]\n\n1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 d6 5. d4 Nf6 6. dxc5 Bg4 7. h3 O-O 8. hxg4 Qd7 9. Be2 Rad8 10. Nbd2 d5 11. Nh2 Rde8 12. g5 Ng4 13. Nxg4 b5 14. exd5 Qe7 15. Ne4 Nb8 16. Qd3 Qxg5 17. Nef6+ gxf6 18. Qxh7# 1-0')[0];
+    record.id = 'oscar-demo-v1'; record.source = '演示棋谱';
+    if(demoData && JSON.stringify(record.moves)===JSON.stringify(demoData.moves))record.analysis=JSON.parse(JSON.stringify(demoData.analysis));
+    return record;
+  }
+  return {START, id, uci, move, position, validate, create, importText, toPgn, lineSan, numeric, viewNumeric, displayScore, assess, timeline, summary, moveFacts, addBranch, fromPlacement, moveSymbol, demo};
 });

@@ -1,0 +1,51 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {execFileSync}=require('node:child_process');
+const {connect,run,adb}=require('./review-android-helper.cjs');
+async function main(){
+ const {browser,page,port}=await connect(),errors=[],out=path.resolve(__dirname,'../android/recorder/build/reports');
+ const action=async a=>page.locator(`[data-act="${a}"]`).first().click();
+ page.on('pageerror',e=>errors.push(e.message));
+ try{
+  await page.evaluate(()=>{while(App.back()){};});
+  const before=await page.evaluate(()=>JSON.stringify(JSON.parse(SproutHost.listGames()).sort((a,b)=>a.id.localeCompare(b.id))));
+  await action('demo');
+  const preset=await page.evaluate(()=>({record:App.state.current,rows:Sprout.timeline(App.state.current)}));
+  assert.equal(preset.record.moves.length,35);assert.equal(Object.keys(preset.record.analysis).length,36);
+  assert.ok(preset.rows.slice(1).every(r=>r.review));
+  assert.ok(Object.values(preset.record.analysis).every(a=>a.engine==='Stockfish 19'&&a.lines.every(l=>l.terminal||l.depth>=20)));
+  await action('next');assert.equal(await page.locator('.piece-review.book .icon').count(),1);
+  assert.match(await page.locator('.analysis-depth').textContent(),/预置分析/);
+  const curveDimensions=await page.locator('.curve text').first().evaluate(e=>{const m=e.getScreenCTM();return [m.a,m.d];});
+  assert.ok(Math.abs(curveDimensions[0]-curveDimensions[1])<.001);
+  await page.locator('#chessboard').scrollIntoViewIfNeeded();
+  fs.writeFileSync(path.join(out,'v111-android-demo-board.png'),execFileSync(adb,['exec-out','screencap','-p'],{maxBuffer:8*1024*1024}));
+  await page.locator('.curve').scrollIntoViewIfNeeded();
+  fs.writeFileSync(path.join(out,'v111-android-demo-prepared.png'),execFileSync(adb,['exec-out','screencap','-p'],{maxBuffer:8*1024*1024}));
+  await action('last');assert.equal(await page.locator('.analysis-heading .score-chip').textContent(),'胜');
+  assert.equal(await page.locator('.piece-review').textContent(),'★');
+  await action('flip');assert.equal(await page.locator('.analysis-heading .score-chip').textContent(),'负');
+  await page.locator('.curve').scrollIntoViewIfNeeded();
+  fs.writeFileSync(path.join(out,'v111-android-demo-terminal-black.png'),execFileSync(adb,['exec-out','screencap','-p'],{maxBuffer:8*1024*1024}));
+  await action('first');
+  await page.locator('[data-square="d2"]').click();await page.locator('[data-square="d4"]').click();
+  await action('engineMove');
+  await page.waitForFunction(()=>!App.state.busy&&App.state.branch.length===2,{},{timeout:45000,polling:500});
+  assert.ok(await page.evaluate(()=>Object.values(App.state.current.analysis).some(e=>!e.precomputed)));
+  await action('saveBranch');assert.equal(await page.evaluate(()=>App.state.current.branches.length),1);
+  await action('mainline');await action('analyzeAll');
+  await page.waitForFunction(()=>!App.state.busy,{},{timeout:60000,polling:500});
+  const engine=await page.evaluate(()=>JSON.parse(SproutHost.status()).engine);
+  assert.ok(await page.evaluate(()=>Sprout.timeline(App.state.current).every(r=>App.state.current.analysis[r.fen]?.engine===JSON.parse(SproutHost.status()).engine)));
+  await action('home');await action('demo');
+  assert.equal(await page.evaluate(()=>App.state.current.branches.length),1);
+  const after=await page.evaluate(()=>JSON.stringify(JSON.parse(SproutHost.listGames()).sort((a,b)=>a.id.localeCompare(b.id))));
+  assert.equal(after,before,'Demo analysis/variations must never mutate native notebooks');
+  await page.reload();await page.waitForFunction(()=>window.App);
+  assert.equal(await page.evaluate(()=>App.state.route),'home');
+  assert.equal(await page.evaluate(()=>JSON.stringify(JSON.parse(SproutHost.listGames()).sort((a,b)=>a.id.localeCompare(b.id)))),before);
+  assert.deepEqual(errors,[]);
+  fs.writeFileSync(path.join(out,'v111-native-demo-review.json'),JSON.stringify({passed:true,presetEngine:'Stockfish 19',minimumDepth:20,positions:36,nativeEngine:engine,canonicalRecordsUnchanged:JSON.parse(before).length,errors},null,2));
+  console.log('PASS: shipped 36-position depth-20 analysis, immediate book/star badges, native engine variation/reanalysis, zero notebook writes, reload.');
+ }finally{await browser.close();run('forward','--remove','tcp:'+port);}
+}
+main().catch(e=>{console.error(e);process.exitCode=1;});

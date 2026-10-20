@@ -16,5 +16,5 @@ test('Elo graph preserves true time spacing, flat scores and same-minute entries
  const same=G.plot([{id:'a',elo:0,at:'2026-10-20T12:00',createdAt:1},{id:'b',elo:10,at:'2026-10-20T12:00',createdAt:2}]);assert.ok(same.points[1].x>same.points[0].x);
 });
 test('Board and notation use the same evidence-based move symbols',()=>{
- assert.equal(S.moveSymbol(null),'');assert.equal(S.moveSymbol({best:true,loss:0}),'!');assert.equal(S.moveSymbol({loss:20}),'✓');assert.equal(S.moveSymbol({loss:90}),'?!');assert.equal(S.moveSymbol({loss:180}),'?');assert.equal(S.moveSymbol({loss:350}),'??');
+ assert.equal(S.moveSymbol(null),'');assert.equal(S.moveSymbol({best:true,loss:0}),'★');assert.equal(S.moveSymbol({loss:20}),'!');assert.equal(S.moveSymbol({loss:90}),'?!');assert.equal(S.moveSymbol({loss:180}),'?');assert.equal(S.moveSymbol({loss:350}),'??');
 });
