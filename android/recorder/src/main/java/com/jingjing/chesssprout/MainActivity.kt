@@ -3,6 +3,7 @@ package com.jingjing.chesssprout
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.res.Configuration
 import android.content.pm.ApplicationInfo
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -48,6 +49,25 @@ class MainActivity: ComponentActivity() {
     private var ready=false
     private var destroyed=false
     private val exportFile get()=File(cacheDir,"pending-export.txt")
+    private fun systemNight()=(resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES
+    @Suppress("DEPRECATION")
+    private fun applyAppearance(dark: Boolean) {
+        val color=if(dark)0xff162022.toInt() else 0xfffaf8f1.toInt()
+        web.setBackgroundColor(color)
+        (web.parent as? FrameLayout)?.setBackgroundColor(color)
+        window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(color))
+        if(Build.VERSION.SDK_INT>=30){
+            val mask=WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+            window.insetsController?.setSystemBarsAppearance(if(dark)0 else mask,mask)
+        }else{
+            val mask=android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            window.decorView.systemUiVisibility=if(dark)window.decorView.systemUiVisibility and mask.inv() else window.decorView.systemUiVisibility or mask
+        }
+    }
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if(ready)emit(JSONObject().put("type","appearance").put("nightMode",systemNight()))
+    }
     @SuppressLint("SetJavaScriptEnabled")
     @Suppress("DEPRECATION")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,14 +81,13 @@ class MainActivity: ComponentActivity() {
         val frame=FrameLayout(this).apply{setBackgroundColor(0xfffaf8f1.toInt())}
         web=WebView(this).apply{setBackgroundColor(0xfffaf8f1.toInt())}
         frame.addView(web,FrameLayout.LayoutParams(-1,-1));setContentView(frame)
+        applyAppearance(systemNight())
         frame.setOnApplyWindowInsetsListener { view,insets ->
             if(Build.VERSION.SDK_INT>=30) {
                 val safe=insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout() or WindowInsets.Type.ime())
                 view.setPadding(safe.left,safe.top,safe.right,safe.bottom);WindowInsets.CONSUMED
             } else {view.setPadding(insets.systemWindowInsetLeft,insets.systemWindowInsetTop,insets.systemWindowInsetRight,insets.systemWindowInsetBottom);insets.consumeSystemWindowInsets()}
         }
-        if(Build.VERSION.SDK_INT>=30)window.insetsController?.setSystemBarsAppearance(WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
-            WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS)
         val loader=WebViewAssetLoader.Builder().addPathHandler("/assets/",WebViewAssetLoader.AssetsPathHandler(this)).build()
         web.settings.apply{javaScriptEnabled=true;domStorageEnabled=true;allowFileAccess=false;allowContentAccess=true
             mixedContentMode=WebSettings.MIXED_CONTENT_NEVER_ALLOW;setSupportZoom(false)}
@@ -116,11 +135,13 @@ class MainActivity: ComponentActivity() {
             runOnUiThread{runCatching{startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(url)))}.onFailure{message("未找到可用的浏览器")}}
         }
         @JavascriptInterface fun status(): String=JSONObject().put("capture",CaptureService.instance?.snapshot()?:JSONObject().put("running",false))
+            .put("nightMode",systemNight())
             .put("video",VideoImporter.state).put("engine",engine.name).put("version",packageManager.getPackageInfo(packageName,0).versionName).put("themeReady",ThemeStore(this@MainActivity).exists()).put("moveFeedback",getSharedPreferences("capture",MODE_PRIVATE).getBoolean("moveFeedback",true)).put("overlay",Settings.canDrawOverlays(this@MainActivity)).toString()
         @JavascriptInterface fun setMoveFeedback(enabled: Boolean) {
             getSharedPreferences("capture",MODE_PRIVATE).edit().putBoolean("moveFeedback",enabled).apply()
             if(!enabled)runOnUiThread{CaptureService.instance?.clearFeedback()}
         }
+        @JavascriptInterface fun setAppearance(dark: Boolean) { runOnUiThread{applyAppearance(dark)} }
         @JavascriptInterface fun saveGame(content: String): String=runCatching {
             require(content.length<=12*1024*1024)
             val record=JSONObject(content);val moves=record.getJSONArray("moves");require(moves.length()<=6000)

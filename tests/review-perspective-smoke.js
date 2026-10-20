@@ -4,7 +4,7 @@ async function main(){
  const browser=await pw.chromium.launch({channel:'msedge',headless:true}),page=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'}),errors=[];
  const out=path.resolve(__dirname,'../android/recorder/build/reports');fs.mkdirSync(out,{recursive:true});
  page.on('pageerror',e=>errors.push(e.message));
- const action=async a=>page.locator(`[data-act="${a}"]`).first().click();
+ const action=async a=>{const el=page.locator(`[data-act="${a}"]`).first();if(["first","last"].includes(a)&&await el.isDisabled())return;await el.click();if(["first","last","playKey","prevKey"].includes(a))await page.waitForFunction(()=>!App.state.playing);};
  const importText=async text=>{await action('import');await page.locator('#import-text').fill(text);await action('importText');};
  try{
   await page.goto(pathToFileURL(path.resolve(__dirname,'../review/index.html')).href);

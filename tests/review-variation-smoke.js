@@ -21,7 +21,7 @@ async function main(){
    cancelVideo:()=>{fixtureVideo={...fixtureVideo,state:'done',cancelled:true};}
   };
  });
- const act=async a=>page.locator(`[data-act="${a}"]`).first().click();
+ const act=async a=>{const el=page.locator(`[data-act="${a}"]`).first();if(["first","last"].includes(a)&&await el.isDisabled())return;await el.click();if(["first","last","playKey","prevKey"].includes(a))await page.waitForFunction(()=>!App.state.playing);};
  const trigger=async a=>page.evaluate(a=>document.querySelector(`[data-act="${a}"]`).click(),a);
  const move=async(a,b)=>{await page.locator(`[data-square="${a}"]`).click();await page.locator(`[data-square="${b}"]`).click();};
  const home=async()=>{await page.evaluate(()=>App.back());};
@@ -67,7 +67,7 @@ async function main(){
   assert.equal(await page.locator('.arrows').count(),0);
   await move('e7','e5');await page.waitForFunction(()=>App.state.current.moves.length===3&&!App.state.battleThinking);
   await page.screenshot({path:path.join(out,'v130-battle-browser.png'),fullPage:true});
-  await act('pauseBattle');await page.reload();await page.locator('[data-route="play"]').click();assert.equal(await page.evaluate(()=>App.state.current.moves.length),3);
+  await act('suspendBattle');await home();await page.reload();await page.locator('[data-route="play"]').click();assert.equal(await page.evaluate(()=>App.state.current.moves.length),3);
   await act('resignBattle');await act('close');assert.equal(await page.evaluate(()=>App.state.battle.ended),false);
   await act('resignBattle');await act('confirmResign');assert.equal(await page.evaluate(()=>App.state.current.result),'1-0');
   await act('battleReview');assert.equal(await page.evaluate(()=>App.state.route),'review');await home();await page.locator('[data-route="home"]').click();

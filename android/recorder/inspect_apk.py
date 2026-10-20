@@ -9,14 +9,16 @@ def digest(stream):
     return sha.hexdigest()
 checks={}
 with zipfile.ZipFile(apk) as archive:
-    profile='assets/review/assets/duolingo-board-profile.json'
-    expected=gzip.decompress((root/'review/assets/duolingo-board-profile.json.gz').read_bytes())
-    assert archive.read(profile)==expected, 'Missing/stale packaged recognition profile'
-    checks[profile]=hashlib.sha256(expected).hexdigest()
-    pairs={f'assets/review/{name}':root/'review'/name for name in ['index.html','core.js','library.js','analysis-policy.js','ratings.js','demo-analysis.js','app.js','themes.js','board-motion.js','style.css','assets/oscar-panic.png']}
-    for piece in (root/'review/assets/pieces').glob('*.svg'):pairs['assets/review/assets/pieces/'+piece.name]=piece
+    for stem in ['duolingo-board-profile','duolingo-night-profile']:
+        profile=f'assets/review/assets/{stem}.json'
+        expected=gzip.decompress((root/f'review/assets/{stem}.json.gz').read_bytes())
+        assert archive.read(profile)==expected, 'Missing/stale packaged recognition profile'
+        checks[profile]=hashlib.sha256(expected).hexdigest()
+    pairs={f'assets/review/{name}':root/'review'/name for name in ['index.html','core.js','library.js','analysis-policy.js','battle-clock.js','ratings.js','demo-analysis.js','app.js','themes.js','board-motion.js','style.css','assets/oscar-panic.png']}
+    for piece in (root/'review/assets/pieces').iterdir():
+        if piece.suffix in ('.svg','.png'):pairs['assets/review/assets/pieces/'+piece.name]=piece
     pairs['res/drawable-nodpi-v4/oscar_panic.png']=root/'review/assets/oscar-panic.png'
-    forbidden=[name for name in archive.namelist() if any(x in name.lower() for x in ['duolingo-game','duolingo-promotion','duolingo-install','.xapk','oscar-screenshot-fixture'])]
+    forbidden=[name for name in archive.namelist() if any(x in name.lower() for x in ['duolingo-game','duolingo-promotion','duolingo-install','.xapk','oscar-screenshot-fixture','official-day.jpg','official-night.jpg'])]
     assert not forbidden, f'Test material in main APK: {forbidden}'
     pairs['assets/src/controlMap.js']=root/'src/controlMap.js'
     pairs['assets/vendor/chess.min.js']=root/'vendor/chess.min.js'

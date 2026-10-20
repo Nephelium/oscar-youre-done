@@ -3,7 +3,7 @@ const {execFileSync}=require('node:child_process');
 const {connect,run,adb}=require('./review-android-helper.cjs');
 async function main(){
  const {browser,page,port}=await connect(),errors=[],out=path.resolve(__dirname,'../android/recorder/build/reports');
- const action=async a=>page.locator(`[data-act="${a}"]`).first().click();
+ const action=async a=>{const el=page.locator(`[data-act="${a}"]`).first();if(["first","last"].includes(a)&&await el.isDisabled())return;await el.click();if(["first","last","playKey","prevKey"].includes(a))await page.waitForFunction(()=>!App.state.playing);};
  page.on('pageerror',e=>errors.push(e.message));
  try{
   await page.evaluate(()=>{while(App.back()){};});

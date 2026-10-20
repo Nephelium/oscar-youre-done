@@ -56,6 +56,7 @@ object VideoImporter {
         val recognizer=BoardRecognizer(options.optString("side")=="b")
         recognizer.region=options.optJSONObject("region")?.let {CapturePipeline.rect(it)}
         val store=ThemeStore(context)
+        store.load()?.let{recognizer.loadProfile(it)}
         val learner=BoardRecognizer(recognizer.blackBottom).apply{region=recognizer.region}
         if(learner.calibrate(frame)) {
             recognizer.loadProfile(learner.profile());recognizer.region=learner.region;recognizer.blackBottom=learner.blackBottom

@@ -7,7 +7,8 @@
     <queries><package android:name="com.duolingo" /></queries>
     <application android:label="奥斯卡你完了" android:icon="@drawable/ic_oscar" android:roundIcon="@drawable/ic_oscar" android:theme="@style/SproutTheme"
         android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true">
-        <activity android:name=".MainActivity" android:exported="true" android:windowSoftInputMode="adjustResize">
+        <activity android:name=".MainActivity" android:exported="true" android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize|smallestScreenSize|keyboardHidden|uiMode">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

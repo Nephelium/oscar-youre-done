@@ -16,27 +16,47 @@ class BoardRecognizer(var blackBottom: Boolean = false) {
         set(value) {field=value;gridReady=false}
     var calibrated = false
         private set
-    private val templates = mutableMapOf<Char, MutableList<FloatArray>>()
+    private val banks=mutableMapOf<String,MutableMap<Char,MutableList<FloatArray>>>()
+    private var appearance="light"
     private val initial = "rnbqkbnrpppppppp................................PPPPPPPPRNBQKBNR"
-    fun reset(rect: RectF? = region) { region = rect; calibrated = false; templates.clear() }
-    fun profile(): JSONObject = JSONObject().put("schema",2).put("templates",JSONObject().also { data ->
-        templates.forEach { (piece,variants) -> data.put(piece.toString(),JSONArray().also { list ->
-            variants.forEach { feature -> list.put(JSONArray().also { values -> feature.forEach { values.put(it.toDouble()) } }) }
-        }) }
-    })
-    fun loadProfile(data: JSONObject): Boolean = runCatching {
-        // v1 allowed moved boards to poison labels. Keep the file, but never reuse it.
-        require(data.getInt("schema")==2)
-        val saved=data.getJSONObject("templates");val loaded=mutableMapOf<Char,MutableList<FloatArray>>()
-        for(piece in ".prnbqkPRNBQK") {
-            val variants=saved.getJSONArray(piece.toString());require(variants.length() in 1..32)
-            loaded[piece]=(0 until variants.length()).map { index ->
-                val values=variants.getJSONArray(index);require(values.length()==24*24*3)
-                FloatArray(values.length()) { i -> values.getDouble(i).also { require(it.isFinite() && abs(it)<=1) }.toFloat() }
-            }.toMutableList()
+    fun reset(rect: RectF? = region) { region = rect; calibrated = false; banks.clear() }
+    fun profile(): JSONObject {
+        fun serialize(templates: Map<Char,List<FloatArray>>)=JSONObject().also { data ->
+            templates.forEach { (piece,variants) -> data.put(piece.toString(),JSONArray().also { list ->
+                variants.forEach { feature -> list.put(JSONArray().also { values -> feature.forEach { values.put(it.toDouble()) } }) }
+            }) }
         }
-        templates.clear();templates.putAll(loaded);calibrated=true;true
+        val mode=if(banks.containsKey(appearance))appearance else banks.keys.first()
+        return JSONObject().put("schema",2).put("appearance",mode).put("templates",serialize(banks.getValue(mode))).also { data ->
+            banks.filterKeys{it!=mode}.forEach{(key,value)->data.put("alternate",JSONObject().put("schema",2).put("appearance",key).put("templates",serialize(value)))}
+        }
+    }
+    fun loadProfile(data: JSONObject): Boolean = runCatching {
+        fun parse(profile: JSONObject): Pair<String,MutableMap<Char,MutableList<FloatArray>>> {
+            require(profile.getInt("schema")==2)
+            val mode=profile.optString("appearance","light");require(mode=="light"||mode=="dark")
+            val saved=profile.getJSONObject("templates");val loaded=mutableMapOf<Char,MutableList<FloatArray>>()
+            for(piece in ".prnbqkPRNBQK") {
+                val variants=saved.getJSONArray(piece.toString());require(variants.length() in 1..32)
+                loaded[piece]=(0 until variants.length()).map { index ->
+                    val values=variants.getJSONArray(index);require(values.length()==24*24*3)
+                    FloatArray(values.length()) { i -> values.getDouble(i).also { require(it.isFinite() && abs(it)<=1) }.toFloat() }
+                }.toMutableList()
+            }
+            return mode to loaded
+        }
+        val loaded=mutableMapOf(parse(data));data.optJSONObject("alternate")?.let{loaded+=parse(it)}
+        banks.putAll(loaded);appearance=data.optString("appearance","light");calibrated=true;true
     }.getOrDefault(false)
+    private fun appearanceOf(image: Bitmap,box: RectF): String {
+        val luminance=(0 until 64).map { index ->
+            val x=((box.left+(index%8+.08f)*box.width()/8)*image.width).toInt().coerceIn(0,image.width-1)
+            val y=((box.top+(index/8+.08f)*box.height()/8)*image.height).toInt().coerceIn(0,image.height-1)
+            val color=image.getPixel(x,y)
+            (((color shr 16)and 255)*.2126+((color shr 8)and 255)*.7152+(color and 255)*.0722)
+        }.sorted()
+        return if(luminance[32]<100)"dark" else "light"
+    }
     fun locate(image: Bitmap): RectF? {
         val ratio = min(1f, 440f / image.width)
         val thumb = Bitmap.createScaledBitmap(image, max(1,(image.width*ratio).toInt()), max(1,(image.height*ratio).toInt()), false)
@@ -99,7 +119,9 @@ class BoardRecognizer(var blackBottom: Boolean = false) {
         if(abs(topInk-bottomInk)<0.04) {if(original==null)region=null;return false}
         blackBottom=bottomInk<topInk
         val labels=if(blackBottom)initial.reversed() else initial
-        templates.clear()
+        appearance=appearanceOf(image,box)
+        val templates=mutableMapOf<Char,MutableList<FloatArray>>()
+        banks[appearance]=templates
         for (i in features.indices) templates.getOrPut(labels[i]) { mutableListOf() }.add(features[i])
         calibrated = true
         gridReady=true
@@ -149,6 +171,7 @@ class BoardRecognizer(var blackBottom: Boolean = false) {
         val rough=region?:locate(image)?:return null
         val box=if(gridReady)rough else refineInitialGrid(image,rough,false).also{region=it;gridReady=true}
         val features = features(image, box)
+        val templates=banks[appearanceOf(image,box)]?:return null
         val labels = StringBuilder(); var confidence = 0.0
         var uncertain=0
         for (feature in features) {

@@ -13,9 +13,17 @@ test('WDL is exact, side-aware, roundtrips backups and rejects malformed values'
   assert.deepEqual(S.probabilities(rows.at(-1).evaluation),{win:100,draw:0,loss:0});
 });
 test('Every selectable piece set has all twelve local piece assets',()=>{
-  for(const set of T.pieces)for(const side of ['w','b'])for(const type of 'pnbrqk'){
-    const file=path.resolve(__dirname,'../review',T.url(set.id,side,type));
-    assert.match(fs.readFileSync(file,'utf8'),/viewBox="0 0 100 100"/);
+  for(const set of T.pieces)for(const side of ['w','b'])for(const type of 'pnbrqk')for(const dark of [false,true]){
+    const file=path.resolve(__dirname,'../review',T.url(set.id,side,type,dark));
+    const bytes=fs.readFileSync(file);assert.equal(bytes.subarray(1,4).toString(),'PNG');
+    assert.equal(bytes.readUInt32BE(16),384);assert.equal(bytes.readUInt32BE(20),384);
   }
   assert.equal(T.piece('invalid').id,'duo');assert.equal(T.board('invalid').id,'duo');
+});
+test('piece sizes default by style, clamp unsafe stored values and remain independent',()=>{
+ assert.equal(T.scale({pieceSet:'duo'}),100);assert.equal(T.scale({pieceSet:'classic'}),112);
+ assert.equal(T.scale({pieceSet:'classic',pieceSizes:{duo:125}}),112);
+ assert.equal(T.scale({pieceSet:'duo',pieceSizes:{duo:200}}),125);
+ assert.equal(T.scale({pieceSet:'duo',pieceSizes:{duo:-1}}),85);
+ assert.equal(T.scale({pieceSet:'paper',pieceSizes:{paper:'abc'}}),112);
 });

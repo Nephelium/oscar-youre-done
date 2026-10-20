@@ -3,7 +3,7 @@ const {connect,run,adb}=require('./review-android-helper.cjs');
 async function main(){
  const {browser,page,port}=await connect(),out=path.resolve(__dirname,'../android/recorder/build/reports'),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
- const click=async a=>page.evaluate(a=>document.querySelector(`[data-act="${a}"]`).click(),a);
+ const click=async a=>{await page.evaluate(a=>document.querySelector(`[data-act="${a}"]`).click(),a);if(['first','last','playKey','prevKey'].includes(a))await page.waitForFunction(()=>!App.state.playing);};
  const shot=name=>fs.writeFileSync(path.join(out,name),execFileSync(adb,['exec-out','screencap','-p'],{maxBuffer:10*1024*1024}));
  try{
   await page.evaluate(()=>{while(App.back()){};});

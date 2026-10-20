@@ -8,4 +8,8 @@
 
 ## 棋子与棋盘
 
-`pieces/duo-*.svg` 为原创圆润棋子，参考多邻国灰白棋盘的简洁配色与圆润轮廓。`pieces/mono-*.svg` 为原创几何棋子，两套均由 `tests/prepare-review-pieces.py` 生成，不含外部位图或字体。经典棋子沿用 `vendor/pieces/`。棋盘配色定义在 `review/themes.js`，界面外观设置与截图识别的校准样式相互独立。原创棋子随软件以 GPL-3.0 提供。
+当前五套棋子均使用 AI 生成的透明 PNG，各有日夜版本。图集、机械裁切参数、提示词与来源见 [pieces/README.md](pieces/README.md)。旧 SVG 保留作历史追溯，不再用于默认外观。
+
+## 识别模板
+
+`duolingo-board-profile.json.gz` 和 `duolingo-night-profile.json.gz` 为日间与夜间棋格数值特征，含标准初始局面校验过的标签，不含完整屏幕图像。识别按棋盘背景亮度选择模板，重新校准一套时保留另一套。界面棋子选择不改变屏幕识别模板。

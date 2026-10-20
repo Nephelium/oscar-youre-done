@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {connect,run}=require('./review-android-helper.cjs'),out=path.resolve(__dirname,'../android/recorder/build/reports');
 async function main(){
  const {browser,page,port}=await connect(),errors=[];page.on('pageerror',e=>errors.push(e.message));
- const act=async a=>page.locator(`[data-act="${a}"]`).first().click();
+ const act=async a=>{const el=page.locator(`[data-act="${a}"]`).first();if(["first","last"].includes(a)&&await el.isDisabled())return;await el.click();if(["first","last","playKey","prevKey"].includes(a))await page.waitForFunction(()=>!App.state.playing);};
  const move=async(a,b)=>{await page.locator(`[data-square="${a}"]`).click();await page.locator(`[data-square="${b}"]`).click();};
  const goHome=async()=>page.evaluate(()=>{while(App.back()){};});
  try{
@@ -19,7 +19,7 @@ async function main(){
   const battle=await page.evaluate(()=>App.state.current);
   assert.equal(battle.source,'Stockfish 对战');assert.equal(await page.locator('.arrows').count(),0);
   await page.screenshot({path:path.join(out,'v130-native-battle.png'),fullPage:false});
-  await act('pauseBattle');await page.reload();await page.waitForFunction(()=>window.App);await page.locator('[data-route="play"]').click();
+  await act('suspendBattle');await goHome();await page.reload();await page.waitForFunction(()=>window.App);await page.locator('[data-route="play"]').click();
   assert.equal(await page.evaluate(()=>App.state.current.id),battle.id);assert.equal(await page.evaluate(()=>App.state.current.moves.length),4);
   await act('resignBattle');await act('confirmResign');await act('battleReview');
   await move('d2','d4');await move('d7','d5');
