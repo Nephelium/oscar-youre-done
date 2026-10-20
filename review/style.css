@@ -43,3 +43,56 @@ input[type=number],input[type=datetime-local]{width:100%;min-width:0;border:1.5p
 .move-placeholder{padding:8px;color:var(--muted)}.legacy-demos{margin-top:16px}
 
 .square .piece-review.book,.analysis-badge.book{background:#66899b;color:#fffefb}.piece-review .icon{width:13px;height:13px;stroke-width:2.2}.mark.book{color:#66899b}.mark .icon{width:14px;height:14px;vertical-align:middle}
+
+/* Shared theme colors also cover import previews and legal destinations. */
+.chessboard{border-color:var(--board-edge);box-shadow:0 5px 0 var(--board-edge)}
+.square.last{background:var(--last-light)}.square.dark.last{background:var(--last-dark)}
+.coord{color:var(--coord-light)}.dark .coord{color:var(--coord-dark)}
+.square.legal:after{background:color-mix(in srgb,var(--board-accent) 45%,transparent)}
+.square.legal:has(img):after{border-color:color-mix(in srgb,var(--board-accent) 55%,transparent);background:none}
+.square img{transition:none;filter:none}.square.selected img{transform:none}
+.captured-piece{position:absolute;pointer-events:none;z-index:3}
+.position-preview>div{background:var(--light-square)}.position-preview>div.dark{background:var(--dark-square)}
+.appearance-card{margin-bottom:18px}.appearance-card h2{font-size:20px}.setting-intro{font-size:12px;color:var(--muted);margin-top:6px}
+.setting-label{font-size:13px;margin:22px 0 10px}.piece-choices{display:grid;gap:10px}
+.theme-choice{display:flex;align-items:center;gap:14px;text-align:left;border:2px solid var(--line);border-radius:16px;padding:12px;background:var(--white);min-width:0}
+.theme-choice.active,.board-choice.active{border-color:var(--green);background:#f4f7eb}
+.piece-sample{display:grid;grid-template-columns:repeat(6,1fr);width:220px;max-width:52%;background:linear-gradient(135deg,#f9fafb,#e7ecef);border-radius:10px;padding:3px}
+.piece-sample img{width:100%;aspect-ratio:1}.theme-name{font-size:14px;font-weight:800;flex:1}.theme-name small{display:block;font-size:10px;color:var(--muted);font-weight:400;white-space:nowrap}
+.theme-check{font-size:18px;color:var(--green);width:18px}
+.board-choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.board-choice{border:2px solid var(--line);border-radius:15px;padding:10px;min-width:0;text-align:left;background:var(--white)}
+.board-sample{display:grid;grid-template-columns:repeat(4,1fr);border-radius:7px;overflow:hidden;margin-bottom:9px;border:1px solid #7d857744}
+.board-sample i{background:var(--sample-light);aspect-ratio:1}.board-sample i:nth-child(2),.board-sample i:nth-child(4),.board-sample i:nth-child(5),.board-sample i:nth-child(7){background:var(--sample-dark)}
+.board-sample img{width:100%;height:100%}.board-choice strong{display:block;font-size:13px}.board-choice small{font-size:10px;color:var(--muted);display:block}
+.toggle{width:50px;height:30px;border:2px solid #bdc5b6;border-radius:20px;background:#dce1d5;flex-shrink:0;padding:3px}
+.toggle span{display:block;width:20px;height:20px;border-radius:50%;background:white;box-shadow:0 2px 3px #263e3726}.toggle.on{background:var(--green);border-color:var(--green)}.toggle.on span{transform:translateX(20px)}
+
+/* Fixed slots prevent the graph moving when explanation, buttons or terminal status change. */
+.review-assessment .analysis-heading{height:66px;margin-bottom:8px;overflow:auto}
+.review-assessment .analysis-badge{flex-shrink:0}
+.review-copy{height:7.6em;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-right:5px}
+.review-assessment .analysis-actions{height:48px;margin-top:12px}
+.review-assessment .analysis-actions .button{min-width:0;padding:8px;font-size:12px;white-space:nowrap}
+.compare-slot{height:42px;margin-top:9px}.compare-slot .button{width:100%;min-height:36px}
+.progress-slot{height:25px;margin-top:5px}.progress-slot .analyze-progress{margin:0;height:4px}
+.progress-slot .tiny{font-size:10px}
+.review-assessment .analysis-depth{height:32px;margin:4px 0 0;align-content:center;font-size:10px;overflow:auto}
+.candidates-card{height:226px;overflow:auto}.candidates-card>.row{height:28px;margin-bottom:5px}
+.candidates-card .candidate{height:43px;min-height:43px;margin-top:4px}
+.candidate-moves{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.candidate-score{white-space:nowrap;min-width:42px;text-align:right}
+.board-caption{min-height:38px}.analysis-section{overflow-anchor:none;min-width:0}
+.curve{touch-action:pan-y;cursor:crosshair}
+.curve-tools .probability-label{background:none;font-size:11px}
+.curve-scrub{display:block;width:100%;height:40px;margin:0;appearance:none;background:transparent;touch-action:pan-y;cursor:ew-resize;accent-color:#a9852d}
+.curve-scrub::-webkit-slider-runnable-track{height:5px;background:#e5e9db;border-radius:5px}
+.curve-scrub::-webkit-slider-thumb{appearance:none;width:25px;height:25px;margin-top:-10px;background:#fffdf5;border:3px solid #b59136;border-radius:50%;box-shadow:0 2px 4px #795f2026}
+.curve-readout{height:42px;display:flex;flex-wrap:wrap;align-content:center;justify-content:space-between;gap:2px 8px;font-size:11px;font-variant-numeric:tabular-nums}
+.curve-readout strong{color:var(--green-dark);font-size:11px}.curve-readout span{color:var(--muted)}
+.curve-caption{min-height:30px}
+.page{animation:none}
+.compare-hint{font-size:11px;color:var(--muted);display:flex;align-items:center;height:100%;gap:7px}
+.compare-hint .icon{width:16px;height:16px}
+.progress-slot{height:5px}.progress-slot .tiny{display:none}
+@media(max-width:700px){.board-choices{grid-template-columns:repeat(2,minmax(0,1fr))}.appearance-card{padding:18px}.theme-choice{padding:10px;gap:9px}.piece-sample{max-width:49%}.theme-name{font-size:13px}.theme-check{width:12px}}

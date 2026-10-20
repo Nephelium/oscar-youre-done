@@ -4,6 +4,8 @@
 
 `demo-analysis.js` 由 `tests/prepare-demo-analysis.cjs` 生成。包含 36 个局面的 Stockfish 19 分析。非终局使用深度 20、MultiPV 3、4 线程、256 MiB Hash。分数统一转换为白方视角，终局按规则确定胜负。完整主线和每条候选变化均经过合法走法核验。
 
+1.2.0 重新生成时启用了 `UCI_ShowWDL`。每条候选变化的 `wdl` 为白方胜／和／负千分比，三项之和为 1000。曲线的胜率表示所选一方获胜的概率，和棋单独列出，翻转后交换胜负概率。模型来自 Stockfish 自对弈统计，不根据用户 Elo 预测个人实战结果。旧分析没有 WDL 时，重新分析即可补齐。依据：[Stockfish 官方 WDL 模型说明](https://github.com/official-stockfish/WDL_model)。
+
 来源：[Stockfish 19 官方发行](https://github.com/official-stockfish/Stockfish/releases/tag/sf_19)。生成工具使用 Windows x86-64 官方包，SHA-256：
 
 `3c8bf1f9ea66a09350a40df4f632288285ac206d99f33ab5842c408fc30b48a7`

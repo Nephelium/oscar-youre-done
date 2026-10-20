@@ -12,7 +12,8 @@ lines.on('line',line=>{
  if(line.startsWith('id name '))engineName=line.slice(8);
  if(active&&line.startsWith('info depth ')&&line.includes(' pv ')&&!/ (lowerbound|upperbound)( |$)/.test(line)){
   const d=Number(line.match(/\bdepth (\d+)/)?.[1]),mp=Number(line.match(/\bmultipv (\d+)/)?.[1]||1),score=line.match(/\bscore (cp|mate) (-?\d+)/),pv=line.split(' pv ')[1].trim().split(/\s+/);
-  if(score)latest[mp]={depth:d,cp:score[1]==='cp'?Number(score[2]):null,mate:score[1]==='mate'?Number(score[2]):null,pv};
+  const wdl=line.match(/\bwdl (\d+) (\d+) (\d+)/)?.slice(1).map(Number);
+  if(score)latest[mp]={depth:d,cp:score[1]==='cp'?Number(score[2]):null,mate:score[1]==='mate'?Number(score[2]):null,pv,wdl};
  }
  if(waiter&&line.startsWith(waiter.prefix)){const done=waiter;waiter=null;clearTimeout(done.timer);done.resolve(line);}
 });
@@ -24,14 +25,14 @@ async function main(){
  const record=S.demo(),rows=S.timeline(record);
  const cached=fs.existsSync(checkpoint)?JSON.parse(fs.readFileSync(checkpoint,'utf8')):{engine:'',analysis:{}};
  await command('uci','uciok');if(engineName!=='Stockfish 19')throw Error('Expected Stockfish 19, got '+engineName);
- processEngine.stdin.write('setoption name Threads value 4\nsetoption name Hash value 256\nsetoption name MultiPV value 3\n');
+ processEngine.stdin.write('setoption name Threads value 4\nsetoption name Hash value 256\nsetoption name MultiPV value 3\nsetoption name UCI_ShowWDL value true\n');
  await command('isready','readyok');
  const analysis={};
  for(const [i,row] of rows.entries()){
   const game=S.position(record,i);
   if(game.game_over()){
-   analysis[row.fen]={engine:engineName,budget:0,precomputed:true,lines:[{cp:game.in_checkmate()?(game.turn()==='w'?-100000:100000):0,mate:game.in_checkmate()?0:null,depth:0,terminal:true,pv:[]}]};
-  }else if(cached.engine===engineName&&cached.analysis[row.fen]?.lines.every(l=>l.depth>=depth)){
+   analysis[row.fen]={engine:engineName,budget:0,precomputed:true,lines:[{cp:game.in_checkmate()?(game.turn()==='w'?-100000:100000):0,mate:game.in_checkmate()?0:null,depth:0,terminal:true,pv:[],wdl:game.in_checkmate()?(game.turn()==='w'?[0,0,1000]:[1000,0,0]):[0,1000,0]}]};
+  }else if(cached.engine===engineName&&cached.analysis[row.fen]?.lines.every(l=>l.depth>=depth&&S.validWdl(l.wdl))){
    analysis[row.fen]=cached.analysis[row.fen];
   }else{
    processEngine.stdin.write('ucinewgame\n');await command('isready','readyok');
@@ -40,7 +41,7 @@ async function main(){
    active=false;
    const values=Object.keys(latest).sort((a,b)=>a-b).map(k=>latest[k]),sign=game.turn()==='w'?1:-1;
    if(values.length!==Math.min(3,game.moves().length)||values.some(l=>l.depth<depth))throw Error('Incomplete deep analysis at ply '+i);
-   values.forEach(l=>{if(l.cp!==null)l.cp*=sign;if(l.mate!==null)l.mate*=sign;S.position({...record,initialFen:row.fen,moves:l.pv});});
+   values.forEach(l=>{if(!S.validWdl(l.wdl))throw Error('Missing WDL at ply '+i);if(sign<0)l.wdl.reverse();if(l.cp!==null)l.cp*=sign;if(l.mate!==null)l.mate*=sign;S.position({...record,initialFen:row.fen,moves:l.pv});});
    analysis[row.fen]={engine:engineName,budget:Date.now()-start,precomputed:true,lines:values};
   }
   fs.writeFileSync(checkpoint,JSON.stringify({engine:engineName,depth,analysis},null,2));

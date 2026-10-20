@@ -1,6 +1,6 @@
 # 奥斯卡你完了 · 独立 Android App
 
-版本 1.1.1（4），包名 `com.jingjing.chesssprout`。Android 8.0+，支持 ARM64 与 x86_64。与原开局研习室独立安装和存储，更新保留棋芽原有数据。
+版本 1.2.0（5），包名 `com.jingjing.chesssprout`。Android 8.0+，支持 ARM64 与 x86_64。与原开局研习室独立安装和存储，更新保留棋芽原有数据。
 
 ## 记录与复盘
 
@@ -44,3 +44,5 @@ Set-Location android
 ARM64 使用官方 Stockfish 19。x86_64 使用 F-Droid DroidFish 1.90 中的 Stockfish 16.1 与对应 NNUE。来源、许可、哈希见 `vendor/chess-sprout-sources.json`，设置中提供许可证与对应源码入口。
 
 应用不申请网络、麦克风或全相册读取权限。每次屏幕采集需系统授权。当前为 debug 签名的 Android 测试版。已验证模拟器实际多邻国完整对局与升后练习，物理手机适配仍需实机检查。
+
+1.2.0 adds configurable animated moves, three piece sets, four boards and draggable pawn-value / WDL probability charts. Run tests/review-interaction-smoke.js and tests/review-interaction-android.js for the new checks.

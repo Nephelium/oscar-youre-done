@@ -45,68 +45,76 @@
   "analysis": {
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1": {
       "engine": "Stockfish 19",
-      "budget": 728,
+      "budget": 854,
       "precomputed": true,
       "lines": [
         {
           "depth": 20,
-          "cp": 28,
+          "cp": 30,
           "mate": null,
           "pv": [
-            "d2d4",
-            "d7d5",
-            "c2c4",
-            "e7e6",
+            "e2e4",
+            "e7e5",
             "g1f3",
-            "g8f6",
-            "g2g3",
-            "d5c4",
-            "f1g2",
-            "c7c5",
-            "e1g1",
             "b8c6",
-            "d4c5",
-            "d8d1",
-            "f1d1",
-            "f8c5",
-            "b1d2",
-            "c4c3",
-            "b2c3",
+            "f1b5",
+            "a7a6",
+            "b5a4",
+            "g8f6",
+            "e1g1",
+            "f8e7",
+            "d2d3",
+            "b7b5",
+            "a4b3",
             "e8g8",
-            "d2b3"
+            "b1c3",
+            "d7d6",
+            "a2a4",
+            "b5b4",
+            "c3d5",
+            "c6a5",
+            "d5b4",
+            "a5b3"
+          ],
+          "wdl": [
+            57,
+            937,
+            6
           ]
         },
         {
           "depth": 20,
-          "cp": 24,
+          "cp": 23,
           "mate": null,
           "pv": [
-            "g1f3",
-            "g8f6",
             "d2d4",
-            "e7e6",
+            "g8f6",
             "c2c4",
+            "e7e6",
+            "g1f3",
             "d7d5",
-            "g2g3",
-            "b8c6",
-            "f1g2",
-            "d5c4",
-            "d1a4",
+            "c1g5",
+            "h7h6",
+            "g5f6",
             "f8b4",
-            "c1d2",
-            "f6d5",
-            "d2b4",
-            "d5b4",
-            "e1g1",
-            "a8b8",
             "b1c3",
-            "a7a6",
-            "f3e5",
+            "d8f6",
+            "d1a4",
+            "b8c6",
+            "c4d5",
+            "e6d5",
+            "e2e3",
             "e8g8",
-            "e5c6",
-            "b4c6",
-            "g2c6",
-            "b7c6"
+            "f1e2",
+            "a7a6",
+            "e1g1",
+            "f8d8",
+            "f1c1"
+          ],
+          "wdl": [
+            45,
+            948,
+            7
           ]
         },
         {
@@ -114,7 +122,49 @@
           "cp": 20,
           "mate": null,
           "pv": [
-            "e2e4",
+            "g1f3",
+            "d7d5",
+            "d2d4",
+            "g8f6",
+            "c2c4",
+            "e7e6",
+            "c1g5",
+            "h7h6",
+            "g5f6",
+            "f8b4",
+            "b1c3",
+            "d8f6",
+            "d1a4",
+            "b8c6",
+            "c4d5",
+            "e6d5",
+            "e2e3",
+            "e8g8",
+            "f1e2",
+            "a7a6",
+            "e1g1",
+            "f8d8",
+            "a1c1",
+            "c8e6"
+          ],
+          "wdl": [
+            41,
+            951,
+            8
+          ]
+        }
+      ]
+    },
+    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1": {
+      "engine": "Stockfish 19",
+      "budget": 737,
+      "precomputed": true,
+      "lines": [
+        {
+          "depth": 20,
+          "cp": 13,
+          "mate": null,
+          "pv": [
             "e7e5",
             "g1f3",
             "b8c6",
@@ -135,22 +185,96 @@
             "c3d5",
             "e7d6",
             "e5e1",
-            "c7c6"
+            "c7c6",
+            "d5e3",
+            "d6e7",
+            "e3c4"
+          ],
+          "wdl": [
+            31,
+            958,
+            11
           ]
-        }
-      ]
-    },
-    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1": {
-      "engine": "Stockfish 19",
-      "budget": 1077,
-      "precomputed": true,
-      "lines": [
+        },
         {
           "depth": 20,
           "cp": 23,
           "mate": null,
           "pv": [
+            "c7c5",
+            "g1f3",
+            "b8c6",
+            "d2d4",
+            "c5d4",
+            "f3d4",
+            "g8f6",
+            "b1c3",
             "e7e5",
+            "d4b5",
+            "d7d6",
+            "c1g5",
+            "a7a6",
+            "b5a3",
+            "b7b5",
+            "c3d5",
+            "f8e7",
+            "g5f6",
+            "e7f6",
+            "c2c3",
+            "f6g5",
+            "h2h4",
+            "g5h4"
+          ],
+          "wdl": [
+            45,
+            948,
+            7
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 28,
+          "mate": null,
+          "pv": [
+            "e7e6",
+            "d2d4",
+            "d7d5",
+            "b1c3",
+            "g8f6",
+            "e4e5",
+            "f6d7",
+            "f2f4",
+            "c7c5",
+            "g1f3",
+            "b8c6",
+            "c1e3",
+            "d8b6",
+            "a2a3",
+            "c5d4",
+            "f3d4",
+            "f8c5",
+            "c3b5",
+            "c6d4",
+            "b5d4"
+          ],
+          "wdl": [
+            54,
+            940,
+            6
+          ]
+        }
+      ]
+    },
+    "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2": {
+      "engine": "Stockfish 19",
+      "budget": 870,
+      "precomputed": true,
+      "lines": [
+        {
+          "depth": 20,
+          "cp": 30,
+          "mate": null,
+          "pv": [
             "g1f3",
             "b8c6",
             "f1b5",
@@ -169,6 +293,109 @@
             "e7f6",
             "e5e1",
             "f8e8",
+            "e1e6"
+          ],
+          "wdl": [
+            58,
+            936,
+            6
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 12,
+          "mate": null,
+          "pv": [
+            "b1c3",
+            "g8f6",
+            "g1f3",
+            "b8c6",
+            "f1b5",
+            "f8b4",
+            "e1g1",
+            "e8g8",
+            "f1e1",
+            "f8e8",
+            "a2a3",
+            "b4c3",
+            "d2c3",
+            "h7h6",
+            "a3a4",
+            "a7a6",
+            "b5f1",
+            "d7d6",
+            "f3d2",
+            "c8e6",
+            "d2c4"
+          ],
+          "wdl": [
+            30,
+            959,
+            11
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 5,
+          "mate": null,
+          "pv": [
+            "f1c4",
+            "g8f6",
+            "d2d3",
+            "c7c6",
+            "c4b3",
+            "d7d5",
+            "g1f3",
+            "a7a5",
+            "a2a4",
+            "f8b4",
+            "c2c3",
+            "b4d6",
+            "e4d5",
+            "c6d5",
+            "c1g5",
+            "c8e6",
+            "b1a3",
+            "b8d7",
+            "a3b5",
+            "d6b8",
+            "g5h4"
+          ],
+          "wdl": [
+            22,
+            963,
+            15
+          ]
+        }
+      ]
+    },
+    "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2": {
+      "engine": "Stockfish 19",
+      "budget": 1226,
+      "precomputed": true,
+      "lines": [
+        {
+          "depth": 20,
+          "cp": 19,
+          "mate": null,
+          "pv": [
+            "b8c6",
+            "f1b5",
+            "g8f6",
+            "e1g1",
+            "f6e4",
+            "f1e1",
+            "e4d6",
+            "f3e5",
+            "c6e5",
+            "e1e5",
+            "f8e7",
+            "b5f1",
+            "e8g8",
+            "d2d4",
+            "e7f6",
+            "e5e1",
+            "f8e8",
             "b1c3",
             "e8e1",
             "d1e1",
@@ -176,208 +403,21 @@
             "c1f4",
             "d6e8",
             "c3d5",
-            "c7c6",
-            "d5e7",
-            "g8f8",
-            "e7c8",
-            "d8c8",
-            "e1b4",
-            "c6c5"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 26,
-          "mate": null,
-          "pv": [
-            "c7c5",
-            "g1f3",
-            "b8c6",
-            "f1b5",
-            "e7e6",
-            "e1g1",
-            "g8e7",
-            "f1e1",
-            "a7a6",
-            "b5f1",
-            "d7d5",
-            "e4d5",
-            "e7d5",
-            "d2d4",
-            "d5f6",
-            "c1e3",
-            "c5d4",
-            "f3d4",
-            "c8d7",
-            "d4b3",
-            "d8c7",
-            "c2c4",
-            "f8e7",
-            "b1c3",
-            "e8g8",
-            "h2h3",
-            "h7h6"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 42,
-          "mate": null,
-          "pv": [
             "d7d6",
-            "d2d4",
-            "e7e5",
-            "g1f3",
-            "e5d4",
-            "f3d4",
-            "g8f6",
-            "b1c3",
-            "f8e7",
-            "c1f4",
-            "b8c6",
-            "f1b5",
-            "c8d7",
-            "d4c6",
-            "d7c6",
-            "b5c6",
-            "b7c6",
-            "e1g1"
-          ]
-        }
-      ]
-    },
-    "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2": {
-      "engine": "Stockfish 19",
-      "budget": 1311,
-      "precomputed": true,
-      "lines": [
-        {
-          "depth": 20,
-          "cp": 26,
-          "mate": null,
-          "pv": [
-            "g1f3",
-            "b8c6",
-            "f1c4",
-            "f8c5",
-            "c2c3",
-            "g8f6",
-            "d2d3",
-            "a7a6",
-            "e1g1",
-            "c5a7",
-            "f1e1",
-            "d7d6",
-            "b1d2",
-            "f6g4",
-            "e1e2",
-            "g4f6",
-            "c4b3",
-            "c8g4",
-            "e2e1",
-            "g4h5"
+            "f4g5",
+            "f7f6",
+            "g5h4",
+            "d4e5"
+          ],
+          "wdl": [
+            39,
+            952,
+            9
           ]
         },
         {
           "depth": 20,
-          "cp": 15,
-          "mate": null,
-          "pv": [
-            "f1c4",
-            "g8f6",
-            "d2d3",
-            "c7c6",
-            "g1f3",
-            "d7d5",
-            "c4b3",
-            "a7a5",
-            "a2a4",
-            "f8b4",
-            "c2c3",
-            "b4d6",
-            "e4d5",
-            "f6d5",
-            "b1d2",
-            "e8g8",
-            "e1g1",
-            "d6c7",
-            "d3d4",
-            "e5d4"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 4,
-          "mate": null,
-          "pv": [
-            "b1c3",
-            "b8c6",
-            "g1f3",
-            "g8f6",
-            "f1b5",
-            "c6d4",
-            "f3d4",
-            "e5d4",
-            "e4e5",
-            "d4c3",
-            "e5f6",
-            "d8f6",
-            "d2c3",
-            "f8c5",
-            "d1e2",
-            "f6e6",
-            "e1g1",
-            "e6e2",
-            "b5e2",
-            "d7d5",
-            "c1f4",
-            "c7c6",
-            "f1e1",
-            "e8g8",
-            "e2d3"
-          ]
-        }
-      ]
-    },
-    "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2": {
-      "engine": "Stockfish 19",
-      "budget": 1228,
-      "precomputed": true,
-      "lines": [
-        {
-          "depth": 20,
-          "cp": 31,
-          "mate": null,
-          "pv": [
-            "b8c6",
-            "d2d4",
-            "e5d4",
-            "f3d4",
-            "g8f6",
-            "d4c6",
-            "b7c6",
-            "f1d3",
-            "d7d5",
-            "e4e5",
-            "f6d7",
-            "e1g1",
-            "d7c5",
-            "f2f4",
-            "c5d3",
-            "c2d3",
-            "c8f5",
-            "b1c3",
-            "f8e7",
-            "g2g4",
-            "f5c8",
-            "f4f5",
-            "e8g8",
-            "c1f4"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 33,
+          "cp": 35,
           "mate": null,
           "pv": [
             "g8f6",
@@ -391,57 +431,100 @@
             "b8c6",
             "e1g1",
             "f8e7",
-            "c2c4",
-            "c6b4",
             "f1e1",
-            "b4d3",
-            "d1d3",
-            "c7c6",
-            "c4d5",
-            "c6d5",
-            "d3b5",
-            "d8d7",
-            "b5b3",
-            "e8g8",
-            "f3e5",
-            "d7d8"
+            "c8g4",
+            "c2c4",
+            "e4f6",
+            "b1c3",
+            "g4f3",
+            "d1f3",
+            "c6d4",
+            "f3h3",
+            "d5c4",
+            "d3c4",
+            "d4c2",
+            "e1d1",
+            "d8c8",
+            "h3c8",
+            "a8c8"
+          ],
+          "wdl": [
+            71,
+            924,
+            5
           ]
         },
         {
           "depth": 20,
-          "cp": 66,
+          "cp": 64,
           "mate": null,
           "pv": [
             "d7d6",
             "d2d4",
             "b8d7",
             "c2c4",
-            "g7g6",
-            "b1c3",
             "g8f6",
-            "f1e2",
-            "f8g7",
+            "b1c3",
+            "g7g6",
             "c1e3",
+            "f8g7",
+            "f1e2",
             "e8g8",
             "e1g1",
-            "d8e7",
+            "b7b6",
             "d4e5",
             "d6e5",
-            "c3d5",
-            "f6d5",
-            "c4d5"
+            "d1c2",
+            "c8b7"
+          ],
+          "wdl": [
+            192,
+            807,
+            1
           ]
         }
       ]
     },
     "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3": {
       "engine": "Stockfish 19",
-      "budget": 1254,
+      "budget": 1404,
       "precomputed": true,
       "lines": [
         {
           "depth": 20,
-          "cp": 27,
+          "cp": 19,
+          "mate": null,
+          "pv": [
+            "f1c4",
+            "f8c5",
+            "c2c3",
+            "g8f6",
+            "d2d3",
+            "d7d6",
+            "b1d2",
+            "e8g8",
+            "e1g1",
+            "a7a6",
+            "a2a4",
+            "c5a7",
+            "f1e1",
+            "h7h6",
+            "h2h3",
+            "c8e6",
+            "c4e6",
+            "f7e6",
+            "b2b4",
+            "f6h5"
+          ],
+          "wdl": [
+            38,
+            953,
+            9
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 17,
           "mate": null,
           "pv": [
             "f1b5",
@@ -456,13 +539,83 @@
             "c6e5",
             "e1e5",
             "e8g8",
-            "d2d4",
-            "e7f6",
+            "b1c3",
+            "d6e8",
+            "c3d5",
+            "e7d6",
             "e5e1",
-            "d6f5",
+            "c7c6",
+            "d5e3"
+          ],
+          "wdl": [
+            35,
+            956,
+            9
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 7,
+          "mate": null,
+          "pv": [
+            "b1c3",
+            "g8f6",
+            "h2h3",
+            "f8b4",
+            "f1d3",
+            "e8g8",
+            "e1g1",
+            "b4c3",
+            "b2c3",
+            "f8e8",
+            "c3c4",
+            "d7d6",
+            "a2a4"
+          ],
+          "wdl": [
+            24,
+            962,
+            14
+          ]
+        }
+      ]
+    },
+    "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3": {
+      "engine": "Stockfish 19",
+      "budget": 737,
+      "precomputed": true,
+      "lines": [
+        {
+          "depth": 20,
+          "cp": 19,
+          "mate": null,
+          "pv": [
+            "g8f6",
+            "d2d3",
+            "f8c5",
+            "e1g1",
+            "e8g8",
             "c2c3",
-            "d7d5",
-            "c1h6"
+            "d7d6",
+            "b1d2",
+            "a7a6",
+            "a2a4",
+            "c5a7",
+            "h2h3",
+            "c8e6",
+            "f1e1",
+            "d8d7",
+            "b2b4",
+            "h7h6",
+            "c4e6",
+            "d7e6",
+            "d2f1",
+            "f8e8"
+          ],
+          "wdl": [
+            39,
+            952,
+            9
           ]
         },
         {
@@ -470,118 +623,40 @@
           "cp": 19,
           "mate": null,
           "pv": [
-            "f1c4",
-            "f8c5",
-            "c2c3",
-            "g8f6",
-            "d2d4",
-            "e5d4",
-            "c3d4",
-            "c5b4",
-            "c1d2",
-            "d7d5",
-            "e4d5",
-            "f6d5",
-            "e1g1",
-            "e8g8",
-            "d1b3",
-            "c8e6",
-            "d2b4",
-            "c6b4"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 6,
-          "mate": null,
-          "pv": [
-            "b1c3",
-            "g8f6",
-            "f1b5",
-            "c6d4",
-            "f3d4",
-            "e5d4",
-            "e4e5",
-            "d4c3",
-            "e5f6",
-            "d8f6",
-            "d2c3",
-            "f8c5",
-            "d1e2",
-            "f6e6",
-            "e1g1",
-            "e6e2",
-            "b5e2",
-            "a7a5",
-            "e2d3",
-            "e8g8",
-            "c1f4",
-            "d7d6",
-            "f1e1",
-            "c8e6",
-            "a2a4",
-            "a8e8",
-            "h2h4"
-          ]
-        }
-      ]
-    },
-    "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3": {
-      "engine": "Stockfish 19",
-      "budget": 1028,
-      "precomputed": true,
-      "lines": [
-        {
-          "depth": 20,
-          "cp": 18,
-          "mate": null,
-          "pv": [
             "f8c5",
             "d2d3",
             "g8f6",
+            "e1g1",
+            "e8g8",
             "c2c3",
             "d7d6",
-            "e1g1",
-            "a7a6",
-            "f1e1",
-            "h7h6",
-            "c4b3",
-            "c8e6",
-            "b3a4",
-            "b7b5",
-            "a4c2",
-            "c5b6",
-            "h2h3",
-            "e8g8",
-            "d3d4"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 20,
-          "mate": null,
-          "pv": [
-            "g8f6",
-            "d2d3",
-            "f8c5",
-            "c2c3",
-            "d7d6",
-            "e1g1",
-            "a7a6",
-            "f1e1",
-            "e8g8",
-            "c4b3",
-            "h7h6",
-            "h2h3",
-            "c5a7",
             "b1d2",
+            "a7a6",
+            "a2a4",
+            "c5a7",
+            "h2h3",
             "c8e6",
-            "b3a4"
+            "f1e1",
+            "d8d7",
+            "b2b4",
+            "h7h6",
+            "c4e6",
+            "d7e6",
+            "d2f1",
+            "f8e8",
+            "f1g3",
+            "d6d5",
+            "e4d5"
+          ],
+          "wdl": [
+            39,
+            952,
+            9
           ]
         },
         {
           "depth": 20,
-          "cp": 38,
+          "cp": 46,
           "mate": null,
           "pv": [
             "f8e7",
@@ -594,82 +669,67 @@
             "d1d8",
             "e7d8",
             "b1c3",
-            "a7a5",
-            "a2a4",
-            "f6d7",
-            "f2f4",
-            "d8e7",
+            "h7h5",
+            "f2f3",
+            "h5h4",
             "c1e3",
-            "e7c5",
-            "e3c5",
-            "d7c5",
-            "b2b3",
+            "d8e7",
+            "a2a4",
+            "a7a5",
+            "e3f4",
+            "e7d6",
+            "e4e5",
+            "f6h5",
+            "e5d6",
+            "h5f4",
+            "d6c7",
             "c8e6"
+          ],
+          "wdl": [
+            103,
+            894,
+            3
           ]
         }
       ]
     },
     "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4": {
       "engine": "Stockfish 19",
-      "budget": 711,
+      "budget": 821,
       "precomputed": true,
       "lines": [
-        {
-          "depth": 20,
-          "cp": 23,
-          "mate": null,
-          "pv": [
-            "d2d3",
-            "g8f6",
-            "c2c3",
-            "a7a5",
-            "e1g1",
-            "d7d6",
-            "b1d2",
-            "e8g8",
-            "f1e1",
-            "h7h6",
-            "d2f1",
-            "c8e6",
-            "c4b5",
-            "c6e7",
-            "h2h3",
-            "e7g6",
-            "b5a4",
-            "c5b6",
-            "f1g3"
-          ]
-        },
         {
           "depth": 20,
           "cp": 22,
           "mate": null,
           "pv": [
-            "c2c3",
-            "g8f6",
             "d2d3",
-            "a7a5",
+            "g8f6",
             "e1g1",
             "d7d6",
+            "c2c3",
+            "a7a5",
             "f1e1",
-            "h7h6",
-            "b1d2",
             "e8g8",
-            "d2f1",
-            "c5b6",
             "h2h3",
-            "c6e7",
-            "c4b3",
-            "c7c5",
-            "f1g3",
-            "e7g6",
-            "c3c4",
-            "f6h7"
+            "c8d7",
+            "d3d4",
+            "c5a7",
+            "b1a3",
+            "h7h6",
+            "a3b5",
+            "a7b6",
+            "c4d3"
+          ],
+          "wdl": [
+            43,
+            949,
+            8
           ]
         },
         {
           "depth": 20,
-          "cp": 20,
+          "cp": 18,
           "mate": null,
           "pv": [
             "e1g1",
@@ -677,35 +737,85 @@
             "d2d3",
             "d7d6",
             "c2c3",
-            "a7a5",
+            "e8g8",
             "f1e1",
-            "c5b6",
-            "c4b3",
+            "a7a5",
+            "h2h3",
             "h7h6",
             "b1d2",
+            "c8e6",
+            "c4b5",
+            "f6d7",
+            "d2c4",
+            "d7b6",
+            "c4b6",
+            "c5b6",
+            "d3d4",
+            "e6d7",
+            "b5a4",
+            "f8e8",
+            "a4c2",
+            "d8f6",
+            "c1e3",
+            "e5d4",
+            "c3d4",
+            "c6b4",
+            "c2b1"
+          ],
+          "wdl": [
+            37,
+            954,
+            9
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 15,
+          "mate": null,
+          "pv": [
+            "c2c3",
+            "g8f6",
+            "d2d3",
+            "a7a5",
+            "e1g1",
+            "d7d6",
+            "f1e1",
             "e8g8",
             "h2h3",
+            "h7h6",
+            "b1d2",
             "c8e6",
-            "b3c2",
-            "f8e8",
-            "c2a4",
-            "e6d7",
+            "c4b5",
+            "f6d7",
             "d2c4",
-            "b6a7",
-            "a4c6",
-            "b7c6"
+            "c6a7",
+            "b5d7",
+            "d8d7",
+            "c4a5",
+            "f7f5",
+            "a5b3",
+            "a7c6",
+            "b3c5",
+            "d6c5",
+            "e4f5",
+            "f8f5"
+          ],
+          "wdl": [
+            33,
+            957,
+            10
           ]
         }
       ]
     },
     "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/2P2N2/PP1P1PPP/RNBQK2R b KQkq - 0 4": {
       "engine": "Stockfish 19",
-      "budget": 1346,
+      "budget": 1236,
       "precomputed": true,
       "lines": [
         {
           "depth": 20,
-          "cp": 22,
+          "cp": 15,
           "mate": null,
           "pv": [
             "g8f6",
@@ -718,56 +828,28 @@
             "f1e1",
             "c5a7",
             "h2h3",
-            "h7h6",
-            "b1d2",
-            "c8e6",
-            "b2b4",
             "c6e7",
             "d3d4",
-            "e6c4",
-            "d2c4",
             "e7g6",
-            "d4e5",
-            "d6e5",
-            "d1c2",
+            "c1e3",
+            "e5d4",
+            "e3d4",
+            "a7d4",
+            "d1d4",
+            "c7c5",
+            "d4e3",
             "f8e8",
-            "e1d1",
-            "d8e7"
+            "b1d2"
+          ],
+          "wdl": [
+            33,
+            957,
+            10
           ]
         },
         {
           "depth": 20,
-          "cp": 46,
-          "mate": null,
-          "pv": [
-            "d7d6",
-            "d2d4",
-            "e5d4",
-            "c3d4",
-            "c5b6",
-            "h2h3",
-            "g8f6",
-            "e1g1",
-            "f6e4",
-            "f1e1",
-            "e8g8",
-            "e1e4",
-            "d6d5",
-            "c4d5",
-            "d8d5",
-            "b1c3",
-            "d5d8",
-            "d4d5",
-            "c6e7",
-            "d1b3",
-            "c8f5",
-            "e4e1",
-            "e7g6"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 47,
+          "cp": 56,
           "mate": null,
           "pv": [
             "c5b6",
@@ -775,49 +857,197 @@
             "e5d4",
             "c3d4",
             "d7d6",
-            "h2h3",
-            "g8f6",
-            "e1g1",
-            "f6e4",
-            "f1e1",
-            "e8g8",
-            "e1e4",
-            "d6d5",
-            "c4d5",
-            "d8d5",
+            "c4b5",
+            "c8d7",
             "b1c3",
-            "d5d8",
-            "d4d5",
-            "c6e7",
-            "d1b3",
-            "c8f5",
-            "e4e1",
+            "g8e7",
+            "e1g1",
+            "e8g8",
+            "h2h3",
             "h7h6",
-            "c1f4",
-            "e7c8",
-            "c3a4",
-            "c8d6",
-            "e1e2",
-            "f8e8",
-            "e2e8",
-            "d6e8",
-            "a1e1",
-            "e8f6"
+            "c1e3",
+            "f7f5",
+            "d4d5",
+            "c6e5",
+            "f3e5",
+            "d6e5",
+            "d1b3",
+            "g8h8",
+            "e3b6"
+          ],
+          "wdl": [
+            147,
+            851,
+            2
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 56,
+          "mate": null,
+          "pv": [
+            "d7d6",
+            "d2d4",
+            "e5d4",
+            "c3d4",
+            "c5b6",
+            "c4b5",
+            "c8d7",
+            "b1c3",
+            "g8e7",
+            "e1g1",
+            "e8g8",
+            "h2h3",
+            "h7h6",
+            "c1e3",
+            "f7f5",
+            "d4d5",
+            "c6e5",
+            "f3e5",
+            "d6e5",
+            "e3b6"
+          ],
+          "wdl": [
+            147,
+            851,
+            2
           ]
         }
       ]
     },
     "r1bqk1nr/ppp2ppp/2np4/2b1p3/2B1P3/2P2N2/PP1P1PPP/RNBQK2R w KQkq - 0 5": {
       "engine": "Stockfish 19",
-      "budget": 1149,
+      "budget": 1048,
       "precomputed": true,
       "lines": [
         {
           "depth": 20,
-          "cp": 49,
+          "cp": 50,
           "mate": null,
           "pv": [
             "d2d4",
+            "e5d4",
+            "c3d4",
+            "c5b6",
+            "e1g1",
+            "g8f6",
+            "h2h3",
+            "f6e4",
+            "f1e1",
+            "e8g8",
+            "e1e4",
+            "d6d5",
+            "c4d5",
+            "d8d5",
+            "b1c3",
+            "d5d8",
+            "d4d5",
+            "c6e7",
+            "a2a4",
+            "a7a5",
+            "c1g5",
+            "f7f6",
+            "d5d6",
+            "c7d6",
+            "g5e3",
+            "b6e3",
+            "d1b3",
+            "d6d5",
+            "e4e3",
+            "a8a6",
+            "a1e1",
+            "e7f5"
+          ],
+          "wdl": [
+            119,
+            878,
+            3
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 30,
+          "mate": null,
+          "pv": [
+            "a2a4",
+            "c5b6",
+            "d2d4",
+            "e5d4",
+            "c3d4",
+            "c8g4",
+            "b1d2",
+            "g8f6",
+            "d4d5",
+            "c6e5",
+            "a4a5",
+            "b6c5",
+            "c4e2",
+            "e5f3",
+            "g2f3",
+            "g4d7",
+            "h2h4",
+            "a7a6",
+            "d2b3",
+            "c5a7",
+            "c1e3",
+            "a7e3",
+            "f2e3"
+          ],
+          "wdl": [
+            58,
+            936,
+            6
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 24,
+          "mate": null,
+          "pv": [
+            "b2b4",
+            "c5b6",
+            "a2a4",
+            "a7a6",
+            "e1g1",
+            "g8f6",
+            "d2d3",
+            "h7h6",
+            "b1d2",
+            "e8g8",
+            "f1e1",
+            "c8e6",
+            "h2h3",
+            "f8e8",
+            "c4e6",
+            "e8e6",
+            "d2f1",
+            "d6d5",
+            "e4d5",
+            "d8d5",
+            "c3c4",
+            "d5d8",
+            "c4c5",
+            "b6a7",
+            "b4b5"
+          ],
+          "wdl": [
+            46,
+            947,
+            7
+          ]
+        }
+      ]
+    },
+    "r1bqk1nr/ppp2ppp/2np4/2b1p3/2BPP3/2P2N2/PP3PPP/RNBQK2R b KQkq d3 0 5": {
+      "engine": "Stockfish 19",
+      "budget": 4012,
+      "precomputed": true,
+      "lines": [
+        {
+          "depth": 20,
+          "cp": 54,
+          "mate": null,
+          "pv": [
             "e5d4",
             "c3d4",
             "c5b6",
@@ -828,181 +1058,104 @@
             "h2h3",
             "e8g8",
             "e1g1",
-            "h7h6",
-            "f1e1",
             "f7f5",
             "e4e5",
-            "d6e5",
-            "d1b3",
-            "g8h8",
-            "d4e5",
-            "d7e8"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 30,
-          "mate": null,
-          "pv": [
-            "a2a4",
-            "c5b6",
-            "b2b4",
-            "a7a6",
-            "e1g1",
-            "g8f6",
-            "d2d3",
-            "h7h6",
-            "b1d2",
-            "e8g8",
-            "f1e1",
-            "c8e6",
-            "c4e6",
-            "f7e6",
-            "h2h3",
-            "d8e8",
-            "a1a2",
-            "f6h5",
-            "d2f1",
-            "h5f4",
-            "a4a5",
-            "b6a7",
-            "f1h2",
-            "e8g6",
-            "h2g4",
-            "g6e8"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 30,
-          "mate": null,
-          "pv": [
-            "b2b4",
-            "c5b6",
-            "a2a4",
-            "a7a6",
-            "e1g1",
-            "g8f6",
-            "d2d3",
-            "h7h6",
-            "f1e1",
-            "e8g8",
-            "b1d2",
-            "f8e8",
-            "d2f1",
-            "c8e6",
-            "c4e6",
-            "e8e6",
-            "d1c2",
-            "d8d7",
-            "f1g3",
-            "d6d5",
-            "e4d5",
-            "f6d5",
-            "c1d2",
-            "d5f4",
-            "d2f4",
-            "e5f4"
-          ]
-        }
-      ]
-    },
-    "r1bqk1nr/ppp2ppp/2np4/2b1p3/2BPP3/2P2N2/PP3PPP/RNBQK2R b KQkq d3 0 5": {
-      "engine": "Stockfish 19",
-      "budget": 3134,
-      "precomputed": true,
-      "lines": [
-        {
-          "depth": 20,
-          "cp": 53,
-          "mate": null,
-          "pv": [
-            "e5d4",
-            "c3d4",
-            "c5b6",
-            "e1g1",
-            "g8f6",
-            "h2h3",
-            "e8g8",
-            "f1e1",
-            "f6e4",
-            "e1e4",
-            "d6d5",
-            "c4d5",
-            "d8d5",
-            "b1c3",
-            "d5d8",
+            "f5f4",
+            "e5e6",
+            "d7e8",
             "d4d5",
-            "c6e7",
+            "c6e5",
+            "b5e8",
+            "e5f3",
+            "d1f3",
+            "d8e8",
+            "f1d1",
+            "e7g6",
             "a2a4",
-            "b6c5",
-            "a4a5",
-            "h7h6"
+            "a7a5"
+          ],
+          "wdl": [
+            138,
+            860,
+            2
           ]
         },
         {
           "depth": 20,
-          "cp": 56,
+          "cp": 65,
           "mate": null,
           "pv": [
             "c5b6",
             "d4e5",
-            "c8g4",
+            "d8e7",
             "e5d6",
-            "g8f6",
-            "h2h3",
-            "g4f3",
-            "g2f3",
-            "e8g8",
-            "b1a3",
-            "c6e5",
-            "c4b3",
+            "e7e4",
+            "c4e2",
+            "e4g6",
+            "e1g1",
+            "g6d6",
+            "d1d6",
             "c7d6",
-            "d1e2",
+            "b1a3",
             "d6d5",
-            "f3f4",
-            "e5g6",
-            "e4e5",
-            "f6e4",
-            "a3b5"
+            "a3b5",
+            "g8f6",
+            "c1f4",
+            "e8g8",
+            "b5c7",
+            "b6c7",
+            "f4c7",
+            "c8g4"
+          ],
+          "wdl": [
+            201,
+            798,
+            1
           ]
         },
         {
           "depth": 20,
-          "cp": 636,
+          "cp": 630,
           "mate": null,
           "pv": [
             "c6d4",
             "c3d4",
             "e5d4",
-            "f3d4",
-            "g8f6",
             "e1g1",
+            "g8f6",
+            "f3d4",
             "e8g8",
             "b1c3",
             "f8e8",
             "c1e3",
-            "c8g4",
-            "d1b3",
-            "g4h5",
+            "c7c6",
+            "h2h3",
+            "h7h6",
+            "d1f3",
+            "c5b4",
+            "c4b3",
+            "b4c3",
+            "b2c3",
+            "c6c5",
             "d4f5",
-            "c5e3",
-            "f2e3",
-            "a8b8",
-            "b3c2",
-            "b7b5"
+            "c8f5"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         }
       ]
     },
     "r1bqk2r/ppp2ppp/2np1n2/2b1p3/2BPP3/2P2N2/PP3PPP/RNBQK2R w KQkq - 1 6": {
       "engine": "Stockfish 19",
-      "budget": 9317,
+      "budget": 4549,
       "precomputed": true,
       "lines": [
         {
           "depth": 20,
-          "cp": 678,
+          "cp": 659,
           "mate": null,
           "pv": [
             "d4c5",
@@ -1013,22 +1166,29 @@
             "c8e6",
             "d5e4",
             "h7h6",
-            "c5d6",
-            "c7d6",
             "e1g1",
             "h8f8",
             "c1e3",
             "d8d7",
             "c3c4",
+            "f7g8",
+            "b1c3",
             "e6f5",
             "e4h4",
-            "f7g8",
-            "h2h3"
+            "f5e6",
+            "f3d2",
+            "d6c5",
+            "f1c1"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 122,
+          "cp": 166,
           "mate": null,
           "pv": [
             "f3g5",
@@ -1045,62 +1205,68 @@
             "f6e4",
             "c4g8",
             "e4f2",
-            "b2b4",
-            "c5b6",
             "g8h7",
             "c8e6",
-            "a2a4",
-            "a7a5",
+            "f1f2",
+            "e8d7",
             "h8g6",
             "e5g4",
-            "g6f4",
-            "f2e4",
-            "g1h1",
-            "e4f2",
-            "f1f2",
-            "g4f2",
-            "h1g1",
-            "f2g4",
-            "g1f1"
+            "g1f1",
+            "c5f2",
+            "b1d2",
+            "f2b6",
+            "d2f3",
+            "g4f6"
+          ],
+          "wdl": [
+            933,
+            67,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 48,
+          "cp": 56,
           "mate": null,
           "pv": [
             "d1b3",
             "e5d4",
-            "c4f7",
-            "e8f8",
             "c3d4",
             "c6d4",
             "f3d4",
             "c5d4",
-            "e1g1",
-            "f6e4",
-            "f7h5",
-            "d8f6",
-            "c1e3",
-            "g7g6",
-            "e3d4",
-            "f6d4",
-            "h5f3",
-            "e4c5",
-            "b3a3",
-            "d6d5"
+            "c4f7",
+            "e8f8",
+            "b1d2",
+            "a7a5",
+            "f7c4",
+            "d6d5",
+            "e4d5",
+            "d8e7",
+            "e1f1",
+            "a5a4",
+            "b3d3",
+            "d4b6",
+            "h2h3",
+            "h7h6",
+            "d2f3"
+          ],
+          "wdl": [
+            147,
+            851,
+            2
           ]
         }
       ]
     },
     "r1bqk2r/ppp2ppp/2np1n2/2P1p3/2B1P3/2P2N2/PP3PPP/RNBQK2R b KQkq - 0 6": {
       "engine": "Stockfish 19",
-      "budget": 15601,
+      "budget": 7476,
       "precomputed": true,
       "lines": [
         {
           "depth": 20,
-          "cp": 673,
+          "cp": 643,
           "mate": null,
           "pv": [
             "f6e4",
@@ -1112,93 +1278,126 @@
             "h7h6",
             "e1g1",
             "h8f8",
-            "c1e3",
-            "d8d7",
             "c5d6",
             "c7d6",
             "c3c4",
             "f7g8",
             "b1c3",
+            "d8d7",
+            "c1e3",
             "e6f5",
             "e4h4",
             "f8f6",
-            "a2a4"
+            "f3d2",
+            "d7e6"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 700,
+          "cp": 712,
+          "mate": null,
+          "pv": [
+            "c8e6",
+            "c4e6",
+            "f7e6",
+            "d1e2",
+            "d6d5",
+            "e1g1",
+            "d5e4",
+            "f3d2",
+            "d8d5",
+            "b1a3",
+            "d5c5",
+            "d2b3",
+            "c5d5",
+            "f1e1",
+            "e8c8",
+            "h2h3",
+            "d5d3",
+            "c1e3",
+            "d3e2",
+            "e1e2"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 721,
           "mate": null,
           "pv": [
             "h7h6",
-            "d1c2",
-            "d6c5",
             "e1g1",
-            "d8e7",
-            "f1d1",
             "e8g8",
-            "h2h3",
-            "b7b6",
-            "b2b3",
-            "f6h5"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 713,
-          "mate": null,
-          "pv": [
-            "e8g8",
-            "b1d2",
-            "d6c5",
-            "e1g1",
-            "d8e7",
             "f1e1",
-            "f8d8",
-            "g2g3",
-            "f6h5",
-            "c4f1",
-            "e7f6",
-            "f1g2",
-            "c8e6"
+            "c8g4",
+            "b1d2",
+            "f8e8",
+            "c5d6",
+            "c7d6",
+            "c4b3",
+            "d8d7",
+            "d2f1",
+            "d6d5",
+            "b3d5",
+            "f6d5"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         }
       ]
     },
     "r2qk2r/ppp2ppp/2np1n2/2P1p3/2B1P1b1/2P2N2/PP3PPP/RNBQK2R w KQkq - 1 7": {
       "engine": "Stockfish 19",
-      "budget": 1818,
+      "budget": 2433,
       "precomputed": true,
       "lines": [
         {
           "depth": 20,
-          "cp": 734,
+          "cp": 714,
           "mate": null,
           "pv": [
             "c5d6",
-            "f6e4",
-            "c4f7",
-            "e8f7",
-            "d1d5",
-            "g4e6",
-            "d5e4",
-            "h7h6",
-            "f3e5",
-            "c6e5",
-            "e4e5",
-            "h8e8",
-            "c1e3",
             "c7d6",
-            "e5d4",
-            "f7g8",
-            "e1g1",
-            "e6f7",
-            "b2b3"
+            "c1g5",
+            "d6d5",
+            "c4d5",
+            "f6d5",
+            "g5d8",
+            "d5f4",
+            "d8g5",
+            "f4g2",
+            "e1f1",
+            "g4h3",
+            "f1e2",
+            "h7h6",
+            "g5e3",
+            "f7f5",
+            "d1d6",
+            "g2e3",
+            "d6g6",
+            "e8f8"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 685,
+          "cp": 683,
           "mate": null,
           "pv": [
             "h2h3",
@@ -1211,12 +1410,23 @@
             "e8c8",
             "b1d2",
             "d8d6",
+            "d1e2",
+            "c6a5",
             "g2g4",
             "h5g6",
-            "d1e2",
+            "e2e3",
             "h6h5",
-            "e1c1",
-            "c6a5"
+            "g4g5",
+            "d6d2",
+            "g5f6",
+            "a5c4",
+            "f3d2",
+            "c4e3"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
@@ -1228,751 +1438,261 @@
             "d6c5",
             "h2h3",
             "g4d7",
+            "f3g5",
+            "h8f8",
             "d1e2",
             "d8e7",
-            "d2b3",
-            "h7h6",
-            "f3d2",
-            "e8c8",
-            "a2a4",
-            "g7g5",
-            "d2f1",
-            "g5g4",
-            "f1g3",
-            "g4h3",
-            "g2h3"
+            "d2b3"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         }
       ]
     },
     "r2qk2r/ppp2ppp/2np1n2/2P1p3/2B1P1b1/2P2N1P/PP3PP1/RNBQK2R b KQkq - 0 7": {
       "engine": "Stockfish 19",
-      "budget": 1453,
+      "budget": 1962,
       "precomputed": true,
       "lines": [
         {
           "depth": 20,
-          "cp": 691,
+          "cp": 672,
           "mate": null,
           "pv": [
             "g4h5",
-            "c1g5",
-            "d6c5",
-            "d1d8",
-            "a8d8",
+            "d1e2",
+            "h7h6",
             "b1d2",
+            "d6d5",
+            "e4d5",
+            "f6d5",
+            "d2e4",
+            "e8g8",
+            "e1g1",
+            "d5f4",
+            "c1f4",
+            "e5f4",
+            "e4d2",
+            "f8e8",
+            "e2d3",
+            "d8d3",
+            "c4d3",
             "h5f3",
-            "d2f3",
-            "d8d6",
-            "g5f6",
-            "d6f6",
-            "f3h2",
-            "f6d6",
-            "h2f1",
-            "d6g6"
+            "d2f3"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 694,
+          "cp": 690,
           "mate": null,
           "pv": [
             "g4e6",
             "c4e6",
             "f7e6",
+            "c5d6",
+            "c7d6",
             "b1d2",
-            "e8g8",
-            "e1g1",
-            "d8e8",
-            "b2b4",
             "d6d5",
-            "f1e1",
-            "c6e7",
-            "c3c4",
+            "e1g1",
             "d5e4",
-            "d2e4",
-            "f6e4",
-            "e1e4"
+            "f3g5",
+            "e4e3",
+            "f2e3",
+            "d8d3",
+            "d1e1",
+            "e8g8"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 737,
+          "cp": 743,
           "mate": null,
           "pv": [
-            "g4c8",
-            "c1g5",
-            "h7h6",
-            "g5f6",
-            "d8f6",
+            "g4d7",
             "c5d6",
-            "f6d6",
-            "b1d2",
-            "c8e6",
-            "c4e2",
-            "g7g5",
-            "b2b4",
-            "h6h5",
-            "b4b5",
-            "c6e7",
-            "d1a4",
-            "e7g6"
+            "f6e4",
+            "c4f7",
+            "e8f7",
+            "d1d5",
+            "d7e6",
+            "d5e4",
+            "d8d6",
+            "f3g5",
+            "f7e7",
+            "g5e6",
+            "d6e6",
+            "b1a3",
+            "e6g6",
+            "e4g4",
+            "g6g4",
+            "h3g4",
+            "e5e4",
+            "g4g5"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         }
       ]
     },
     "r2q1rk1/ppp2ppp/2np1n2/2P1p3/2B1P1b1/2P2N1P/PP3PP1/RNBQK2R w KQ - 1 8": {
       "engine": "Stockfish 19",
-      "budget": 3778,
+      "budget": 2472,
       "precomputed": true,
       "lines": [
         {
           "depth": 20,
-          "cp": 912,
+          "cp": 915,
           "mate": null,
           "pv": [
             "h3g4",
             "f6e4",
-            "c5d6",
-            "e4d6",
+            "c1e3",
+            "e4c5",
             "c4e2",
             "e5e4",
             "f3d4",
             "c6e5",
-            "b2b4",
-            "f8e8",
-            "c1f4",
-            "g7g5"
+            "d4f5",
+            "c5d3",
+            "e2d3",
+            "e5d3",
+            "e1f1",
+            "d8f6",
+            "h1h3",
+            "d3b2",
+            "d1c2",
+            "b2c4"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 719,
+          "cp": 703,
+          "mate": null,
+          "pv": [
+            "c5d6",
+            "g4e6",
+            "c4d3",
+            "c7d6",
+            "e1g1",
+            "d6d5",
+            "e4d5",
+            "d8d5",
+            "d3c2",
+            "h7h6",
+            "f3h2",
+            "a8d8",
+            "d1e2",
+            "e5e4"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 702,
           "mate": null,
           "pv": [
             "c1g5",
             "g4e6",
             "b1d2",
             "d6d5",
+            "c4d5",
+            "e6d5",
             "g5f6",
             "g7f6",
             "e4d5",
-            "e6d5",
-            "f3h4",
-            "e5e4",
-            "d1g4",
-            "g8h8"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 698,
-          "mate": null,
-          "pv": [
-            "e1g1",
-            "g4e6",
-            "c4d5",
-            "c6e7",
-            "d5e6",
-            "f7e6",
-            "f1e1",
-            "e7g6",
-            "c3c4",
-            "f6h5",
-            "b1c3",
-            "g6h4",
-            "f3h4",
-            "d8h4",
-            "c1e3",
-            "h5f4",
-            "d1g4",
-            "h4g4",
-            "h3g4",
-            "d6c5",
-            "e3c5",
-            "f4d3"
+            "d8d5",
+            "d2b3",
+            "f8d8"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         }
       ]
     },
     "r2q1rk1/ppp2ppp/2np1n2/2P1p3/2B1P1P1/2P2N2/PP3PP1/RNBQK2R b KQ - 0 8": {
       "engine": "Stockfish 19",
-      "budget": 4653,
+      "budget": 3877,
       "precomputed": true,
       "lines": [
-        {
-          "depth": 20,
-          "cp": 895,
-          "mate": null,
-          "pv": [
-            "f6e4",
-            "d1c2",
-            "d6d5",
-            "c4b3",
-            "h7h6",
-            "c1e3",
-            "c6a5",
-            "f3h4",
-            "a5c4",
-            "c2e2",
-            "c4e3",
-            "e2e3",
-            "d5d4",
-            "e3e4",
-            "d8g5"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 960,
-          "mate": null,
-          "pv": [
-            "d6d5",
-            "e4d5",
-            "c6a5",
-            "b2b3",
-            "a5c4",
-            "b3c4",
-            "f6g4",
-            "f3g5",
-            "g4f2",
-            "e1f2",
-            "h7h6",
-            "h1h3",
-            "d8f6",
-            "g5f3",
-            "e5e4",
-            "f2g1",
-            "e4f3"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 977,
-          "mate": null,
-          "pv": [
-            "d8d7",
-            "f3d2",
-            "d7g4",
-            "d1g4",
-            "f6g4",
-            "c4e2",
-            "f7f5",
-            "h1h3",
-            "d6c5",
-            "d2f1",
-            "c6d4",
-            "c3d4",
-            "g4f2",
-            "e2c4",
-            "g8h8"
-          ]
-        }
-      ]
-    },
-    "r4rk1/pppq1ppp/2np1n2/2P1p3/2B1P1P1/2P2N2/PP3PP1/RNBQK2R w KQ - 1 9": {
-      "engine": "Stockfish 19",
-      "budget": 3951,
-      "precomputed": true,
-      "lines": [
-        {
-          "depth": 20,
-          "cp": 1002,
-          "mate": null,
-          "pv": [
-            "g4g5",
-            "f6e4",
-            "c4d3",
-            "g7g6",
-            "d3e4",
-            "d7g4",
-            "d1e2",
-            "d6d5",
-            "h1h4",
-            "g4g2",
-            "e4d5",
-            "c6e7",
-            "d5e4",
-            "f7f5",
-            "g5f6",
-            "f8f6",
-            "h4h2",
-            "g2g4",
-            "e2c4",
-            "g8h8"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 960,
-          "mate": null,
-          "pv": [
-            "f3d2",
-            "d7g4",
-            "d1g4",
-            "f6g4",
-            "c4e2",
-            "g4f6",
-            "b2b4",
-            "d6c5",
-            "b4b5",
-            "c6e7",
-            "a2a4",
-            "a8d8",
-            "c1a3"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 937,
-          "mate": null,
-          "pv": [
-            "f3h4",
-            "d7g4",
-            "d1g4",
-            "f6g4",
-            "h4f5",
-            "g4f6",
-            "h1h4",
-            "f8d8",
-            "c4e2",
-            "d6c5",
-            "b1a3",
-            "h7h5",
-            "e2f3",
-            "f6g4",
-            "c1g5"
-          ]
-        }
-      ]
-    },
-    "r4rk1/pppq1ppp/2np1n2/2P1p3/4P1P1/2P2N2/PP2BPP1/RNBQK2R b KQ - 2 9": {
-      "engine": "Stockfish 19",
-      "budget": 5407,
-      "precomputed": true,
-      "lines": [
-        {
-          "depth": 20,
-          "cp": 906,
-          "mate": null,
-          "pv": [
-            "d7g4",
-            "f3g5",
-            "g4d7",
-            "d1d3",
-            "d6d5",
-            "d3g3",
-            "h7h6",
-            "b1d2",
-            "d5d4",
-            "g5h3",
-            "a8d8",
-            "g3f3",
-            "f6h7",
-            "f3h5",
-            "g7g6",
-            "h5h6"
-          ]
-        },
         {
           "depth": 20,
           "cp": 908,
           "mate": null,
           "pv": [
             "f6e4",
-            "f3g5",
-            "e4g5",
-            "c1g5",
-            "h7h6",
-            "g5h4",
+            "d1d3",
             "d6d5",
-            "b1d2",
-            "d5d4",
-            "d2b3",
-            "d4c3",
-            "d1d7",
-            "c3b2",
-            "a1d1"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 937,
-          "mate": null,
-          "pv": [
-            "d6d5",
-            "e4d5",
-            "f6d5",
-            "c3c4",
-            "d5f6",
-            "d1d7",
-            "f6d7",
-            "c1e3",
-            "d7f6",
-            "f3h2",
-            "f6g4",
-            "h2g4",
-            "e5e4",
-            "g4f6",
-            "g7f6",
-            "e3h6",
-            "f8d8",
-            "b1c3",
-            "c6b4"
-          ]
-        }
-      ]
-    },
-    "3r1rk1/pppq1ppp/2np1n2/2P1p3/4P1P1/2P2N2/PP2BPP1/RNBQK2R w KQ - 3 10": {
-      "engine": "Stockfish 19",
-      "budget": 3386,
-      "precomputed": true,
-      "lines": [
-        {
-          "depth": 20,
-          "cp": 961,
-          "mate": null,
-          "pv": [
             "f3d2",
-            "d6d5",
-            "g4g5",
-            "f6e4",
-            "d2e4",
-            "d5e4",
-            "d1c2",
-            "g7g6",
-            "b1d2",
-            "d7f5",
-            "d2e4",
-            "c6d4",
-            "c3d4"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 960,
-          "mate": null,
-          "pv": [
-            "c5d6",
-            "h7h5",
-            "f3g5",
-            "h5g4",
-            "c1e3",
-            "d7d6",
-            "d1c1",
-            "f6d5",
-            "e4d5",
-            "d6d5",
-            "e1g1",
-            "d5d7",
-            "c3c4",
-            "e5e4",
-            "b1a3",
-            "c6d4"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 934,
-          "mate": null,
-          "pv": [
-            "f3h4",
-            "f6e4",
-            "h4f5",
-            "d6c5",
-            "d1c2",
-            "e4f6",
-            "f5g7",
-            "g8g7",
-            "g4g5",
-            "e5e4",
-            "g5f6",
-            "g7f6",
-            "b1d2",
-            "f8e8",
-            "d2e4",
-            "e8e4",
-            "c2e4"
-          ]
-        }
-      ]
-    },
-    "3r1rk1/pppq1ppp/2np1n2/2P1p3/4P1P1/2P2N2/PP1NBPP1/R1BQK2R b KQ - 4 10": {
-      "engine": "Stockfish 19",
-      "budget": 3473,
-      "precomputed": true,
-      "lines": [
-        {
-          "depth": 20,
-          "cp": 906,
-          "mate": null,
-          "pv": [
-            "d7g4",
-            "c5d6",
-            "c7d6",
-            "f3h4",
-            "g4e6",
-            "h4f5",
-            "d6d5",
-            "d1c2",
-            "f8e8",
-            "g2g4",
-            "h7h6",
-            "c2d3",
-            "f6e4",
-            "d3h3"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 924,
-          "mate": null,
-          "pv": [
-            "d6d5",
-            "g4g5",
-            "f6e4",
-            "d2e4",
-            "d5e4",
-            "d1c2",
-            "d7d5",
-            "f3d2",
-            "c6d4",
-            "c3d4",
-            "e5d4",
-            "c2e4",
-            "d5e4",
-            "d2e4",
-            "d8e8",
-            "e2d3",
-            "f7f5"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 950,
-          "mate": null,
-          "pv": [
-            "f6g4",
-            "d2b3",
-            "d6d5",
-            "f3g1",
-            "g4f2",
-            "e1f2",
-            "a7a5",
-            "f2e1",
-            "a5a4",
-            "b3d2",
-            "d7e7",
-            "d1c2",
-            "d5d4",
-            "d2f1",
-            "d4d3",
-            "e2d3"
-          ]
-        }
-      ]
-    },
-    "3r1rk1/pppq1ppp/2n2n2/2Ppp3/4P1P1/2P2N2/PP1NBPP1/R1BQK2R w KQ - 0 11": {
-      "engine": "Stockfish 19",
-      "budget": 3454,
-      "precomputed": true,
-      "lines": [
-        {
-          "depth": 20,
-          "cp": 968,
-          "mate": null,
-          "pv": [
-            "g4g5",
-            "d5e4",
-            "g5f6",
-            "e4f3",
-            "e2f3",
-            "d7d3",
-            "d1a4",
-            "e5e4",
-            "f3e2",
-            "f8e8",
-            "h1h3",
-            "d3d7",
-            "d2e4",
-            "d7e6"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 948,
-          "mate": null,
-          "pv": [
-            "f3h4",
-            "d5e4",
-            "g4g5",
-            "f6d5",
-            "d2e4",
-            "d5f4",
-            "d1d7",
-            "d8d7",
-            "e2f1",
-            "f8d8",
-            "c1e3",
-            "f4d3",
-            "e1e2"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 929,
-          "mate": null,
-          "pv": [
-            "f3h2",
-            "d5e4",
-            "g4g5",
-            "e4e3",
-            "g5f6",
-            "d7d5",
-            "h2f3",
-            "e3d2",
-            "d1d2",
-            "d5d2",
-            "f3d2",
-            "f8e8",
-            "f6g7",
-            "e5e4",
-            "h1h3",
-            "d8d5",
-            "e2c4",
-            "c6e5",
-            "c4d5",
-            "e5d3",
-            "e1f1"
-          ]
-        }
-      ]
-    },
-    "3r1rk1/pppq1ppp/2n2n2/2Ppp3/4P1P1/2P5/PP1NBPPN/R1BQK2R b KQ - 1 11": {
-      "engine": "Stockfish 19",
-      "budget": 4900,
-      "precomputed": true,
-      "lines": [
-        {
-          "depth": 20,
-          "cp": 930,
-          "mate": null,
-          "pv": [
-            "d5e4",
-            "e1g1",
-            "h7h5",
-            "g4g5",
-            "f6g4",
-            "d2e4",
-            "f7f5",
-            "g5f6",
-            "d7d1",
-            "f1d1",
-            "g4f6",
-            "e4f6",
-            "g7f6",
-            "e2c4",
-            "g8h8"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 935,
-          "mate": null,
-          "pv": [
-            "f6e4",
-            "d2e4",
-            "d5e4",
-            "d1d7",
-            "d8d7",
-            "h2f1",
+            "d5c4",
+            "d3e4",
+            "d8d3",
+            "e4f5",
             "c6e7",
-            "h1h5",
-            "e7d5",
-            "h5e5",
-            "d5f6",
-            "c1e3",
-            "c7c6",
-            "e3d4",
-            "d7d4",
-            "c3d4",
-            "g7g6",
-            "f1g3"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 947,
-          "mate": null,
-          "pv": [
-            "h7h6",
-            "e4d5",
-            "f6d5",
-            "e1g1",
+            "f5d3",
             "e5e4",
-            "d2e4",
-            "f8e8",
-            "e4g3",
-            "d7e7",
-            "d1b3",
-            "g8h8",
-            "e2d1",
-            "c6a5"
-          ]
-        }
-      ]
-    },
-    "4rrk1/pppq1ppp/2n2n2/2Ppp3/4P1P1/2P5/PP1NBPPN/R1BQK2R w KQ - 2 12": {
-      "engine": "Stockfish 19",
-      "budget": 3766,
-      "precomputed": true,
-      "lines": [
-        {
-          "depth": 20,
-          "cp": 1076,
-          "mate": null,
-          "pv": [
-            "g4g5",
-            "f6h5",
-            "e2h5",
-            "d5e4",
-            "d2e4",
-            "d7d1",
-            "h5d1",
-            "e8e6",
-            "h2g4",
-            "e6g6",
-            "d1e2",
-            "f7f5",
-            "g5f6",
-            "g6g4",
-            "f6g7",
-            "g4e4",
-            "g7f8q",
-            "g8f8"
+            "d3e4"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 989,
+          "cp": 964,
           "mate": null,
           "pv": [
-            "e1g1",
-            "d5e4",
-            "g4g5",
+            "d6d5",
+            "e4d5",
+            "c6a5",
+            "c4e2",
             "f6d5",
-            "d2e4",
+            "b1a3",
             "d5f4",
             "d1c2",
-            "d7f5",
-            "e2f3",
-            "f5g6",
-            "c2b1",
-            "f7f5",
-            "e4g3",
-            "g6g5",
-            "f3d5",
-            "g8h8"
+            "f4g2",
+            "e1f1",
+            "e5e4",
+            "c2e4",
+            "g2e3",
+            "c1e3",
+            "g7g6",
+            "f3g1",
+            "f8e8"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
@@ -1980,258 +1700,987 @@
           "cp": 975,
           "mate": null,
           "pv": [
+            "d8d7",
+            "f3d2",
+            "d7g4",
+            "d1g4",
+            "f6g4",
+            "c5d6",
+            "c7d6",
+            "c4b3",
+            "d6d5",
+            "f2f3",
+            "g4e3",
+            "e1f2",
+            "f7f5",
+            "b1a3"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "r4rk1/pppq1ppp/2np1n2/2P1p3/2B1P1P1/2P2N2/PP3PP1/RNBQK2R w KQ - 1 9": {
+      "engine": "Stockfish 19",
+      "budget": 5090,
+      "precomputed": true,
+      "lines": [
+        {
+          "depth": 20,
+          "cp": 957,
+          "mate": null,
+          "pv": [
+            "f3d2",
+            "d7g4",
+            "d1g4",
+            "f6g4",
+            "c4e2",
+            "g4f6",
+            "a2a4",
+            "f8e8",
+            "a4a5",
+            "d6c5",
+            "a5a6",
+            "b7a6",
+            "h1h3",
+            "c6d4",
+            "e2d1"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 937,
+          "mate": null,
+          "pv": [
+            "f3h4",
+            "a8d8",
+            "h4f5",
+            "d6d5",
+            "c4b5",
+            "f8e8",
+            "b5c6",
+            "d7c6",
+            "b1d2",
+            "d5e4",
+            "d1e2",
+            "c6e6",
+            "c5c6",
+            "f6d5",
+            "g2g3",
+            "e6c6",
+            "e1g1"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 936,
+          "mate": null,
+          "pv": [
+            "f3h2",
+            "f6e4",
+            "e1g1",
+            "d6d5",
+            "b2b4",
+            "d7d8",
+            "c4b3",
+            "d8h4",
+            "g2g3",
+            "h4h3",
+            "d1f3",
+            "e4c3",
+            "b1c3",
+            "c6d4"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "r4rk1/pppq1ppp/2np1n2/2P1p3/4P1P1/2P2N2/PP2BPP1/RNBQK2R b KQ - 2 9": {
+      "engine": "Stockfish 19",
+      "budget": 5110,
+      "precomputed": true,
+      "lines": [
+        {
+          "depth": 20,
+          "cp": 910,
+          "mate": null,
+          "pv": [
+            "d7g4",
+            "c5d6",
+            "g4e4",
+            "d6c7",
+            "e4d5",
+            "h1h3",
+            "d5d1",
+            "e1d1",
+            "f6g4",
+            "d1e1",
+            "e5e4",
+            "f3d4",
+            "g4e5",
+            "c1d2",
+            "e5d3",
+            "e2d3"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 929,
+          "mate": null,
+          "pv": [
+            "f6e4",
+            "d1d3",
+            "d7g4",
+            "f3g5",
+            "g4g2",
+            "d3e4",
+            "g2e4",
+            "g5e4",
+            "d6d5",
+            "e4d2",
+            "e5e4",
+            "a2a4",
+            "h7h6",
+            "e1d1",
+            "d5d4",
+            "d2e4",
+            "d4d3",
+            "e2d3"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 932,
+          "mate": null,
+          "pv": [
+            "d6d5",
+            "f3h4",
+            "a8d8",
+            "b1d2",
+            "d5e4",
+            "h4f5",
+            "h7h5",
+            "d1c2",
+            "f6g4",
+            "c2e4",
+            "g4f6",
+            "e4c2",
+            "f6d5",
+            "e2h5"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "3r1rk1/pppq1ppp/2np1n2/2P1p3/4P1P1/2P2N2/PP2BPP1/RNBQK2R w KQ - 3 10": {
+      "engine": "Stockfish 19",
+      "budget": 5529,
+      "precomputed": true,
+      "lines": [
+        {
+          "depth": 20,
+          "cp": 936,
+          "mate": null,
+          "pv": [
+            "c5d6",
+            "c7d6",
+            "f3d2",
+            "d6d5",
+            "g4g5",
+            "f6e4",
+            "d2e4",
+            "d5e4",
+            "d1d7",
+            "d8d7",
+            "b1d2",
+            "e4e3",
+            "f2e3",
+            "f8d8",
+            "e3e4",
+            "c6e7",
+            "h1h3"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 931,
+          "mate": null,
+          "pv": [
+            "f3h4",
+            "d6d5",
+            "d1d3",
+            "d5e4",
+            "d3d7",
+            "d8d7",
+            "b1a3",
+            "f6d5",
+            "g2g3",
+            "e4e3",
+            "f2e3",
+            "e5e4",
+            "e1f2",
+            "f8d8",
+            "h4f5",
+            "c6e5",
+            "f2g2"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 916,
+          "mate": null,
+          "pv": [
+            "f3g5",
+            "h7h6",
+            "g5h3",
+            "f6e4",
+            "c5d6",
+            "f7f5",
+            "g4g5",
+            "d7d6",
+            "d1d6",
+            "d8d6",
+            "b1a3",
+            "f8d8",
+            "e2c4",
+            "g8h7"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "3r1rk1/pppq1ppp/2np1n2/2P1p3/4P1P1/2P2N2/PP1NBPP1/R1BQK2R b KQ - 4 10": {
+      "engine": "Stockfish 19",
+      "budget": 2666,
+      "precomputed": true,
+      "lines": [
+        {
+          "depth": 20,
+          "cp": 904,
+          "mate": null,
+          "pv": [
+            "d7g4",
+            "f3h4",
+            "g4e6",
+            "d1c2",
+            "f8e8",
+            "h4f5",
+            "d6d5",
+            "g2g4",
+            "h7h5",
+            "g4g5",
+            "f6e4",
+            "d2e4",
+            "d5e4",
+            "c2e4",
+            "e6d5",
+            "e4d5",
+            "d8d5",
+            "f5e3"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 923,
+          "mate": null,
+          "pv": [
+            "d6d5",
+            "g4g5",
+            "f6e4",
+            "d2e4",
+            "d5e4",
+            "d1d7",
+            "d8d7",
+            "f3g1",
+            "e4e3",
+            "c1e3",
+            "c6d4",
+            "c3d4",
+            "e5d4",
+            "h1h3",
+            "f8e8",
+            "h3f3",
+            "d7d8",
+            "e3d2"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 924,
+          "mate": null,
+          "pv": [
+            "f6g4",
+            "d2f1",
+            "d6d5",
+            "c1g5",
+            "d5e4",
+            "d1d7",
+            "d8d7",
+            "f3d2",
+            "d7d2",
+            "f1d2",
+            "g4e3",
+            "g5e3"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "3r1rk1/pppq1ppp/2n2n2/2Ppp3/4P1P1/2P2N2/PP1NBPP1/R1BQK2R w KQ - 0 11": {
+      "engine": "Stockfish 19",
+      "budget": 3025,
+      "precomputed": true,
+      "lines": [
+        {
+          "depth": 20,
+          "cp": 947,
+          "mate": null,
+          "pv": [
+            "g4g5",
+            "d5e4",
+            "f3h4",
+            "e4e3",
+            "g5f6",
+            "e3d2",
+            "d1d2",
+            "d7d2",
+            "c1d2",
+            "d8d2",
+            "e1d2",
+            "f8d8",
+            "d2e1",
+            "e5e4",
+            "h4f5",
+            "c6e5",
+            "h1h3",
+            "e5d3",
+            "e2d3",
+            "d8d3",
+            "f5e7",
+            "g8f8"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 932,
+          "mate": null,
+          "pv": [
+            "f3h4",
+            "h7h6",
+            "d1c2",
+            "f6g4",
+            "h4f5",
+            "g4f6",
+            "e2b5",
+            "d5e4",
+            "f5e3",
+            "f6d5",
+            "d2e4",
+            "d5b4",
+            "c3b4"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 927,
+          "mate": null,
+          "pv": [
+            "f3h2",
+            "d5e4",
+            "g4g5",
+            "f6d5",
+            "d2e4",
+            "d5f4",
+            "d1d7",
+            "d8d7",
+            "f2f3",
+            "f4e2",
+            "e1e2",
+            "c6e7",
+            "e2e1",
+            "e7d5",
+            "h2g4",
+            "d5f4"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "3r1rk1/pppq1ppp/2n2n2/2Ppp3/4P1P1/2P5/PP1NBPPN/R1BQK2R b KQ - 1 11": {
+      "engine": "Stockfish 19",
+      "budget": 4757,
+      "precomputed": true,
+      "lines": [
+        {
+          "depth": 20,
+          "cp": 927,
+          "mate": null,
+          "pv": [
+            "d5e4",
+            "e1g1",
+            "h7h5",
+            "g4h5",
+            "d7e7",
+            "d1e1",
+            "f6h5",
+            "e2h5",
+            "e7h4",
+            "e1e2",
+            "d8d2",
+            "c1d2",
+            "g7g6",
+            "g2g3",
+            "h4h5",
+            "e2e4"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 943,
+          "mate": null,
+          "pv": [
+            "d7e7",
+            "e1g1",
+            "g7g5",
+            "d1e1",
+            "d5e4",
+            "e2c4",
+            "c6a5",
+            "e1e2",
+            "d8d2",
+            "c1d2",
+            "f6e8",
+            "b2b4",
+            "a5c4",
+            "e2c4",
+            "e4e3"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 952,
+          "mate": null,
+          "pv": [
+            "g7g5",
             "h2f1",
             "d5e4",
-            "f1e3",
-            "g7g5",
-            "e2b5",
+            "f1g3",
+            "h7h6",
+            "g3f5",
+            "d7f5",
+            "g4f5",
+            "g5g4",
+            "d1a4",
+            "e4e3",
+            "f2e3",
+            "g4g3",
+            "e2c4"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "4rrk1/pppq1ppp/2n2n2/2Ppp3/4P1P1/2P5/PP1NBPPN/R1BQK2R w KQ - 2 12": {
+      "engine": "Stockfish 19",
+      "budget": 4827,
+      "precomputed": true,
+      "lines": [
+        {
+          "depth": 20,
+          "cp": 1071,
+          "mate": null,
+          "pv": [
+            "g4g5",
+            "f6h5",
+            "e2h5",
             "e8d8",
-            "b5c6",
+            "h2g4",
+            "d5e4",
+            "d1e2",
             "d7d3",
-            "c6b7",
-            "a7a6",
-            "b7c6",
-            "g8g7",
-            "c3c4"
+            "g4f6",
+            "g7f6",
+            "g5f6",
+            "d3e2",
+            "e1e2",
+            "e4e3",
+            "e2e3"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 994,
+          "mate": null,
+          "pv": [
+            "e1g1",
+            "e8d8",
+            "d1e1",
+            "h7h6",
+            "e4d5",
+            "f6d5",
+            "d2e4",
+            "d5f4",
+            "b2b4",
+            "f7f5",
+            "g4f5",
+            "f4d3",
+            "e2d3",
+            "f8f7",
+            "d3c4"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 972,
+          "mate": null,
+          "pv": [
+            "h2f1",
+            "h7h6",
+            "f1e3",
+            "d5e4",
+            "a2a4",
+            "c6d4",
+            "c5c6",
+            "d7c6",
+            "e2c4",
+            "e8d8",
+            "b2b4",
+            "d4e6",
+            "b4b5",
+            "c6c5",
+            "a4a5"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         }
       ]
     },
     "4rrk1/pppq1ppp/2n2n2/2Ppp1P1/4P3/2P5/PP1NBPPN/R1BQK2R b KQ - 0 12": {
       "engine": "Stockfish 19",
-      "budget": 4254,
+      "budget": 3403,
       "precomputed": true,
       "lines": [
         {
           "depth": 20,
-          "cp": 1073,
-          "mate": null,
-          "pv": [
-            "e8e6",
-            "g5f6",
-            "e6f6",
-            "d2c4",
-            "f8d8",
-            "h2g4",
-            "d5c4",
-            "d1d7",
-            "d8d7",
-            "g4f6",
-            "g7f6",
-            "c1e3",
-            "g8f8",
-            "e2c4",
-            "d7d4",
-            "c3d4",
-            "e5d4"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 1093,
+          "cp": 1095,
           "mate": null,
           "pv": [
             "f6h5",
             "e2h5",
-            "g8h8",
-            "d2b3",
-            "e8d8",
-            "h5g4",
-            "d7e7",
-            "d1e2",
             "d5e4",
-            "h2f1",
+            "h5g4",
+            "d7d8",
+            "d2e4",
             "d8d1",
-            "e1d1",
-            "f8d8",
-            "d1e1",
-            "d8d3",
-            "c1e3",
-            "d3d8"
+            "g4d1",
+            "e8d8",
+            "d1e2",
+            "f8e8",
+            "f2f3",
+            "c6d4",
+            "c3d4",
+            "e5d4",
+            "e2d3",
+            "e8e4",
+            "d3e4",
+            "d8e8"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 1114,
+          "cp": 1095,
           "mate": null,
           "pv": [
             "d5e4",
             "g5f6",
             "e4e3",
-            "d2e4",
-            "d7d1",
-            "e2d1",
-            "c6d4",
-            "c1e3",
-            "d4e6",
-            "c5c6",
-            "e8b8",
+            "f2e3",
+            "d7f5",
             "h2g4",
-            "e6f4",
-            "e3f4",
-            "e5f4"
+            "e5e4",
+            "e2c4",
+            "e8e5",
+            "b2b4",
+            "f5g6",
+            "b4b5",
+            "e5g5",
+            "b5c6",
+            "g5g4"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 1095,
+          "mate": null,
+          "pv": [
+            "e8e6",
+            "g5f6",
+            "e6f6",
+            "e4d5",
+            "d7d5",
+            "h2g4",
+            "f6f4",
+            "g4e3",
+            "d5e6",
+            "g2g3",
+            "f8e8",
+            "d1c2",
+            "g7g6",
+            "b2b4",
+            "f4f6",
+            "d2e4",
+            "g8g7",
+            "b4b5",
+            "c6d8"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         }
       ]
     },
     "4rrk1/pppq1ppp/2n5/2Ppp1P1/4P1n1/2P5/PP1NBPPN/R1BQK2R w KQ - 1 13": {
       "engine": "Stockfish 19",
-      "budget": 4157,
+      "budget": 3755,
       "precomputed": true,
       "lines": [
         {
           "depth": 20,
-          "cp": 1159,
+          "cp": 1160,
           "mate": null,
           "pv": [
             "e2g4",
             "d7d8",
             "g4f5",
-            "d8g5",
-            "h2g4",
             "g7g6",
-            "e4d5",
-            "g6f5",
-            "d2e4",
-            "g5g6",
+            "h2g4",
+            "h7h5",
             "g4f6",
             "g8g7",
-            "c1h6",
-            "g7h8",
-            "h6f8",
-            "f5e4",
-            "h1h7",
-            "g6h7",
-            "f6h7",
-            "h8h7",
-            "d1h5",
-            "h7g8"
+            "e4d5",
+            "e5e4",
+            "d5c6",
+            "e4e3",
+            "f2e3",
+            "e8e3",
+            "e1f2",
+            "e3e5",
+            "c6b7",
+            "e5f5",
+            "d2f3",
+            "d8d1",
+            "h1d1"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 1151,
+          "cp": 1150,
           "mate": null,
           "pv": [
             "h2g4",
             "e8e6",
-            "e4d5",
-            "d7d5",
-            "g4e3",
-            "d5d7",
-            "e2c4",
-            "g7g6",
             "b2b4",
-            "f8a8",
-            "h1h6",
-            "g8g7",
-            "d1g4",
-            "d7e7",
+            "d5d4",
+            "d2b3",
+            "d4d3",
+            "d1d3",
+            "d7d3",
+            "e2d3",
+            "e6e7",
             "b4b5",
-            "c6a5",
-            "c4e6"
+            "f8d8",
+            "d3e2",
+            "g8f8",
+            "b5b6",
+            "a7a6"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 1043,
+          "cp": 1032,
           "mate": null,
           "pv": [
             "e4d5",
             "g4f2",
-            "d5c6",
-            "f2d3",
-            "e2d3",
-            "d7d3",
-            "h2f1",
+            "e1f2",
+            "d7d5",
+            "d2c4",
+            "d5d1",
+            "h1d1",
+            "c6e7",
+            "f2g1",
             "e5e4",
-            "d1e2",
-            "d3e2",
-            "e1e2",
-            "e4e3",
-            "c6b7",
-            "e3d2",
-            "e2d2",
-            "e8d8",
-            "d2e1",
-            "f8e8",
-            "e1f2"
+            "e2g4",
+            "h7h5",
+            "g5h6",
+            "f7f5",
+            "g4e2"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         }
       ]
     },
     "4rrk1/pppq1ppp/2n5/2Ppp1P1/4P1N1/2P5/PP1NBPP1/R1BQK2R b KQ - 0 13": {
       "engine": "Stockfish 19",
-      "budget": 5459,
+      "budget": 3528,
       "precomputed": true,
       "lines": [
         {
           "depth": 20,
-          "cp": 1139,
+          "cp": 1137,
           "mate": null,
           "pv": [
             "e8e6",
             "e4d5",
             "d7d5",
-            "g4e3",
-            "d5d8",
-            "e2c4",
+            "d1c2",
             "e5e4",
-            "d1h5",
-            "e6h6",
-            "g5h6",
-            "g7g6",
-            "h5e2",
-            "c6e5",
-            "d2e4",
+            "d2c4",
+            "d5d3",
+            "c2a4",
+            "d3d8",
+            "b2b4",
+            "f7f5",
+            "g5f6",
+            "e6f6",
+            "c1e3",
+            "f6g6",
+            "a4b3",
             "g8h8",
-            "c4d5",
-            "f8e8"
+            "b4b5",
+            "g6g4"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 1158,
+          "cp": 1157,
           "mate": null,
           "pv": [
             "d5e4",
             "d1a4",
             "d7f5",
             "d2e4",
-            "f5g6",
+            "g8h8",
+            "e4f6",
+            "g7f6",
+            "g4f6",
+            "e5e4",
+            "f6e8",
+            "f8e8",
             "c1e3",
-            "e8e6",
-            "f2f3",
-            "f8a8"
+            "h8g8",
+            "e1c1",
+            "g8f8",
+            "h1h3",
+            "e8d8",
+            "d1h1",
+            "f5d7"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 1195,
+          "cp": 1177,
           "mate": null,
           "pv": [
-            "f7f5",
-            "g5f6",
-            "d5d4",
-            "f6g7",
-            "g8g7",
-            "d2c4",
-            "g7h8",
-            "d1d3",
+            "d7e6",
+            "g4f6",
+            "g7f6",
+            "e2g4",
             "e8e7",
-            "h1h6"
+            "g4e6",
+            "f7e6",
+            "d2f1",
+            "d5e4",
+            "g5f6",
+            "f8f6",
+            "f1g3",
+            "f6f2",
+            "e1f2",
+            "e4e3",
+            "c1e3",
+            "e7f7",
+            "f2e2"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         }
       ]
     },
     "4rrk1/p1pq1ppp/2n5/1pPpp1P1/4P1N1/2P5/PP1NBPP1/R1BQK2R w KQ b6 0 14": {
       "engine": "Stockfish 19",
-      "budget": 3680,
+      "budget": 2933,
       "precomputed": true,
       "lines": [
         {
           "depth": 20,
-          "cp": 1261,
+          "cp": 1238,
+          "mate": null,
+          "pv": [
+            "c5b6",
+            "c7b6",
+            "e2d3",
+            "f7f6",
+            "g5f6",
+            "d5d4",
+            "d2f1",
+            "e8e6",
+            "d3c4",
+            "g8h8",
+            "f6g7",
+            "h8g7",
+            "c4e6",
+            "d7e6",
+            "h1h3",
+            "h7h5"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 1226,
           "mate": null,
           "pv": [
             "e2b5",
@@ -2239,74 +2688,61 @@
             "g4f6",
             "g7f6",
             "d1h5",
-            "f8d8",
-            "e4d5",
-            "d7d5",
+            "f8e8",
             "h5h7",
             "g8f8",
             "g5g6",
-            "d5d7",
-            "g6g7",
+            "d5d4",
+            "d2f3",
             "f8e7",
-            "g7g8n",
-            "d8g8",
-            "h7g8",
-            "d7d8",
-            "g8g3",
-            "e5e4",
-            "d2c4"
+            "c1h6",
+            "e8b8",
+            "h7f7",
+            "e7d8",
+            "f7f8",
+            "d7e8",
+            "g6g7",
+            "b8b5"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 1260,
+          "cp": 1223,
           "mate": null,
           "pv": [
             "g4f6",
             "g7f6",
             "e2g4",
-            "d7e6",
-            "d2f1",
-            "d5e4",
-            "g4e6",
-            "f7e6",
-            "d1g4",
-            "f6f5",
-            "g4h5",
-            "e8e7"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 1259,
-          "mate": null,
-          "pv": [
-            "e2d3",
-            "f7f5",
+            "e8e6",
             "g5f6",
             "d5d4",
-            "d3b5",
-            "e8e6",
-            "c3d4",
-            "e5d4",
-            "d1b3",
-            "g8h8",
-            "b3h3",
-            "g7g5",
-            "f2f4",
+            "g4f5",
+            "e6f6",
+            "f5d7",
             "d4d3",
-            "b5d3",
-            "c6b4",
-            "g4e5",
-            "e6e5",
-            "h3d7"
+            "d7c6",
+            "f6c6",
+            "d1g4",
+            "c6g6",
+            "g4h3",
+            "g6g7"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         }
       ]
     },
     "4rrk1/p1pq1ppp/2n5/1pPPp1P1/6N1/2P5/PP1NBPP1/R1BQK2R b KQ - 0 14": {
       "engine": "Stockfish 19",
-      "budget": 6094,
+      "budget": 4160,
       "precomputed": true,
       "lines": [
         {
@@ -2316,197 +2752,236 @@
           "pv": [
             "d7d5",
             "g4e3",
-            "d5e6",
+            "d5d8",
             "e2b5",
-            "e6g6",
-            "b5c6",
-            "g6c6",
-            "h1h3",
+            "c6d4",
+            "b5d3",
+            "h7h6",
+            "g5h6",
+            "g7g6",
+            "c3d4",
+            "e5d4",
+            "d2f3",
             "f7f5",
-            "d1h5",
-            "f5f4",
-            "h5h7",
-            "g8f7",
-            "h7h5",
-            "f7g8"
+            "h6h7",
+            "g8h8",
+            "e1f1",
+            "d4e3",
+            "c1e3"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 1290,
+          "cp": 1268,
           "mate": null,
           "pv": [
             "f7f5",
             "g5f6",
             "d7d5",
             "g4e3",
-            "d5d7",
-            "e2b5",
-            "f8f6",
-            "d1e2",
+            "d5d8",
+            "f6g7",
+            "f8f2",
+            "e1f2",
             "e5e4",
-            "b2b3",
-            "g8f8",
-            "h1h7",
-            "f6f4",
-            "h7h5"
+            "h1h3",
+            "e8e6",
+            "e2g4",
+            "e6f6",
+            "f2e1"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 1299,
+          "cp": 1327,
           "mate": null,
           "pv": [
-            "e5e4",
+            "d7f5",
             "d5c6",
-            "d7d5",
-            "d2f1",
-            "d5d1",
-            "e1d1",
-            "h7h6",
-            "e2b5",
-            "h6g5",
-            "d1e1",
-            "a7a5",
-            "b5c4",
-            "e8b8",
-            "f1d2"
+            "f5g5",
+            "d2c4",
+            "g5d8",
+            "c4d6",
+            "c7d6",
+            "c5d6",
+            "e8e6",
+            "d1c2",
+            "f7f5",
+            "d6d7",
+            "f5g4"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         }
       ]
     },
     "4rrk1/p1p1qppp/2n5/1pPPp1P1/6N1/2P5/PP1NBPP1/R1BQK2R w KQ - 1 15": {
       "engine": "Stockfish 19",
-      "budget": 1875,
+      "budget": 2792,
       "precomputed": true,
       "lines": [
         {
           "depth": 20,
-          "cp": 1518,
+          "cp": 1515,
           "mate": null,
           "pv": [
             "d2e4",
-            "f7f6",
+            "f7f5",
             "g5f6",
             "g7f6",
             "e2b5",
-            "f6f5",
-            "c1g5",
-            "f5g4",
-            "g5e7",
-            "e8e7",
+            "e7g7",
             "b5c6",
-            "f8f4",
+            "f6f5",
+            "g4h6",
+            "g8h8",
             "e4g5",
-            "e7g7"
+            "g7g6",
+            "c6e8",
+            "f8e8",
+            "d1e2"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 1347,
-          "mate": null,
-          "pv": [
-            "d2b3",
-            "c6d4",
-            "c3d4",
-            "e5d4",
-            "b3d4",
-            "e7e4",
-            "e1g1",
-            "h7h5",
-            "g5h6",
-            "f7f5",
-            "h6h7",
-            "g8h7",
-            "f2f3",
-            "f5g4",
-            "f3e4",
-            "f8f1",
-            "g1f1"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 1343,
+          "cp": 1409,
           "mate": null,
           "pv": [
             "e2b5",
             "e7g5",
-            "d2c4",
+            "d2e4",
             "g5g6",
+            "e4f6",
+            "g7f6",
+            "h1h6",
+            "e8b8",
+            "h6g6",
+            "h7g6",
             "b5c6",
-            "f7f5",
+            "f6f5",
+            "g4e5",
+            "g8g7",
+            "e1e2",
+            "f7f6"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 1358,
+          "mate": null,
+          "pv": [
+            "e2d3",
+            "e5e4",
+            "d2e4",
+            "e7e4",
             "g4e3",
-            "f5f4",
-            "d5d6",
-            "g8h8",
-            "c6e8",
-            "g6e8",
-            "d6d7",
-            "e8a8",
-            "c4e5",
-            "f4e3"
+            "e4d3",
+            "d1d3",
+            "f7f5",
+            "d5c6",
+            "e8e5",
+            "e1f1",
+            "f8e8",
+            "a2a4",
+            "b5b4"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         }
       ]
     },
     "4rrk1/p1p1qppp/2n5/1pPPp1P1/4N1N1/2P5/PP2BPP1/R1BQK2R b KQ - 2 15": {
       "engine": "Stockfish 19",
-      "budget": 1830,
+      "budget": 2657,
       "precomputed": true,
       "lines": [
         {
           "depth": 20,
-          "cp": 1545,
+          "cp": 1583,
           "mate": null,
           "pv": [
             "f7f6",
             "g5f6",
+            "f8f6",
+            "g4f6",
             "g7f6",
             "e2b5",
             "e7g7",
-            "b5c6",
-            "f6f5",
-            "g4h6",
-            "g8h8",
-            "e4g5",
+            "d1h5",
             "g7g6",
-            "c6e8",
-            "g6e8",
-            "d1f3",
-            "f8f6",
-            "h6f5"
+            "h5g6",
+            "h7g6",
+            "e4f6",
+            "g8f7",
+            "f6e8",
+            "f7e8",
+            "c1h6",
+            "e8e7",
+            "h6g5",
+            "e7f8"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 1578,
+          "cp": 1596,
           "mate": null,
           "pv": [
             "f7f5",
             "g5f6",
+            "f8f6",
+            "g4f6",
             "g7f6",
             "e2b5",
-            "e7g7",
-            "b5c6",
-            "f6f5",
-            "g4h6",
             "g8h8",
-            "e4g5",
-            "g7g6",
-            "c6e8",
-            "g6e8",
+            "b5c6",
+            "e8g8",
             "d1f3",
-            "f5f4",
-            "f3e4",
-            "e8g6",
-            "e4g6",
-            "h7g6"
+            "g8g6",
+            "f3f5",
+            "g6g2",
+            "c1h6",
+            "g2g6"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 1776,
+          "cp": 1912,
           "mate": null,
           "pv": [
             "h7h5",
@@ -2514,23 +2989,30 @@
             "f7f5",
             "g5f6",
             "e7d7",
+            "e2b5",
+            "e8d8",
             "f6g7",
-            "d7g7",
+            "g8g7",
             "c1h6",
-            "g7g6",
-            "h5g5",
-            "g6g5",
-            "h6g5",
-            "f8f4",
-            "d5c6",
-            "f4e4"
+            "g7g8",
+            "d1e2",
+            "d7d5",
+            "g4f6",
+            "f8f6",
+            "e4f6",
+            "g8f7"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         }
       ]
     },
     "1n2rrk1/p1p1qppp/8/1pPPp1P1/4N1N1/2P5/PP2BPP1/R1BQK2R w KQ - 3 16": {
       "engine": "Stockfish 19",
-      "budget": 597,
+      "budget": 569,
       "precomputed": true,
       "lines": [
         {
@@ -2538,9 +3020,9 @@
           "cp": null,
           "mate": 8,
           "pv": [
-            "g4f6",
-            "g7f6",
             "e4f6",
+            "g7f6",
+            "g4f6",
             "e7f6",
             "g5f6",
             "b8d7",
@@ -2551,8 +3033,13 @@
             "g5f6",
             "h8g8",
             "c1h6",
-            "a7a6",
+            "e8d8",
             "f6g7"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
@@ -2560,9 +3047,9 @@
           "cp": null,
           "mate": 8,
           "pv": [
-            "e4f6",
-            "g7f6",
             "g4f6",
+            "g7f6",
+            "e4f6",
             "e7f6",
             "g5f6",
             "b8d7",
@@ -2573,45 +3060,86 @@
             "g5f6",
             "h8g8",
             "c1h6",
-            "a7a6",
+            "e8d8",
             "f6g7"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
           "depth": 20,
-          "cp": 1996,
+          "cp": 2064,
           "mate": null,
           "pv": [
-            "d5d6",
-            "b8d7",
-            "d6e7",
-            "e8e7",
-            "c5c6",
-            "f8d8",
             "d1d3",
-            "g7g6",
-            "c6d7",
-            "g8f8",
+            "f7f5",
+            "g5f6",
+            "b8d7",
+            "f6e7",
+            "e8e7",
+            "d3h3",
+            "d7f6",
             "g4f6",
-            "h7h5",
-            "g5h6",
-            "e7d7",
-            "d3d7",
-            "d8d7",
-            "f6d7",
-            "f8e7"
+            "g7f6",
+            "c1h6",
+            "e7f7",
+            "h6f8",
+            "g8f8",
+            "c5c6",
+            "f6f5",
+            "h3h6",
+            "f7g7",
+            "h6f6",
+            "g7f7"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         }
       ]
     },
     "1n2rrk1/p1p1qppp/8/1pPPp1P1/4N1N1/2PQ4/PP2BPP1/R1B1K2R b KQ - 4 16": {
       "engine": "Stockfish 19",
-      "budget": 3345,
+      "budget": 2401,
       "precomputed": true,
       "lines": [
         {
           "depth": 20,
-          "cp": 2297,
+          "cp": 2171,
+          "mate": null,
+          "pv": [
+            "f7f5",
+            "g5f6",
+            "b8d7",
+            "f6e7",
+            "e8e7",
+            "d5d6",
+            "c7d6",
+            "c1g5",
+            "f8f2",
+            "e4f2",
+            "e5e4",
+            "d3h3",
+            "d7f8",
+            "g5e7",
+            "d6c5",
+            "g4h6",
+            "g7h6"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": 2215,
           "mate": null,
           "pv": [
             "f7f6",
@@ -2619,53 +3147,19 @@
             "b8d7",
             "f6e7",
             "e8e7",
-            "h1h7",
-            "g8f7",
+            "d5d6",
+            "c7d6",
+            "c1g5",
+            "f8f2",
+            "e4f2",
+            "e5e4",
             "d3h3",
-            "f7e8",
-            "c1g5",
-            "f8g8",
-            "g5e7",
-            "e8e7",
-            "h3h4",
-            "e7e8",
-            "g4f6",
-            "d7f6",
-            "e4f6",
-            "g7f6",
-            "e2b5",
-            "e8d8",
-            "h4f6",
-            "d8c8"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": 2393,
-          "mate": null,
-          "pv": [
-            "f7f5",
-            "g5f6",
-            "e7f7",
-            "f6g7",
-            "f7g6",
-            "g7f8q",
-            "g8f8",
-            "h1h6",
-            "f8e7",
-            "h6g6",
-            "h7g6",
-            "c1g5",
-            "e7d7",
-            "d3b5",
-            "d7c8",
-            "b5e8",
-            "c8b7",
-            "c5c6",
-            "b7a8",
-            "e8g6",
-            "a7a6",
-            "g6e6"
+            "h7h6"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
@@ -2673,23 +3167,28 @@
           "cp": null,
           "mate": 5,
           "pv": [
-            "h7h5",
+            "h7h6",
             "e4f6",
-            "g7f6",
-            "g4f6",
             "e7f6",
+            "g4f6",
+            "g7f6",
             "g5f6",
-            "h5h4",
-            "h1h4",
-            "b5b4",
-            "d3h7"
+            "h6h5",
+            "d3g3",
+            "g8h8",
+            "h1h5"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         }
       ]
     },
     "1n2rrk1/p1p2ppp/8/1pPPp1q1/4N1N1/2PQ4/PP2BPP1/R1B1K2R w KQ - 0 17": {
       "engine": "Stockfish 19",
-      "budget": 60,
+      "budget": 61,
       "precomputed": true,
       "lines": [
         {
@@ -2700,6 +3199,11 @@
             "e4f6",
             "g7f6",
             "d3h7"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         },
         {
@@ -2710,113 +3214,6 @@
             "g4f6",
             "g7f6",
             "e4f6",
-            "g8g7",
-            "f6e8",
-            "f8e8",
-            "d3h7",
-            "g7f6",
-            "c1g5",
-            "f6g5",
-            "h7g7",
-            "g5f5",
-            "g7f7",
-            "f5g5",
-            "h1h5"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": null,
-          "mate": 9,
-          "pv": [
-            "c1g5",
-            "f7f5",
-            "e4f6",
-            "f8f6",
-            "g4f6",
-            "g7f6",
-            "g5f6",
-            "e8e7",
-            "d3g3",
-            "g8f8",
-            "f6e7",
-            "f8f7",
-            "h1h7",
-            "f7e8",
-            "g3g8",
-            "e8d7",
-            "g8d8"
-          ]
-        }
-      ]
-    },
-    "1n2rrk1/p1p2ppp/5N2/1pPPp1q1/6N1/2PQ4/PP2BPP1/R1B1K2R b KQ - 1 17": {
-      "engine": "Stockfish 19",
-      "budget": 1,
-      "precomputed": true,
-      "lines": [
-        {
-          "depth": 20,
-          "cp": null,
-          "mate": 1,
-          "pv": [
-            "g7f6",
-            "d3h7"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": null,
-          "mate": 1,
-          "pv": [
-            "g5f6",
-            "d3h7"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": null,
-          "mate": 1,
-          "pv": [
-            "g8h8",
-            "h1h7"
-          ]
-        }
-      ]
-    },
-    "1n2rrk1/p1p2p1p/5p2/1pPPp1q1/6N1/2PQ4/PP2BPP1/R1B1K2R w KQ - 0 18": {
-      "engine": "Stockfish 19",
-      "budget": 29,
-      "precomputed": true,
-      "lines": [
-        {
-          "depth": 20,
-          "cp": null,
-          "mate": 1,
-          "pv": [
-            "d3h7"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": null,
-          "mate": 4,
-          "pv": [
-            "c1g5",
-            "e5e4",
-            "g5f6",
-            "h7h6",
-            "h1h6",
-            "e4d3",
-            "h6h8"
-          ]
-        },
-        {
-          "depth": 20,
-          "cp": null,
-          "mate": 7,
-          "pv": [
-            "g4f6",
             "g8g7",
             "f6e8",
             "f8e8",
@@ -2829,6 +3226,153 @@
             "h1h8",
             "e5e4",
             "h8h5"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": null,
+          "mate": 9,
+          "pv": [
+            "c1g5",
+            "f7f5",
+            "e4f6",
+            "g7f6",
+            "g4f6",
+            "f8f6",
+            "g5f6",
+            "e8e7",
+            "f6e7",
+            "b8d7",
+            "d3f5",
+            "d7f6",
+            "f5f6",
+            "h7h6",
+            "f6g6",
+            "g8h8",
+            "e7f6"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "1n2rrk1/p1p2ppp/5N2/1pPPp1q1/6N1/2PQ4/PP2BPP1/R1B1K2R b KQ - 1 17": {
+      "engine": "Stockfish 19",
+      "budget": 3,
+      "precomputed": true,
+      "lines": [
+        {
+          "depth": 20,
+          "cp": null,
+          "mate": 1,
+          "pv": [
+            "g7f6",
+            "d3h7"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": null,
+          "mate": 1,
+          "pv": [
+            "g5f6",
+            "d3h7"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": null,
+          "mate": 1,
+          "pv": [
+            "g8h8",
+            "h1h7"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "1n2rrk1/p1p2p1p/5p2/1pPPp1q1/6N1/2PQ4/PP2BPP1/R1B1K2R w KQ - 0 18": {
+      "engine": "Stockfish 19",
+      "budget": 26,
+      "precomputed": true,
+      "lines": [
+        {
+          "depth": 20,
+          "cp": null,
+          "mate": 1,
+          "pv": [
+            "d3h7"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": null,
+          "mate": 4,
+          "pv": [
+            "c1g5",
+            "f6f5",
+            "d3f5",
+            "h7h5",
+            "h1h5",
+            "g8g7",
+            "f5h7"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 20,
+          "cp": null,
+          "mate": 7,
+          "pv": [
+            "g4f6",
+            "g8g7",
+            "c1g5",
+            "e5e4",
+            "d3g3",
+            "f8g8",
+            "h1h7",
+            "g7f8",
+            "g3c7",
+            "g8g7",
+            "h7h8",
+            "g7g8",
+            "h8g8"
+          ],
+          "wdl": [
+            1000,
+            0,
+            0
           ]
         }
       ]
@@ -2843,7 +3387,12 @@
           "mate": 0,
           "depth": 0,
           "terminal": true,
-          "pv": []
+          "pv": [],
+          "wdl": [
+            1000,
+            0,
+            0
+          ]
         }
       ]
     }

@@ -42,7 +42,8 @@
         if (check.validate_fen(fen).valid && value && Array.isArray(value.lines)) {
           record.analysis[fen] = {engine: String(value.engine || 'Stockfish').slice(0,80), budget: Number(value.budget) || 0,
             lines: value.lines.slice(0, 3).map(l => ({cp: Number.isFinite(l.cp) ? l.cp : null, mate: Number.isFinite(l.mate) ? l.mate : null,
-              depth: Math.max(0, Number(l.depth) || 0), terminal: !!l.terminal, pv: Array.isArray(l.pv) ? l.pv.filter(x => /^[a-h][1-8][a-h][1-8][qrbn]?$/.test(x)).slice(0, 80) : []}))};
+              depth: Math.max(0, Number(l.depth) || 0), terminal: !!l.terminal, ...(validWdl(l.wdl)?{wdl:l.wdl.slice()}:{}),
+              pv: Array.isArray(l.pv) ? l.pv.filter(x => /^[a-h][1-8][a-h][1-8][qrbn]?$/.test(x)).slice(0, 80) : []}))};
         }
       });
     }
@@ -99,6 +100,15 @@
     const value = numeric(evaluation);
     return value === null ? null : value * (side === 'b' ? -1 : 1);
   }
+  function validWdl(wdl) {
+    return Array.isArray(wdl)&&wdl.length===3&&wdl.every(n=>Number.isInteger(n)&&n>=0&&n<=1000)&&wdl.reduce((a,b)=>a+b,0)===1000;
+  }
+  function probabilities(evaluation, side = 'w') {
+    const wdl=evaluation?.lines?.[0]?.wdl;
+    if(!validWdl(wdl))return null;
+    const [win,draw,loss]=side==='b'?wdl.slice().reverse():wdl;
+    return {win:win/10,draw:draw/10,loss:loss/10};
+  }
   function displayScore(evaluation, side = 'w') {
     const l = evaluation?.lines?.[0];
     if (!l) return '—';
@@ -132,8 +142,8 @@
     return rows;
   }
   function moveSymbol(review) {return !review?'':review.book?'▤':review.best?'★':review.loss>=350?'??':review.loss>=180?'?':review.loss>=90?'?!':review.loss<30?'!':'✓';}
-  function summary(record, side = record.side) {
-    const rows = timeline(record).slice(1), own = rows.filter(r => r.color === side), ready = own.filter(r => r.review);
+  function summary(record, side = record.side, cachedRows = null) {
+    const rows = (cachedRows || timeline(record)).slice(1), own = rows.filter(r => r.color === side), ready = own.filter(r => r.review);
     return {plies: rows.length, analyzed: ready.length, total: own.length,
       score: ready.length ? Math.round(100 * Math.exp(-ready.reduce((n,r) => n + Math.min(2000,r.review.loss), 0) / ready.length / 250)) : null,
       mistakes: ready.filter(r => r.review.loss >= 180).length};
@@ -166,5 +176,5 @@
     if(demoData && JSON.stringify(record.moves)===JSON.stringify(demoData.moves))record.analysis=JSON.parse(JSON.stringify(demoData.analysis));
     return record;
   }
-  return {START, id, uci, move, position, validate, create, importText, toPgn, lineSan, numeric, viewNumeric, displayScore, assess, timeline, summary, moveFacts, addBranch, fromPlacement, moveSymbol, demo};
+  return {START, id, uci, move, position, validate, create, importText, toPgn, lineSan, numeric, viewNumeric, displayScore, probabilities, validWdl, assess, timeline, summary, moveFacts, addBranch, fromPlacement, moveSymbol, demo};
 });

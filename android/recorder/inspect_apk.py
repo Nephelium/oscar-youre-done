@@ -9,7 +9,8 @@ def digest(stream):
     return sha.hexdigest()
 checks={}
 with zipfile.ZipFile(apk) as archive:
-    pairs={f'assets/review/{name}':root/'review'/name for name in ['index.html','core.js','ratings.js','demo-analysis.js','app.js','style.css','assets/oscar-panic.png']}
+    pairs={f'assets/review/{name}':root/'review'/name for name in ['index.html','core.js','ratings.js','demo-analysis.js','app.js','themes.js','board-motion.js','style.css','assets/oscar-panic.png']}
+    for piece in (root/'review/assets/pieces').glob('*.svg'):pairs['assets/review/assets/pieces/'+piece.name]=piece
     pairs['res/drawable-nodpi-v4/oscar_panic.png']=root/'review/assets/oscar-panic.png'
     forbidden=[name for name in archive.namelist() if any(x in name.lower() for x in ['duolingo-game','duolingo-promotion','duolingo-install','.xapk','oscar-screenshot-fixture'])]
     assert not forbidden, f'Test material in main APK: {forbidden}'

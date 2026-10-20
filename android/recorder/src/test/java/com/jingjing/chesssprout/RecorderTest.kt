@@ -5,6 +5,15 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class RecorderTest {
+    @Test fun parserKeepsWhiteWdlAndSwapsBlackWithoutLosingDraws() {
+        val info="info depth 20 multipv 1 score cp 91 wdl 470 510 20 nodes 100 pv e7e5 g1f3"
+        assertEquals(listOf(470,510,20),UciParser.parse(info,true)!!.wdl)
+        assertEquals(listOf(20,510,470),UciParser.parse(info,false)!!.wdl)
+        for(value in listOf("900 900 0","-1 501 500","400 nope 600","1001 0 0")) {
+            assertNull(UciParser.parse(info.replace("470 510 20",value),true)!!.wdl)
+        }
+        assertNull(UciParser.parse("info depth 10 score cp 10 pv e2e4",true)!!.wdl)
+    }
     private fun placement(vararg moves: String): String {val b=Board();moves.forEach{b.doMove(it)};return b.fen.substringBefore(' ')}
     @Test fun tracksDuplicateAndTwoPlyGapAndUndo() {
         val t=CaptureTracker()

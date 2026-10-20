@@ -10,7 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-data class UciLine(val rank: Int, val depth: Int, val cp: Int?, val mate: Int?, val pv: List<String>)
+data class UciLine(val rank: Int, val depth: Int, val cp: Int?, val mate: Int?, val pv: List<String>, val wdl: List<Int>? = null)
 object UciParser {
     fun parse(line: String, whiteToMove: Boolean): UciLine? {
         val parts = line.trim().split(Regex("\\s+"))
@@ -18,8 +18,12 @@ object UciParser {
         fun number(key: String): Int? { val i = parts.indexOf(key); return if (i >= 0) parts.getOrNull(i+1)?.toIntOrNull() else null }
         val score = parts.indexOf("score"); val kind = parts.getOrNull(score+1); val value = parts.getOrNull(score+2)?.toIntOrNull() ?: return null
         val sign = if (whiteToMove) 1 else -1
+        val wdlAt = parts.indexOf("wdl")
+        val wdl = if (wdlAt < 0) null else parts.drop(wdlAt + 1).take(3).mapNotNull { it.toIntOrNull() }
+            .takeIf { it.size == 3 && it.all { n -> n in 0..1000 } && it.sum() == 1000 }
         return UciLine(number("multipv") ?: 1, number("depth") ?: 0, if (kind == "cp") value * sign else null,
-            if (kind == "mate") value * sign else null, parts.drop(parts.indexOf("pv")+1).takeWhile { it.matches(Regex("[a-h][1-8][a-h][1-8][qrbn]?")) })
+            if (kind == "mate") value * sign else null, parts.drop(parts.indexOf("pv")+1).takeWhile { it.matches(Regex("[a-h][1-8][a-h][1-8][qrbn]?")) },
+            if (whiteToMove) wdl else wdl?.reversed())
     }
 }
 
@@ -51,6 +55,7 @@ class StockfishEngine(private val context: Context) {
         send("setoption name Threads value 2")
         send("setoption name Hash value 32")
         send("setoption name MultiPV value 3")
+        if (options.any { it.startsWith("option name UCI_ShowWDL ") }) send("setoption name UCI_ShowWDL value true")
         val networkDir = File(context.filesDir, "networks").apply { mkdirs() }
         val networkFiles = runCatching { context.assets.list("networks")?.toList() ?: emptyList() }.getOrDefault(emptyList())
         for (network in networkFiles) {
@@ -67,7 +72,8 @@ class StockfishEngine(private val context: Context) {
         if (board.isMated || board.isStaleMate || board.isDraw) {
             val mate = if (board.isMated) (if (fen.split(' ')[1] == "w") -1 else 1) else null
             return JSONObject().put("engine", name).put("budget", budget).put("lines", JSONArray().put(JSONObject().put("depth",0)
-                .put("cp", if(mate==null)0 else mate*100000).put("mate", if(mate==null)JSONObject.NULL else 0).put("terminal",true).put("pv", JSONArray())))
+                .put("cp", if(mate==null)0 else mate*100000).put("mate", if(mate==null)JSONObject.NULL else 0).put("terminal",true)
+                .put("wdl", JSONArray(if(mate==null)listOf(0,1000,0) else if(mate>0)listOf(1000,0,0) else listOf(0,0,1000))).put("pv", JSONArray())))
         }
         try {
             start()
@@ -84,6 +90,7 @@ class StockfishEngine(private val context: Context) {
             check(results.isNotEmpty()) { "引擎未返回分析结果，请重试" }
             return JSONObject().put("engine", name).put("budget", budget).put("lines", JSONArray(results.values.take(3).map { l ->
                 JSONObject().put("depth", l.depth).put("cp", l.cp ?: JSONObject.NULL).put("mate", l.mate ?: JSONObject.NULL).put("pv", JSONArray(l.pv))
+                    .apply { l.wdl?.let { put("wdl", JSONArray(it)) } }
             }))
         } catch (error: Exception) { if (token == generation.get()) close(); throw error }
     }
