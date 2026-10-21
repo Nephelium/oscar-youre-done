@@ -44,6 +44,12 @@ class CaptureTracker(initialFen: String = Board().fen, moves: List<String> = emp
         if(observed.length!=64 || observed.any{it !in ".?prnbqkPRNBQK"} ||
             observed.count{it=='K'}>1 || observed.count{it=='k'}>1 ||
             ('K' !in observed && 'k' !in observed))return Change("unmatched")
+        val expected=expand(current)
+        val differences=observed.indices.filter{observed[it]!=expected[it]}
+        // A selected/enlarged piece can be mistaken for another shape or empty.
+        // A legal move changes at least two squares (mate animation handled above).
+        // Ignore this transient observation without altering any stored position.
+        if(differences.size==1 && expected[differences.single()]!='.')return Change("same")
         val targets=Piece.entries.filter{it!=Piece.NONE}.associateWith{piece->
             var mask=0L
             for(i in observed.indices)if(observed[i]==piece.fenSymbol[0])mask=mask or (1L shl ((7-i/8)*8+i%8))

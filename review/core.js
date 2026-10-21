@@ -222,6 +222,19 @@
     if(key){const changes=[];if(delta?.cp!==null&&delta?.cp!==undefined)changes.push(sideName(side)+'评价'+(delta.cp>=0?'上升':'下降')+(Math.abs(delta.cp)/100).toFixed(2)+'兵');if(delta?.win!==null&&delta?.win!==undefined)changes.push('获胜概率'+(delta.win>=0?'上升':'下降')+Math.abs(delta.win).toFixed(1)+'个百分点');paragraphs.unshift('关键节点 · '+key.reason+'。'+(changes.length?changes.join('，')+'。':'')+(row.captured?'这一步涉及吃'+PIECES[row.captured]+'，结合后续应手看交换结果。':row.mate?'对方已无法解除将军。':row.check?'这步带将军，先看对方有哪些合法解将。':'建议对照推荐线，检查这一手留下的机会。'));}
     return {paragraphs,delta,key};
   }
+  function shouldStoreBranch(record, at, moves) {
+    if (!moves.length) return false;
+    let shared = 0;
+    for (const b of record.branches) {
+      if (b.at !== at) continue;
+      let n = 0;
+      while (n < Math.min(b.moves.length, moves.length) && b.moves[n] === moves[n]) n++;
+      // An unchanged route or its extension updates the existing saved line.
+      if (n === Math.min(b.moves.length, moves.length)) return true;
+      shared = Math.max(shared, n);
+    }
+    return moves.length - shared >= 3;
+  }
   function addBranch(record, at, moves) {
     position(record, at, moves);
     if (!moves.length) throw Error('先在棋盘上走出一条变化。');
@@ -253,5 +266,5 @@
     if(demoData && JSON.stringify(record.moves)===JSON.stringify(demoData.moves))record.analysis=JSON.parse(JSON.stringify(demoData.analysis));
     return record;
   }
-  return {START, id, uci, move, position, validate, create, importText, toPgn, lineSan, numeric, viewNumeric, displayScore, probabilities, validWdl, assess, timeline, summary, moveFacts, variationRows, evaluationChange, keyMoments, explainMove, addBranch, compactBranches, fromPlacement, moveSymbol, demo};
+  return {START, id, uci, move, position, validate, create, importText, toPgn, lineSan, numeric, viewNumeric, displayScore, probabilities, validWdl, assess, timeline, summary, moveFacts, variationRows, evaluationChange, keyMoments, explainMove, shouldStoreBranch, addBranch, compactBranches, fromPlacement, moveSymbol, demo};
 });

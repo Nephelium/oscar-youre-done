@@ -5,6 +5,15 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class RecorderTest {
+    @Test fun enlargedSelectedPieceDoesNotStartGapSearchOrInventMove() {
+        val tracker=CaptureTracker()
+        val initial=tracker.board.fen
+        assertEquals("same",tracker.accept(initial.substringBefore(' ').replace("RNBQKBNR","RNB1KBNR")).kind)
+        assertEquals(0,tracker.lastSearchNodes)
+        assertEquals(initial,tracker.board.fen)
+        assertTrue(tracker.moves.isEmpty())
+        assertEquals(listOf("e2e4"),tracker.accept(placement("e4")).moves)
+    }
     @Test fun confirmationLabelsIncludeBothPlayersAndPromotion() {
         assertEquals("白兵e4 · 黑马f6",CaptureTracker.describeMoves(Board().fen,listOf("e2e4","g8f6")))
         assertEquals("白兵a8升马",CaptureTracker.describeMoves("7k/P7/8/8/8/8/8/7K w - - 0 1",listOf("a7a8n")))

@@ -1,5 +1,7 @@
 # Project guide
 
+1.3.3: New exploratory forks auto-save after three new plies; explicit saves and uninterrupted extensions remain available at any length. Run review-branch-comparison-ui.js and review-capture-regression-ui.js. VideoRegressionTest requires private regression-video.mp4 and regression-reference.json supplied in the app external files directory. review-video-screen-replay.js replays that local video through MediaProjection. Never publish these inputs or resulting private game records. Video import targets games without takebacks; use screenshot import for exercises.
+
 Android recorder module :recorder; shared static UI in review/; vendored rules, engines and licenses in vendor/. Build outputs stay in android/recorder/build/ and must not be committed. docs/images/ contains presentation screenshots; docs/examples/ contains the verified public demonstration PGN.
 
 Run npm test and npm run test:ui for JavaScript. In android/, run gradlew :recorder:testDebugUnitTest :recorder:lintDebug :recorder:assembleDebug. Android instrumentation needs the Release vision fixture archive extracted into android/recorder/build/reports/; fixtures must never enter the main APK. Keep package identity and persistent storage compatible. Do not publish account information, secrets, emulator data, signing keys or full user screen recordings.

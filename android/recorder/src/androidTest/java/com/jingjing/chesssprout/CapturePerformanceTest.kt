@@ -15,6 +15,36 @@ import java.io.File
 
 @RunWith(AndroidJUnit4::class)
 class CapturePerformanceTest {
+    @Test fun disappearingBoardDoesNotCreateAnEmptyPositionIssue() {
+        val instrumentation=InstrumentationRegistry.getInstrumentation()
+        val initial=instrumentation.context.assets.open("duolingo-auto-initial.png").use{BitmapFactory.decodeStream(it)}
+        val blank=Bitmap.createBitmap(initial.width,initial.height,Bitmap.Config.ARGB_8888).apply{eraseColor(android.graphics.Color.WHITE)}
+        val pipeline=CapturePipeline(instrumentation.targetContext,JSONObject(),"棋盘退场回归")
+        repeat(4){pipeline.process(initial)}
+        assertEquals("8/8/8/8/8/8/8/8",pipeline.recognizer.recognize(blank)?.placement)
+        repeat(6){pipeline.process(blank)}
+        assertTrue(pipeline.tracker.moves.isEmpty())
+        assertEquals(0,pipeline.game.getJSONArray("issues").length())
+        repeat(2){pipeline.process(initial)}
+        pipeline.finish()
+        assertEquals(0,pipeline.game.getJSONArray("issues").length())
+        blank.recycle();initial.recycle()
+    }
+    @Test fun blankSwitchFrameDoesNotConsumeInitialCalibration() {
+        val instrumentation=InstrumentationRegistry.getInstrumentation()
+        val initial=instrumentation.context.assets.open("duolingo-auto-initial.png").use{BitmapFactory.decodeStream(it)}
+        val blank=Bitmap.createBitmap(initial.width,initial.height,Bitmap.Config.ARGB_8888)
+        val expected=BoardRecognizer();assertTrue(expected.calibrate(initial))
+        val pipeline=CapturePipeline(instrumentation.targetContext,JSONObject(),"切换应用首帧回归")
+        pipeline.process(blank)
+        repeat(4){pipeline.process(initial)}
+        val wanted=expected.profile().getJSONObject("templates")
+        val actual=pipeline.recognizer.profile().getJSONObject("templates")
+        for(piece in ".prnbqkPRNBQK")assertEquals("Relearn $piece after blank first frame",wanted.getJSONArray(piece.toString()).toString(),actual.getJSONArray(piece.toString()).toString())
+        assertTrue(pipeline.tracker.moves.isEmpty())
+        assertEquals(0,pipeline.game.getJSONArray("issues").length())
+        blank.recycle();initial.recycle();pipeline.finish()
+    }
     @Test fun selectingQueenAndShowingLegalDotsDoesNotRecordAMove() {
         val context=InstrumentationRegistry.getInstrumentation().targetContext
         val directory=context.getExternalFilesDir(null)!!

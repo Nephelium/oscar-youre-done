@@ -11,6 +11,23 @@ test('automatic analysis defaults are bounded; unlimited is explicit and shallow
  assert.equal(P.accept({engine:'X',lines:[{depth:20}]},{engine:'Y',lines:[{depth:12}]}),true);
 });
 const ev=(cp,wdl=[200,700,100],mate=null)=>({engine:'test-engine',budget:600,lines:[{cp,wdl,mate,depth:12,pv:[]}]});
+test('short experiments stay unsaved; saved continuations extend and fresh forks need three new plies',()=>{
+ const r=S.create('branch policy'),line=['d2d4','d7d5','c2c4'];
+ assert.equal(S.shouldStoreBranch(r,0,[]),false);
+ for(let n=1;n<3;n++)assert.equal(S.shouldStoreBranch(r,0,line.slice(0,n)),false);
+ assert.equal(S.shouldStoreBranch(r,0,line),true);
+ const saved=S.addBranch(r,0,line.slice(0,1)); // Explicit save is always allowed.
+ assert.equal(S.shouldStoreBranch(r,0,line.slice(0,2)),true);
+ assert.equal(S.addBranch(r,0,line).id,saved.id);
+ const alternative=['d2d4','d7d5','g1f3','g8f6','e2e3'];
+ assert.equal(S.shouldStoreBranch(r,0,alternative.slice(0,3)),false);
+ assert.equal(S.shouldStoreBranch(r,0,alternative.slice(0,4)),false);
+ assert.equal(S.shouldStoreBranch(r,0,alternative),true);
+ S.addBranch(r,0,alternative);
+ assert.equal(r.branches.length,2);
+ assert.deepEqual(r.branches[0].moves,line);
+ assert.equal(S.shouldStoreBranch(r,2,['f1c4']),false);
+});
 test('variation timeline preserves mainline and evaluates every branch step from shared FEN cache',()=>{
  const r=S.importText('1. e4 e5 2. Nf3 Nc6 *')[0],before=JSON.stringify(r.moves);
  const line=['f1c4','g8f6','d2d3'],rows=S.variationRows(r,2,line);

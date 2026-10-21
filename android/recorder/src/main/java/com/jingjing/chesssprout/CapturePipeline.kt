@@ -30,6 +30,7 @@ class CapturePipeline(private val context: Context, options: JSONObject, val sou
     private var frames = 0
     private var lastIssue = ""
     private var unmatchedFrames=0
+    private var fixedRegion=options.optJSONObject("region")!=null
     var lastProcessMs=0L
         private set
     var message = "等待标准初始棋盘，请先不要走子"
@@ -65,13 +66,14 @@ class CapturePipeline(private val context: Context, options: JSONObject, val sou
             message="练习局面已确认，可以继续走题";store.save(game);return
         }
         recognizer.blackBottom=options.optString("side","w")=="b"
+        fixedRegion=options.optJSONObject("region")!=null
         recognizer.reset(options.optJSONObject("region")?.let { rect(it) })
         themeStore.load()?.let { recognizer.loadProfile(it) }
         attemptCalibration=!positionMode && tracker.moves.isEmpty()
         pendingFen=null
         previous="";stable=0; message="正在重新定位棋盘"
     }
-    fun onResize() {recognizer.region=null;previous="";stable=0;unmatchedFrames=0;recovery=null}
+    fun onResize() {recognizer.region=null;fixedRegion=false;previous="";stable=0;unmatchedFrames=0;recovery=null}
     fun onInterrupted() {previous="";stable=0;unmatchedFrames=0;recovery=null}
     fun process(image: Bitmap) {
         val start=System.nanoTime()
@@ -81,10 +83,10 @@ class CapturePipeline(private val context: Context, options: JSONObject, val sou
         frames++
         // Prefer a verified initial-board calibration, but never label an opening
         // move as an empty square. A ready profile can recover a unique 1–2 ply start.
-        if(attemptCalibration) {
-            attemptCalibration=false
+        if(attemptCalibration && frames%3==1) {
             val learner=BoardRecognizer(recognizer.blackBottom).apply {region=recognizer.region}
             if(learner.calibrate(image)) {
+                attemptCalibration=false
                 recognizer.loadProfile(learner.profile());recognizer.region=learner.region
                 recognizer.blackBottom=learner.blackBottom
                 game.put("side",if(recognizer.blackBottom)"b" else "w")
@@ -102,10 +104,13 @@ class CapturePipeline(private val context: Context, options: JSONObject, val sou
             message="棋盘已就绪，可以开始下棋"; game.getJSONObject("capture").put("state","recording");store.save(game)
         }
         val observation=recognizer.recognize(image)
-        if(observation==null) {
+        // A transition/results page can classify as 64 empty cells at the old
+        // board rectangle. No legal position loses both kings; treat it as an
+        // absent board, preserving confirmed moves and any real earlier gaps.
+        if(observation==null || ('K' !in observation.placement && 'k' !in observation.placement)) {
             previous="";stable=0
             badFrames++
-            if(badFrames%8==0)recognizer.region=null
+            if(badFrames%16==0)retryRegion(image)
             if(badFrames%16==0 && !positionMode && tracker.moves.isEmpty())attemptCalibration=true
             if(badFrames>8)message="暂未看清棋盘，请等动画结束或框选棋盘"
             return
@@ -144,6 +149,7 @@ class CapturePipeline(private val context: Context, options: JSONObject, val sou
                 }
             }
             "move","undo" -> {
+                attemptCalibration=false
                 unmatchedFrames=0;recovery=null
                 feedback=if(change.kind=="undo")"已识别撤回 ${change.removed.size} 步" else
                     "已记录 $confirmedPlies 步 · "+CaptureTracker.describeMoves(beforeFen,change.moves)
@@ -170,9 +176,7 @@ class CapturePipeline(private val context: Context, options: JSONObject, val sou
                 unmatchedFrames++
                 // A plausible but shifted grid can return labels forever. Retry
                 // localization even when recognition is non-null, at a bounded rate.
-                if(unmatchedFrames%8==0) {
-                    recognizer.region=null;previous="";stable=0
-                }
+                if(unmatchedFrames%16==0)retryRegion(image)
                 if(stable>=4 && lastIssue!=placement && game.getJSONArray("issues").length()<100) {
                     lastIssue=placement
                     val imageName="${game.getString("id")}-${System.currentTimeMillis()}.jpg"
@@ -188,6 +192,17 @@ class CapturePipeline(private val context: Context, options: JSONObject, val sou
                     message="有一处需要校对，正在继续观察";store.save(game)
                 }
             }
+        }
+    }
+    private fun retryRegion(image: Bitmap) {
+        // Selection highlights can invalidate grid detection. Preserve a working
+        // crop when no replacement can be found; never discard the user's crop.
+        if(fixedRegion)return
+        val candidate=recognizer.locate(image)?:return
+        val current=recognizer.region
+        if(current==null || kotlin.math.abs(candidate.left-current.left)>.015f ||
+            kotlin.math.abs(candidate.top-current.top)>.015f || kotlin.math.abs(candidate.width()-current.width())>.02f) {
+            recognizer.region=candidate;previous="";stable=0
         }
     }
     private fun beginContinuation(resumed: CaptureRecovery.Recovered,anchor: String) {

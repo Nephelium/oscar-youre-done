@@ -209,3 +209,5 @@ input[type=number],input[type=datetime-local]{width:100%;min-width:0;border:1.5p
 .curve-legend>button:not(.button){font:inherit;font-weight:700;border:0;background:transparent;min-height:32px;padding:2px;cursor:pointer}
 .curve [data-saved-branch]{cursor:pointer;outline:none}
 .curve [data-saved-branch]:focus-visible circle{stroke:var(--ink);stroke-width:3}
+
+.video-time-entry{display:flex;align-items:center;gap:10px;margin:8px 0 16px}.video-time-entry label{display:flex;align-items:center;gap:6px;flex:1;min-width:0}.video-time-entry input{width:100%;min-width:0;min-height:44px;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--white);color:inherit;font:inherit}.video-time-entry button{min-height:44px;flex:none}

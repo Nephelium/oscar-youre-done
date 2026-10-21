@@ -48,8 +48,63 @@ async function main(){
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
    assert.ok(await page.locator('.saved-branch-line').count());
   }
+  // A screenshot-only record has no mainline, but its saved lines must still
+  // support the real range control, including a round trip through the fork.
+  const screenshot=S.importText('1. e4 *')[0];screenshot.moves=[];screenshot.id='screenshot-branches';
+  const short=S.addBranch(screenshot,0,['d2d4','d7d5']);
+  const long=S.addBranch(screenshot,0,['e2e4','e7e5','g1f3','b8c6']);
+  const fresh=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
+  fresh.on('pageerror',e=>errors.push(e.message));
+  await fresh.addInitScript(r=>{
+   localStorage.setItem('sprout.games.v1',JSON.stringify([r]));
+   localStorage.setItem('sprout.view.v1',JSON.stringify({id:r.id,route:'review',ply:0,tab:'analysis'}));
+   localStorage.setItem('sprout.settings.v1',JSON.stringify({autoAnalysis:false,animation:false}));
+  },screenshot);
+  // Re-use this document's storage without the original fixture init script.
+  await fresh.goto(page.url());
+  await fresh.locator('.curve-branches summary').click();
+  for(const branch of [short,long])await fresh.locator(`[data-act="curveBranch"][data-id="${branch.id}"]`).click();
+  const slider=fresh.locator('#curve-scrub');await slider.scrollIntoViewIfNeeded();
+  const bounds=await slider.boundingBox();
+  await fresh.mouse.move(bounds.x+13,bounds.y+bounds.height/2);await fresh.mouse.down();
+  await fresh.mouse.move(bounds.x+bounds.width-13,bounds.y+bounds.height/2,{steps:10});await fresh.mouse.up();
+  assert.equal(await fresh.evaluate(()=>App.state.branchPly),4);
+  assert.equal(await fresh.evaluate(()=>App.state.branch.join(',')),long.moves.join(','));
+  await slider.focus();await slider.press('Home');
+  assert.equal(await fresh.evaluate(()=>App.state.branchActive),false);
+  await slider.press('ArrowRight');assert.equal(await fresh.evaluate(()=>App.state.branchPly),1);
+  await slider.press('End');assert.equal(await fresh.evaluate(()=>App.state.branchPly),4);
+  await fresh.locator(`[data-act="openCompared"][data-id="${short.id}"]`).click();
+  await slider.focus();await slider.press('Home');await slider.press('ArrowRight');
+  assert.equal(await fresh.evaluate(()=>App.state.branch.join(',')),short.moves.join(','));
+  assert.equal(await fresh.evaluate(()=>App.state.branchPly),1);
+  await fresh.close();
+  const trial=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
+  trial.on('pageerror',e=>errors.push(e.message));
+  await trial.goto(page.url());await trial.locator('[data-act="demo"]').click();
+  const trialMove=async(a,b)=>{await trial.locator(`[data-square="${a}"]`).click();await trial.locator(`[data-square="${b}"]`).click();};
+  const trialAct=async a=>trial.locator(`[data-act="${a}"]`).first().click();
+  // Repeated one-ply experiments must not pollute the saved list.
+  for(const [a,b] of [['d2','d4'],['e2','e4'],['c2','c4']]){
+   await trialMove(a,b);await trialAct('prev');
+   assert.equal(await trial.evaluate(()=>App.state.current.branches.length),0);
+  }
+  await trialMove('d2','d4');await trialMove('d7','d5');await trialAct('prev');await trialAct('saveBranch');
+  assert.deepEqual(await trial.evaluate(()=>App.state.current.branches[0].moves),['d2d4']);
+  const savedId=await trial.evaluate(()=>App.state.current.branches[0].id);
+  await trialMove('d7','d5');await trialMove('c2','c4');
+  assert.equal(await trial.evaluate(()=>App.state.current.branches[0].id),savedId);
+  assert.equal(await trial.evaluate(()=>App.state.current.branches.length),1);
+  await trialAct('prev');await trialMove('g1','f3');
+  assert.equal(await trial.evaluate(()=>App.state.current.branches.length),1);
+  await trialMove('g8','f6');
+  assert.equal(await trial.evaluate(()=>App.state.current.branches.length),1);
+  await trialMove('e2','e3');
+  assert.equal(await trial.evaluate(()=>App.state.current.branches.length),2);
+  assert.deepEqual(await trial.evaluate(()=>App.state.current.branches.map(b=>b.moves.length)),[3,5]);
+  await trial.close();
   assert.deepEqual(errors,[]);
-  console.log('PASS: prefix deduplication, multi-branch curves, common time axis, perspective, win mode, point navigation and responsive layout.');
+  console.log('PASS: prefix deduplication, multi-branch curves, screenshot-only dragging, keyboard/fork round trips, perspective, win mode and responsive layout.');
  }finally{await browser.close();}
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

@@ -28,6 +28,8 @@ class BoardRecognizer(var blackBottom: Boolean = false) {
         private set
     var classifiedFrames=0
         private set
+    var diagnostic=""
+        private set
     private val initial = "rnbqkbnrpppppppp................................PPPPPPPPRNBQKBNR"
     fun reset(rect: RectF? = region) { region = rect; calibrated = false; banks.clear() }
     fun profile(): JSONObject {
@@ -178,6 +180,7 @@ class BoardRecognizer(var blackBottom: Boolean = false) {
     }
     data class Observation(val placement: String, val confidence: Double)
     fun recognize(image: Bitmap): Observation? {
+        diagnostic=""
         if (!calibrated) return null
         val rough=region?:locate(image)?:return null
         val box=if(gridReady)rough else refineInitialGrid(image,rough,false).also{region=it;gridReady=true}
@@ -203,7 +206,7 @@ class BoardRecognizer(var blackBottom: Boolean = false) {
             cachedTemplates=templates;cachedFeatures.fill(null);cachedDistances.fill(null)
         }
         for ((index,feature) in features.withIndex()) {
-            val distances = if(cachedFeatures[index]?.contentEquals(feature)==true)cachedDistances[index]!! else templates.map { (piece, variants) ->
+            val distances = if(canReuseDistances(feature,cachedFeatures[index],cachedDistances[index]))cachedDistances[index]!! else templates.map { (piece, variants) ->
                 var best=Double.POSITIVE_INFINITY
                 for(variant in variants) {
                     if(best==0.0)break
@@ -213,6 +216,7 @@ class BoardRecognizer(var blackBottom: Boolean = false) {
             }.sortedBy { it.second }.also {cachedFeatures[index]=feature;cachedDistances[index]=it}
             val first = distances[0]; val second = distances[1]
             if (first.second > 0.145 || second.second-first.second < 0.0025) {
+                diagnostic+="$index:${first.first}/${first.second},${second.first}/${second.second} "
                 // One uncertain square is retained only as a mask. The legal tracker
                 // can accept it solely as the losing king in a unique checkmate.
                 if(++uncertain>1)return null
@@ -253,6 +257,15 @@ class BoardRecognizer(var blackBottom: Boolean = false) {
             if(total>=bound)return limit
         }
         return total/a.size
+    }
+    private fun canReuseDistances(current: FloatArray,previous: FloatArray?,distances: List<Pair<Char,Double>>?): Boolean {
+        if(previous==null || distances==null)return false
+        val delta=distance(current,previous,Double.POSITIVE_INFINITY)
+        if(delta==0.0)return true
+        // Triangle inequality: every template distance changes by at most delta.
+        // Reuse only if BOTH the winning class and confidence decision are proven
+        // unchanged. Keep the original feature so small changes accumulate.
+        return distances[0].second+delta<0.145 && distances[1].second-distances[0].second-2*delta>=0.0025
     }
     private fun features(image: Bitmap, box: RectF, existingPixels: IntArray?=null): List<FloatArray> {
         val left=box.left*image.width; val top=box.top*image.height; val width=box.width()*image.width; val height=box.height()*image.height

@@ -115,7 +115,7 @@ object VideoImporter {
                 while(time<duration && !cancelled) {
                     // Unsupported codec/image layouts fall back at the current
                     // timestamp, preserving already confirmed moves.
-                    val decoded=try{reader?.next{cancelled}}catch(_: Exception){reader?.close();reader=null;null}
+                    val decoded=try{reader?.next(){cancelled}}catch(_: Exception){reader?.close();reader=null;null}
                     if(reader!=null && decoded==null)break
                     val frame=decoded?.bitmap?:if(!cancelled)readFrame(retriever,time) else null
                     if(frame!=null)try {pipeline.process(frame)} finally {frame.recycle()}
@@ -129,6 +129,8 @@ object VideoImporter {
                 state=JSONObject().put("state","done").put("gameId",pipeline.game.getString("id")).put("message",pipeline.message)
                     .put("plies",pipeline.confirmedPlies).put("cancelled",cancelled).put("progress",100)
                     .put("classifiedFrames",pipeline.recognizer.classifiedFrames).put("reusedFrames",pipeline.recognizer.reusedFrames)
+                    .put("convertedFrames",reader?.convertedFrames).put("reusedRgbFrames",reader?.reusedFrames)
+                    .put("conversionMs",reader?.conversionNs?.div(1e6)).put("decoder",reader?.codecName)
             } catch(error: Exception) {
                 pipeline?.finish("导入中断，已保留确认的走法")
                 state=JSONObject().put("state","error").put("message",error.message?:"录屏无法读取")

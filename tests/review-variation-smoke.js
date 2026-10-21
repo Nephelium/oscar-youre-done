@@ -38,8 +38,8 @@ async function main(){
   assert.ok(await page.locator('.variation-line').count());
   await act('prev');assert.equal(await page.evaluate(()=>App.state.branch.length),2);assert.equal(await page.evaluate(()=>App.state.branchPly),1);
   await act('next');assert.equal(await page.evaluate(()=>App.state.branchPly),2);
-  await act('mainline');assert.equal(await page.evaluate(()=>App.state.branch.length),2);await act('resumeBranch');
-  await act('first');assert.equal(await page.evaluate(()=>App.state.branchActive),false);assert.equal(await page.locator('.branch-banner').count(),0);await move('e2','e4');await page.waitForFunction(()=>!App.state.busy&&App.state.current.branches.length===2);assert.ok(await page.evaluate(()=>fixtureOptions.every(o=>o.depth===20&&!o.infinite)));assert.equal(await page.locator('.evaluation-deltas span').count(),2);assert.doesNotMatch(await page.locator('.review-copy').textContent(),/个百分点/);
+  assert.equal(await page.evaluate(()=>App.state.current.branches.length),0);await act('saveBranch');await act('mainline');assert.equal(await page.evaluate(()=>App.state.branch.length),2);await act('resumeBranch');
+  await act('first');assert.equal(await page.evaluate(()=>App.state.branchActive),false);assert.equal(await page.locator('.branch-banner').count(),0);await move('e2','e4');await page.waitForFunction(()=>!App.state.busy);assert.equal(await page.evaluate(()=>App.state.current.branches.length),1);await act('saveBranch');assert.equal(await page.evaluate(()=>App.state.current.branches.length),2);assert.ok(await page.evaluate(()=>fixtureOptions.every(o=>o.depth===20&&!o.infinite)));assert.equal(await page.locator('.evaluation-deltas span').count(),2);assert.doesNotMatch(await page.locator('.review-copy').textContent(),/个百分点/);
   assert.equal(await page.evaluate(()=>App.state.branch.length),1);
   assert.equal(await page.evaluate(()=>App.state.current.moves.length),35);
   await act('last');await act('explain');assert.match(await page.locator('#modal-content').textContent(),/白方兵从 e2 到 e4/);await act('close');
@@ -50,7 +50,7 @@ async function main(){
   const id=await page.locator('[data-open]').first().getAttribute('data-open');
   // A previous installation may have persisted the old zero-step variation screen.
   await page.evaluate(id=>localStorage.setItem('sprout.view.v1',JSON.stringify({route:'review',id,ply:0,branchAt:0,branch:['d2d4'],branchPly:0,branchActive:true})),id);
-  await page.reload();assert.equal(await page.evaluate(()=>App.state.branchActive),false);assert.equal(await page.locator('.branch-banner').count(),0);assert.deepEqual(await page.evaluate(()=>App.state.current.branches[0].moves),['d2d4']);await home();
+  await page.reload();assert.equal(await page.evaluate(()=>App.state.branchActive),false);assert.equal(await page.locator('.branch-banner').count(),0);assert.equal(await page.evaluate(()=>App.state.current.branches.length),0);await home();
   const card=page.locator(`[data-open="${id}"]`),box=await card.boundingBox();
   await page.mouse.move(box.x+box.width-25,box.y+20);await page.mouse.down();await page.mouse.move(box.x+60,box.y+20,{steps:6});await page.mouse.up();
   assert.equal(await card.locator('..').getAttribute('class'),'record-swipe open');
