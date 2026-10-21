@@ -105,13 +105,13 @@ object VideoImporter {
         state=JSONObject().put("state","processing").put("progress",0).put("message","正在识别录屏")
         Thread({
             val retriever=MediaMetadataRetriever();var pipeline: CapturePipeline?=null
-            var reader: VideoFrameReader?=null
+            var reader: PrefetchedVideoReader?=null
             try {
                 retriever.setDataSource(context,uri)
                 val duration=retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)!!.toLong()
                 pipeline=CapturePipeline(context,captureOptions,"录屏导入")
                 var time=captureOptions.optLong("startMs")
-                reader=runCatching{VideoFrameReader(context,uri,time)}.getOrNull()
+                reader=runCatching{PrefetchedVideoReader(context,uri,time)}.getOrNull()
                 while(time<duration && !cancelled) {
                     // Unsupported codec/image layouts fall back at the current
                     // timestamp, preserving already confirmed moves.

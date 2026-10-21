@@ -30,7 +30,8 @@ class VideoRegressionTest {
             while(VideoImporter.state.optString("state")=="processing" && System.nanoTime()<deadline)Thread.sleep(200)
             assertEquals(VideoImporter.state.toString(),"done",VideoImporter.state.getString("state"))
             val record=GameStore(context).read(VideoImporter.state.getString("gameId"))!!
-            File(directory,"v133-importer-full.json").writeText(JSONObject()
+            val reportName=InstrumentationRegistry.getArguments().getString("reportName")?:"v133-importer-full.json"
+            File(directory,reportName).writeText(JSONObject()
                 .put("elapsedMs",(System.nanoTime()-start)/1e6).put("preparationMs",(preparedAt-start)/1e6)
                 .put("state",VideoImporter.state).put("record",record).toString(2))
             val expected=JSONObject(File(directory,"regression-reference.json").readText()).getJSONArray("moves")

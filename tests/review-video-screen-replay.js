@@ -37,8 +37,21 @@ async function main(){
   run('shell','am','start','-a','android.intent.action.VIEW','-d',`http://127.0.0.1:${port}/`,'-p','com.android.chrome');
   const readyDeadline=Date.now()+25000;while(!playback.ready&&Date.now()<readyDeadline){if(playback.error)throw Error(playback.error);await wait(200);}
   assert.ok(playback.ready,'Original video must decode in Chrome');
-  await c.page.waitForFunction(()=>JSON.parse(SproutHost.status()).capture.calibrated,null,{timeout:30000,polling:200});
-  await wait(1200);
+  // A loaded profile is not proof that this screen's initial board is ready.
+  // Poll from the host: background WebViews may throttle their JS timers.
+  const boardDeadline=Date.now()+35000;let readySince=0,initialCapture;
+  while(Date.now()<boardDeadline){
+   initialCapture=await c.page.evaluate(()=>JSON.parse(SproutHost.status()).capture);
+   if(initialCapture.message==='棋盘已就绪，可以开始下棋') {if(!readySince)readySince=Date.now();if(Date.now()-readySince>=1200)break;}
+   else readySince=0;
+   await wait(200);
+  }
+  fs.writeFileSync(path.join(out,'video-replay-initial-status.json'),JSON.stringify({playback,capture:initialCapture},null,2));
+  if(!readySince || Date.now()-readySince<1200){
+   const preview=await c.page.evaluate(()=>SproutHost.capturePreview());
+   if(preview)fs.writeFileSync(path.join(out,'video-replay-initial-preview.jpg'),Buffer.from(preview.split(',')[1],'base64'));
+   throw Error('Initial screen must be recognized before replay: '+JSON.stringify(initialCapture));
+  }
   const id=await c.page.evaluate(()=>JSON.parse(SproutHost.status()).capture.gameId),start=Date.now();play=true;
   let previous=-1,lastLog=0;
   while(!playback.ended&&Date.now()-start<360000){
@@ -52,7 +65,7 @@ async function main(){
   await c.page.evaluate(()=>SproutHost.captureAction('stop','{}'));await wait(600);
   const record=await c.page.evaluate(id=>JSON.parse(SproutHost.listGames()).find(g=>g.id===id),id);
   const report={scope:'Original private video, Chrome normal-speed playback, full-screen MediaProjection; emulator only',elapsedMs:Date.now()-start,playback,events,record};
-  fs.writeFileSync(path.join(out,'v133-video-screen-replay.json'),JSON.stringify(report,null,2));
+  fs.writeFileSync(path.join(out,process.env.REPLAY_REPORT||'v133-video-screen-replay.json'),JSON.stringify(report,null,2));
   assert.deepEqual(record.moves,reference.moves);assert.equal(record.issues.filter(x=>!x.resolved).length,0);
   console.log(`PASS: ${record.moves.length} exact plies at playbackRate ${playback.rate}; no unresolved gaps.`);
  }finally{

@@ -43,6 +43,9 @@ class CaptureService : Service() {
     private var frameEligible=false
     private var decodedFrames=0
     private var repeatedFrames=0
+    private val frameConverter=ScreenFrameConverter()
+    private var conversionNs=0L
+    private var lastConversionMs=0.0
     private var processingError: String?=null
     private var lastNotify=0L
     @Volatile private var latest: Bitmap?=null
@@ -101,19 +104,13 @@ class CaptureService : Service() {
                     return
                 }
                 if(image!=null) {
-                val plane=image.planes[0];val paddedWidth=plane.rowStride/plane.pixelStride
-                val buffer=Bitmap.createBitmap(paddedWidth,image.height,Bitmap.Config.ARGB_8888)
-                var cropped: Bitmap?=null
-                var frame: Bitmap?=null
-                try {
-                    buffer.copyPixelsFromBuffer(plane.buffer)
-                    val factor=minOf(1f,720f/image.width)
-                    cropped=Bitmap.createBitmap(buffer,0,0,image.width,image.height)
-                    frame=Bitmap.createScaledBitmap(cropped,(image.width*factor).toInt(),(image.height*factor).toInt(),true)
-                    synchronized(this@CaptureService) {latest?.recycle();latest=frame;frameEligible=true;decodedFrames++}
-                } finally {
-                    if(cropped!==frame && cropped!==buffer)cropped?.recycle()
-                    if(buffer!==frame)buffer.recycle()
+                val before=System.nanoTime()
+                val plane=image.planes[0]
+                synchronized(this@CaptureService) {
+                    latest=frameConverter.convert(plane.buffer,image.width,image.height,plane.rowStride,plane.pixelStride)
+                    frameEligible=true;decodedFrames++
+                    val elapsed=System.nanoTime()-before
+                    conversionNs+=elapsed;lastConversionMs=elapsed/1e6
                 }
                 } else if(frameEligible)repeatedFrames++
                 synchronized(this@CaptureService) {if(frameEligible)latest?.let {pipeline?.process(it)}}
@@ -194,6 +191,7 @@ class CaptureService : Service() {
     fun snapshot(): JSONObject=synchronized(this) {JSONObject().put("running",true).put("paused",paused).put("gameId",pipeline?.game?.optString("id"))
         .put("message",if(paused)"记录已暂停" else processingError?:pipeline?.message).put("plies",pipeline?.confirmedPlies?:0).put("calibrated",pipeline?.game?.getJSONObject("capture")?.optString("state")=="recording").put("pendingFen",pipeline?.pendingFen).put("awaitingPosition",pipeline?.awaitingPosition?:false)
         .put("decodedFrames",decodedFrames).put("repeatedFrames",repeatedFrames).put("ownAppVisible",appVisible)
+        .put("conversionMs",lastConversionMs).put("conversionTotalMs",conversionNs/1e6)
         .put("processMs",pipeline?.lastProcessMs?:0).put("classifiedFrames",pipeline?.recognizer?.classifiedFrames?:0)
         .put("reusedFrames",pipeline?.recognizer?.reusedFrames?:0)
         .put("feedbackSerial",pipeline?.feedbackSerial?:0).put("lastFeedback",pipeline?.feedback?:"")}
@@ -207,7 +205,7 @@ class CaptureService : Service() {
         // Close it on that same handler only after an in-flight copy has completed.
         handler.post {
             try {
-                synchronized(this) {pipeline?.finish(finishMessage);latest?.recycle();latest=null}
+                synchronized(this) {pipeline?.finish(finishMessage);latest=null;frameConverter.close()}
             } catch(error: Exception) {android.util.Log.e("ChessSprout","Could not persist final recording",error)}
             finally {
                 reader?.setOnImageAvailableListener(null,null)

@@ -1,5 +1,7 @@
 # Project guide
 
+1.3.4: YuvFrameConverter reuses scratch arrays without changing pixels; PrefetchedVideoReader has bounded lookahead; ScreenFrameConverter reuses capture bitmaps. Run FrameConversionTest and VideoPrefetchTest, then compare the same private full video and real MediaProjection replay. Keep private inputs and game records out of source control.
+
 1.3.3: New exploratory forks auto-save after three new plies; explicit saves and uninterrupted extensions remain available at any length. Run review-branch-comparison-ui.js and review-capture-regression-ui.js. VideoRegressionTest requires private regression-video.mp4 and regression-reference.json supplied in the app external files directory. review-video-screen-replay.js replays that local video through MediaProjection. Never publish these inputs or resulting private game records. Video import targets games without takebacks; use screenshot import for exercises.
 
 Android recorder module :recorder; shared static UI in review/; vendored rules, engines and licenses in vendor/. Build outputs stay in android/recorder/build/ and must not be committed. docs/images/ contains presentation screenshots; docs/examples/ contains the verified public demonstration PGN.

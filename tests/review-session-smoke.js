@@ -53,8 +53,10 @@ async function main(){
   assert.ok(await page.evaluate(()=>App.state.battle.clock.w>900000));
   await act('suspendBattle');const remaining=await page.evaluate(()=>App.state.battle.clock.w);await page.waitForTimeout(400);assert.equal(await page.evaluate(()=>App.state.battle.clock.w),remaining);
   await home();await page.locator('[data-route=settings]').click();assert.equal(await page.locator('[data-act=allowUndo]').getAttribute('aria-checked'),'false');await act('allowUndo');
-  await page.locator('[data-route=play]').click();await act('undoBattle');assert.equal(await page.evaluate(()=>App.state.current.moves.length),0);
-  assert.equal(await page.evaluate(()=>App.state.battle.clock.w),900000);
+  await page.locator('[data-route=play]').click();
+  // Observe restoration in the click task, before the resumed clock's next tick.
+  const undone=await page.evaluate(()=>{document.querySelector('[data-act=undoBattle]').click();return {moves:App.state.current.moves.length,white:App.state.battle.clock.w};});
+  assert.equal(undone.moves,0);assert.equal(undone.white,900000);
   await page.evaluate(()=>playDelay=1400);await clickMove('d2','d4');await act('undoBattle');await page.waitForTimeout(1600);
   assert.equal(await page.evaluate(()=>App.state.current.moves.length),0);
   await page.setViewportSize({width:844,height:390});await page.waitForTimeout(300);

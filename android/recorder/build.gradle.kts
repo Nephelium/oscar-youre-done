@@ -9,8 +9,8 @@ android {
         applicationId = "com.jingjing.chesssprout"
         minSdk = 26
         targetSdk = 36
-        versionCode = 10
-        versionName = "1.3.3"
+        versionCode = 11
+        versionName = "1.3.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
