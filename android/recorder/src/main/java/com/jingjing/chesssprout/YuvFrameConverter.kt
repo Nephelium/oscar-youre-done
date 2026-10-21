@@ -20,6 +20,8 @@ internal class YuvFrameConverter {
     private val guLut=IntArray(256)
     private val gvLut=IntArray(256)
     private val bLut=IntArray(256)
+    private val redLut=IntArray(256*256)
+    private val blueLut=IntArray(256*256)
     fun convert(image: Image,format: MediaFormat,rotation: Int): Bitmap {
         require(image.format==ImageFormat.YUV_420_888)
         val crop=image.cropRect
@@ -54,6 +56,10 @@ internal class YuvFrameConverter {
                 yLut[i]=if(full)256*i else 298*maxOf(0,i-16)
                 rLut[i]=rv*(i-128);guLut[i]=gu*(i-128);gvLut[i]=gv*(i-128);bLut[i]=bu*(i-128)
             }
+            for(y in 0..255)for(chroma in 0..255) {
+                redLut[(y shl 8) or chroma]=(((yLut[y]+rLut[chroma]+128) shr 8).coerceIn(0,255) shl 16)
+                blueLut[(y shl 8) or chroma]=((yLut[y]+bLut[chroma]+128) shr 8).coerceIn(0,255)
+            }
         }
         for(y in 0 until height) {
           val sy=crop.top+y*crop.height()/height
@@ -63,10 +69,8 @@ internal class YuvFrameConverter {
             val u=uBytes[rowU+xU[x]].toInt() and 255
             val v=vBytes[rowV+xV[x]].toInt() and 255
             val c=yLut[luma]
-            val r=((c+rLut[v]+128) shr 8).coerceIn(0,255)
             val g=((c-guLut[u]-gvLut[v]+128) shr 8).coerceIn(0,255)
-            val b=((c+bLut[u]+128) shr 8).coerceIn(0,255)
-            pixels[row+x]=(0xff shl 24) or (r shl 16) or (g shl 8) or b
+            pixels[row+x]=(0xff shl 24) or redLut[(luma shl 8) or v] or (g shl 8) or blueLut[(luma shl 8) or u]
           }
         }
         val bitmap=Bitmap.createBitmap(pixels,width,height,Bitmap.Config.ARGB_8888)

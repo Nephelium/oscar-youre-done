@@ -23,11 +23,13 @@ internal class ScreenFrameConverter : AutoCloseable {
         }
         val factor=minOf(1f,720f/width)
         val w=maxOf(1,(width*factor).toInt());val h=maxOf(1,(height*factor).toInt())
+        requireNotNull(buffer).copyPixelsFromBuffer(bytes)
+        // A compositor-sized, unpadded image already is the desired bitmap.
+        if(paddedWidth==width && w==width && h==height)return requireNotNull(buffer)
         if(output?.width!=w || output?.height!=h) {
             canvas=null;output?.recycle();output=Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888)
             canvas=Canvas(requireNotNull(output))
         }
-        requireNotNull(buffer).copyPixelsFromBuffer(bytes)
         source.set(0,0,width,height);target.set(0,0,w,h)
         // Match createScaledBitmap's transparent destination and default blend.
         // SRC selects a different Skia rounding path when downscaling.

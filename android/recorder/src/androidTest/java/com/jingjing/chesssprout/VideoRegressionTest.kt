@@ -55,14 +55,16 @@ class VideoRegressionTest {
         val events=JSONArray();val started=System.nanoTime()
         var decodeNs=0L;var processNs=0L;var count=0;var previous=""
         var time=if(args.getString("profile")=="bundled")5200L else 2600L
-        val reader=if(mode!="retriever")VideoFrameReader(context,uri,time) else null
-        fun readerMetric(name: String): Any?=reader?.let{runCatching{it.javaClass.getMethod(name).invoke(it)}.getOrNull()}
+        val experimental=mode=="sync" || args.containsKey("sampleMs")
+        val reader=if(mode!="retriever" && !experimental)VideoFrameReader(context,uri,time) else null
+        val experiment=if(experimental)ExperimentalVideoFrameReader(context,uri,time,args.getString("sampleMs")?.toLong()?:200,mode=="sync") else null
+        fun readerMetric(name: String): Any?=(experiment?:reader)?.let{runCatching{it.javaClass.getMethod(name).invoke(it)}.getOrNull()}
         try {
             while(time<end) {
                 val begin=System.nanoTime()
-                val decoded=if(mode=="legacy132")reader?.javaClass?.getMethod("next",kotlin.jvm.functions.Function0::class.java)
+                val decoded=if(experiment!=null)experiment.next{false}?.let{VideoFrameReader.Frame(it.bitmap,it.timeMs)} else if(mode=="legacy132")reader?.javaClass?.getMethod("next",kotlin.jvm.functions.Function0::class.java)
                     ?.invoke(reader, { false }) as VideoFrameReader.Frame? else reader?.next(){false}
-                if(reader!=null && decoded==null)break
+                if((reader!=null || experiment!=null) && decoded==null)break
                 val frame=decoded?.bitmap?:requireNotNull(retriever.getFrameAtTime(time*1000,MediaMetadataRetriever.OPTION_CLOSEST))
                 val timestamp=decoded?.timeMs?:time
                 val decodedAt=System.nanoTime();decodeNs+=decodedAt-begin
@@ -95,6 +97,6 @@ class VideoRegressionTest {
                 assertEquals((offset until expected.length()).map{expected.getString(it)},pipeline.tracker.moves)
                 assertEquals(0,(0 until pipeline.game.getJSONArray("issues").length()).count{!pipeline.game.getJSONArray("issues").getJSONObject(it).optBoolean("resolved")})
             }
-        } finally {reader?.close();retriever.release()}
+        } finally {reader?.close();experiment?.close();retriever.release()}
     }
 }

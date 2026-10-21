@@ -192,6 +192,7 @@ class CaptureService : Service() {
         .put("message",if(paused)"记录已暂停" else processingError?:pipeline?.message).put("plies",pipeline?.confirmedPlies?:0).put("calibrated",pipeline?.game?.getJSONObject("capture")?.optString("state")=="recording").put("pendingFen",pipeline?.pendingFen).put("awaitingPosition",pipeline?.awaitingPosition?:false)
         .put("decodedFrames",decodedFrames).put("repeatedFrames",repeatedFrames).put("ownAppVisible",appVisible)
         .put("conversionMs",lastConversionMs).put("conversionTotalMs",conversionNs/1e6)
+        .put("captureWidth",reader?.width).put("captureHeight",reader?.height)
         .put("processMs",pipeline?.lastProcessMs?:0).put("classifiedFrames",pipeline?.recognizer?.classifiedFrames?:0)
         .put("reusedFrames",pipeline?.recognizer?.reusedFrames?:0)
         .put("feedbackSerial",pipeline?.feedbackSerial?:0).put("lastFeedback",pipeline?.feedback?:"")}

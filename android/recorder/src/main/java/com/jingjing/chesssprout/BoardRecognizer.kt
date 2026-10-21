@@ -24,6 +24,47 @@ class BoardRecognizer(var blackBottom: Boolean = false) {
     private var lastFingerprint: IntArray?=null
     private var lastObservation: Observation?=null
     private var lastBlackBottom=false
+    private data class Samples(val key: List<Int>,val left: Int,val top: Int,val width: Int,val height: Int,
+        val fingerprint: IntArray,val edges: IntArray,val features: IntArray,val pixels: IntArray)
+    private var sampling: Samples?=null
+    private val edgeCounts=IntArray(32768)
+    private val edgeKeys=IntArray(64)
+    private val edgeColors=IntArray(64)
+    // Coordinates are calculated with the original float expressions. Copy only
+    // the exact bounding rectangle containing all sampled pixels, without resize.
+    private fun samples(image: Bitmap,box: RectF): Samples {
+        val key=listOf(image.width,image.height,box.left.toBits(),box.top.toBits(),box.right.toBits(),box.bottom.toBits())
+        var data=sampling
+        if(data==null || data.key!=key) {
+            fun pixel(x: Float,y: Float)=y.toInt().coerceIn(0,image.height-1)*image.width+x.toInt().coerceIn(0,image.width-1)
+            val fingerprint=IntArray(64*576){index->
+                val cell=index/576;val p=index%576
+                pixel((box.left+(cell%8+.04f+(p%24+.5f)/24*.92f)*box.width()/8)*image.width,
+                    (box.top+(cell/8+.04f+(p/24+.5f)/24*.92f)*box.height()/8)*image.height)
+            }
+            val left=box.left*image.width;val top=box.top*image.height
+            val width=box.width()*image.width;val height=box.height()*image.height
+            val edges=IntArray(64*64){index->
+                val cell=index/64;val p=index%64;val edge=p%4;val step=(p/4+.5f)/16
+                val dx=when(edge){0,1->step;2->.14f;else->.86f}
+                val dy=when(edge){0->.14f;1->.86f;else->step}
+                pixel(left+(cell%8+dx)*width/8,top+(cell/8+dy)*height/8)
+            }
+            val features=IntArray(64*576){index->
+                val cell=index/576;val p=index%576
+                pixel(left+(cell%8+.08f+(p%24+.5f)/24*.84f)*width/8,
+                    top+(cell/8+.08f+(p/24+.5f)/24*.84f)*height/8)
+            }
+            val all=listOf(fingerprint,edges,features)
+            val x0=all.minOf{a->a.minOf{it%image.width}};val x1=all.maxOf{a->a.maxOf{it%image.width}}
+            val y0=all.minOf{a->a.minOf{it/image.width}};val y1=all.maxOf{a->a.maxOf{it/image.width}}
+            val w=x1-x0+1;val h=y1-y0+1
+            for(a in all)for(i in a.indices)a[i]=(a[i]/image.width-y0)*w+a[i]%image.width-x0
+            data=Samples(key,x0,y0,w,h,fingerprint,edges,features,IntArray(w*h));sampling=data
+        }
+        image.getPixels(data.pixels,0,data.width,data.left,data.top,data.width,data.height)
+        return data
+    }
     var reusedFrames=0
         private set
     var classifiedFrames=0
@@ -184,21 +225,15 @@ class BoardRecognizer(var blackBottom: Boolean = false) {
         if (!calibrated) return null
         val rough=region?:locate(image)?:return null
         val box=if(gridReady)rough else refineInitialGrid(image,rough,false).also{region=it;gridReady=true}
-        val pixels=IntArray(image.width*image.height)
-        image.getPixels(pixels,0,image.width,0,0,image.width,image.height)
+        val sampled=samples(image,box)
         // Compare each cell against the last classified frame, never against the
         // immediately preceding animation frame. Slow cumulative motion must count.
-        val fingerprint=IntArray(64*24*24) { index->
-            val cell=index/576;val sample=index%576
-            val x=((box.left+(cell%8+.04f+(sample%24+.5f)/24*.92f)*box.width()/8)*image.width).toInt().coerceIn(0,image.width-1)
-            val y=((box.top+(cell/8+.04f+(sample/24+.5f)/24*.92f)*box.height()/8)*image.height).toInt().coerceIn(0,image.height-1)
-            pixels[y*image.width+x]
-        }
+        val fingerprint=IntArray(64*24*24) { sampled.pixels[sampled.fingerprint[it]] }
         if(lastBlackBottom==blackBottom && lastObservation!=null && unchanged(fingerprint,lastFingerprint)) {
             reusedFrames++;return lastObservation
         }
         classifiedFrames++
-        val features = features(image, box,pixels)
+        val features = features(image, box,sampled)
         val templates=banks[appearanceOf(image,box)]?:return null
         val labels = StringBuilder(); var confidence = 0.0
         var uncertain=0
@@ -267,28 +302,31 @@ class BoardRecognizer(var blackBottom: Boolean = false) {
         // unchanged. Keep the original feature so small changes accumulate.
         return distances[0].second+delta<0.145 && distances[1].second-distances[0].second-2*delta>=0.0025
     }
-    private fun features(image: Bitmap, box: RectF, existingPixels: IntArray?=null): List<FloatArray> {
-        val left=box.left*image.width; val top=box.top*image.height; val width=box.width()*image.width; val height=box.height()*image.height
-        // One native copy replaces tens of thousands of Bitmap.getPixel JNI calls.
-        val pixels=existingPixels?:IntArray(image.width*image.height).also {image.getPixels(it,0,image.width,0,0,image.width,image.height)}
-        fun pixel(x: Float,y: Float)=pixels[y.toInt().coerceIn(0,image.height-1)*image.width+x.toInt().coerceIn(0,image.width-1)]
+    private fun features(image: Bitmap, box: RectF, existing: Samples?=null): List<FloatArray> {
+        val sampled=existing?:samples(image,box)
         return (0 until 64).map { index ->
-            val col=index%8; val row=index/8
             // Estimate the dominant edge colour. Four corner averages are unstable near
             // antialiasing, coordinate labels, and a one-pixel crop error at grid boundaries.
-            val bins=mutableMapOf<Int,MutableList<Int>>()
+            var keyCount=0
             for(sample in 0 until 16)for(edge in 0..3) {
-                val step=(sample+.5f)/16;val dx=when(edge){0,1->step;2->.14f;else->.86f}
-                val dy=when(edge){0->.14f;1->.86f;else->step}
-                val color=pixel(left+(col+dx)*width/8,top+(row+dy)*height/8)
+                val color=sampled.pixels[sampled.edges[index*64+sample*4+edge]]
                 val key=(((color shr 19)and 31)shl 10) or (((color shr 11)and 31)shl 5) or ((color shr 3)and 31)
-                bins.getOrPut(key){mutableListOf()}.add(color)
+                edgeColors[sample*4+edge]=color
+                if(edgeCounts[key]++==0)edgeKeys[keyCount++]=key
             }
-            val background=bins.values.maxBy{it.size};val bg=DoubleArray(3)
-            for(color in background)for(c in 0..2)bg[c]+=((color shr(16-c*8))and 255).toDouble()/background.size
+            // Keep first-insertion tie breaking and original summation order,
+            // matching LinkedHashMap.maxBy without per-frame maps/boxed colors.
+            var bestKey=edgeKeys[0]
+            for(i in 1 until keyCount)if(edgeCounts[edgeKeys[i]]>edgeCounts[bestKey])bestKey=edgeKeys[i]
+            val count=edgeCounts[bestKey];val bg=DoubleArray(3)
+            for(color in edgeColors) {
+                val key=(((color shr 19)and 31)shl 10) or (((color shr 11)and 31)shl 5) or ((color shr 3)and 31)
+                if(key==bestKey)for(c in 0..2)bg[c]+=((color shr(16-c*8))and 255).toDouble()/count
+            }
+            for(i in 0 until keyCount)edgeCounts[edgeKeys[i]]=0
             val values=FloatArray(24*24*3)
             for(y in 0 until 24) for(x in 0 until 24) {
-                val color=pixel(left+(col+.08f+(x+.5f)/24*.84f)*width/8,top+(row+.08f+(y+.5f)/24*.84f)*height/8)
+                val color=sampled.pixels[sampled.features[index*576+y*24+x]]
                 for(c in 0..2) values[(y*24+x)*3+c]=((((color shr (16-c*8)) and 255)-bg[c])/255).toFloat()
             }
             values

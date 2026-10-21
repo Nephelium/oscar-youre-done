@@ -1,5 +1,7 @@
 # Project guide
 
+1.3.5: BoardRecognizer copies only the exact sampling ROI and reuses coordinate/color buffers. YuvFrameConverter uses pixel-equivalent lookup tables; ScreenFrameConverter skips redundant same-size drawing. RecognizerSamplingTest compares the frozen ReferenceBoardRecognizer. ExperimentalVideoFrameReader is androidTest-only and is not the production importer. Keep original sampling/thresholds; benchmark and private fixtures stay separate.
+
 1.3.4: YuvFrameConverter reuses scratch arrays without changing pixels; PrefetchedVideoReader has bounded lookahead; ScreenFrameConverter reuses capture bitmaps. Run FrameConversionTest and VideoPrefetchTest, then compare the same private full video and real MediaProjection replay. Keep private inputs and game records out of source control.
 
 1.3.3: New exploratory forks auto-save after three new plies; explicit saves and uninterrupted extensions remain available at any length. Run review-branch-comparison-ui.js and review-capture-regression-ui.js. VideoRegressionTest requires private regression-video.mp4 and regression-reference.json supplied in the app external files directory. review-video-screen-replay.js replays that local video through MediaProjection. Never publish these inputs or resulting private game records. Video import targets games without takebacks; use screenshot import for exercises.

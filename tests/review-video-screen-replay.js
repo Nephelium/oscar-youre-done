@@ -1,12 +1,24 @@
-// Private video fixture at normal playback speed, through real MediaProjection.
+// Private video fixture at REPLAY_RATE (default 1), through real MediaProjection.
 // Usage: node tests/review-video-screen-replay.js <local video> <reference JSON>
 // Start and authorize full-screen capture before running. No uploads occur.
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const {connect,run}=require('./review-android-helper.cjs');
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function closeReplayTab(url){
+ let port,browser;
+ try {
+  let pw;try{pw=require('playwright')}catch{pw=require(path.join(require('node:os').homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}
+  port=run('forward','tcp:0','localabstract:chrome_devtools_remote');
+  browser=await pw.chromium.connectOverCDP('http://127.0.0.1:'+port,{timeout:5000});
+  for(const page of browser.contexts().flatMap(c=>c.pages()))if(page.url()===url)await page.close();
+ }catch(error){console.warn('Replay tab cleanup: '+error.message)}
+ finally{if(browser)await browser.close();if(port)run('forward','--remove','tcp:'+port);}
+}
 async function main(){
  const file=path.resolve(process.argv[2]),reference=JSON.parse(fs.readFileSync(process.argv[3],'utf8'));
  const bytes=fs.statSync(file).size,out=path.resolve(__dirname,'../android/recorder/build/reports');
+ const rate=Number(process.env.REPLAY_RATE||1),reportName=process.env.REPLAY_REPORT||'v133-video-screen-replay.json';
+ assert.ok(Number.isFinite(rate)&&rate>0&&rate<=16,'Playback rate must be in (0,16]');
  let play=false,playback={},c;
  const server=http.createServer((req,res)=>{
   res.setHeader('Cache-Control','no-store');
@@ -25,10 +37,12 @@ async function main(){
   }
   res.setHeader('Content-Type','text/html');
   res.end(`<meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#111}video{width:100%;height:100dvh;object-fit:contain;display:block}</style><video id="v" muted playsinline preload="auto" src="/video"></video><script>
-  let v=document.querySelector('video'),ready=false;
+  let v=document.querySelector('video'),ready=false,startedAt=0,endedAt=0;
+  v.playbackRate=${rate};v.onplaying=()=>{if(!startedAt)startedAt=performance.now()};v.onended=()=>endedAt=performance.now();
   v.onloadedmetadata=()=>{v.currentTime=4.1};v.onseeked=()=>ready=true;
-  setInterval(async()=>{let s=await(await fetch('/state')).json();if(s.play&&ready&&v.paused&&!v.ended)await v.play().catch(()=>{});
-  await fetch('/progress',{method:'POST',body:JSON.stringify({time:v.currentTime,duration:v.duration,ready,paused:v.paused,ended:v.ended,rate:v.playbackRate,error:v.error?.message})})},200);
+  let timer=setInterval(async()=>{let s=await(await fetch('/state')).json();if(s.play&&ready&&v.paused&&!v.ended)await v.play().catch(()=>{});
+  let q=v.getVideoPlaybackQuality();
+  await fetch('/progress',{method:'POST',body:JSON.stringify({time:v.currentTime,duration:v.duration,ready,paused:v.paused,ended:v.ended,rate:v.playbackRate,playbackWallMs:startedAt?(endedAt||performance.now())-startedAt:0,totalVideoFrames:q.totalVideoFrames,droppedVideoFrames:q.droppedVideoFrames,error:v.error?.message})});if(v.ended)clearInterval(timer)},200);
   </script>`);
  });
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const port=server.address().port,events=[];
@@ -46,7 +60,7 @@ async function main(){
    else readySince=0;
    await wait(200);
   }
-  fs.writeFileSync(path.join(out,'video-replay-initial-status.json'),JSON.stringify({playback,capture:initialCapture},null,2));
+  fs.writeFileSync(path.join(out,reportName+'.initial.json'),JSON.stringify({playback,capture:initialCapture},null,2));
   if(!readySince || Date.now()-readySince<1200){
    const preview=await c.page.evaluate(()=>SproutHost.capturePreview());
    if(preview)fs.writeFileSync(path.join(out,'video-replay-initial-preview.jpg'),Buffer.from(preview.split(',')[1],'base64'));
@@ -57,19 +71,25 @@ async function main(){
   while(!playback.ended&&Date.now()-start<360000){
    await wait(200);
    const capture=await c.page.evaluate(()=>JSON.parse(SproutHost.status()).capture);
+   fs.writeFileSync(path.join(out,reportName+'.progress.json'),JSON.stringify({elapsedMs:Date.now()-start,playback,capture}));
    if(capture.plies!==previous){events.push({elapsedMs:Date.now()-start,videoTime:playback.time,capture});previous=capture.plies;}
    if(Date.now()-lastLog>30000){console.log(JSON.stringify({video:playback.time,plies:capture.plies,message:capture.message}));lastLog=Date.now();}
    if(playback.error)throw Error(playback.error);
   }
   assert.ok(playback.ended,'Playback must reach the actual end');await wait(2500);
   await c.page.evaluate(()=>SproutHost.captureAction('stop','{}'));await wait(600);
-  const record=await c.page.evaluate(id=>JSON.parse(SproutHost.listGames()).find(g=>g.id===id),id);
-  const report={scope:'Original private video, Chrome normal-speed playback, full-screen MediaProjection; emulator only',elapsedMs:Date.now()-start,playback,events,record};
-  fs.writeFileSync(path.join(out,process.env.REPLAY_REPORT||'v133-video-screen-replay.json'),JSON.stringify(report,null,2));
+  const records=await c.page.evaluate(()=>JSON.parse(SproutHost.listGames()));
+  const record=records.find(g=>g.id===id),segments=[];let next=record;
+  while(next&&!segments.some(g=>g.id===next.id)){segments.push(next);next=records.find(g=>g.id===next.capture?.nextId);}
+  const exact=JSON.stringify(record.moves)===JSON.stringify(reference.moves);
+  const unresolved=segments.reduce((n,g)=>n+(g.issues||[]).filter(x=>!x.resolved).length,0);
+  const report={scope:'Original private video, Chrome variable-speed playback, full-screen MediaProjection; emulator only',requestedRate:rate,exact,unresolved,elapsedMs:Date.now()-start,playback,events,record,segments};
+  fs.writeFileSync(path.join(out,reportName),JSON.stringify(report,null,2));
   assert.deepEqual(record.moves,reference.moves);assert.equal(record.issues.filter(x=>!x.resolved).length,0);
   console.log(`PASS: ${record.moves.length} exact plies at playbackRate ${playback.rate}; no unresolved gaps.`);
  }finally{
   if(c){await c.page.evaluate(()=>SproutHost.captureAction('stop','{}')).catch(()=>{});await c.browser.close();run('forward','--remove','tcp:'+c.port);}
+  await closeReplayTab(`http://127.0.0.1:${port}/`);
   run('reverse','--remove',`tcp:${port}`);server.closeAllConnections();server.close();
  }
 }
