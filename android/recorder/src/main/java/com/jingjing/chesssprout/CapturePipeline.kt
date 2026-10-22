@@ -81,6 +81,13 @@ class CapturePipeline(private val context: Context, options: JSONObject, val sou
     }
     private fun processFrame(image: Bitmap) {
         frames++
+        // A legally recorded game is complete. Result banners and disappearing
+        // pieces must not become new gaps. Exercises can still undo and retry.
+        if (!positionMode && game.getJSONObject("capture").optString("state")=="recording" &&
+            (tracker.board.isMated || tracker.board.isDraw)) {
+            message="对局已结束，已记录 $confirmedPlies 步"
+            return
+        }
         // Prefer a verified initial-board calibration, but never label an opening
         // move as an empty square. A ready profile can recover a unique 1–2 ply start.
         if(attemptCalibration && frames%3==1) {
@@ -231,8 +238,9 @@ class CapturePipeline(private val context: Context, options: JSONObject, val sou
         tracker=resumed.tracker;lastIssue="";unmatchedFrames=0
     }
     fun finish(reason: String="已保存，可以复盘") {
-        if(!recognizer.calibrated || !positionConfirmed || game.getJSONObject("capture").optString("state")!="recording") game.getJSONArray("issues").put(JSONObject().put("at",0).put("message","尚未确认起始棋盘，请重新记录或导入棋谱").put("resolved",false))
-        else if(badFrames>16 && !tracker.board.isMated && !tracker.board.isDraw) game.getJSONArray("issues").put(JSONObject().put("at",tracker.moves.size).put("message","结束前的画面未能确认，请核对最后几步是否完整").put("resolved",false))
+        if(game.getJSONObject("capture").optString("state")=="stopped")return
+        if(!recognizer.calibrated || !positionConfirmed || game.getJSONObject("capture").optString("state")!="recording") game.getJSONArray("issues").put(JSONObject().put("kind","unconfirmed-start").put("at",0).put("message","尚未确认起始棋盘，请重新记录或导入棋谱").put("resolved",false))
+        else if(badFrames>16 && !tracker.board.isMated && !tracker.board.isDraw) game.getJSONArray("issues").put(JSONObject().put("kind","unconfirmed-tail").put("at",tracker.moves.size).put("message","结束前的画面未能确认，请核对最后几步是否完整").put("resolved",false))
         game.getJSONObject("capture").put("state","stopped").put("frames",frames).put("message",reason)
         game.put("updatedAt",System.currentTimeMillis()); store.save(game);message=reason
     }

@@ -55,7 +55,56 @@
     record.issues = (raw.issues || []).slice(0, 500).filter(x => x && typeof x === 'object').map(x => ({...x, message: String(x.message || '请核对这段棋谱').slice(0,300)}));
     record.revisions = Array.isArray(raw.revisions) ? raw.revisions : [];
     record.undoEvents = Array.isArray(raw.undoEvents) ? raw.undoEvents : [];
+    const terminal = terminalResult(game);
+    if (terminal) {
+      record.result = terminal;
+      // Legacy end-of-capture warnings have no target placement. Keep the issue
+      // and its evidence, but a legal terminal mainline settles this tail warning.
+      if (moves.length) record.issues.forEach(issue => {
+        if (!issue.resolved && isTailWarning(issue) && Number.isInteger(issue.at) && issue.at >= 0 && issue.at <= moves.length)
+          Object.assign(issue, {resolved:true, resolution:'terminal-mainline'});
+      });
+    }
     return record;
+  }
+  function terminalResult(game) {
+    return game.in_checkmate() ? (game.turn()==='w'?'0-1':'1-0') : game.in_draw() ? '1/2-1/2' : null;
+  }
+  function isTailWarning(issue) {
+    return !issue.placement && !issue.continuationId && (issue.kind==='unconfirmed-tail' ||
+      issue.message==='结束前的画面未能确认，请核对最后几步是否完整');
+  }
+  function issueAnchor(record, issue) {
+    return Math.min(record.moves.length, Math.max(0, Number.isInteger(issue?.at)?issue.at:0));
+  }
+  function archiveCorrection(record) {
+    return (record.revisions||[]).concat({at:Date.now(),moves:record.moves.slice(),result:record.result,
+      issues:record.issues.map(x=>({...x})),branches:record.branches.map(b=>({...b,moves:b.moves.slice()}))});
+  }
+  function confirmIssue(record, index) {
+    if (!Number.isInteger(index) || !record.issues[index] || record.issues[index].resolved) throw Error('这处提示已更新，请重新打开校对。');
+    const next=validate(record);next.revisions=archiveCorrection(record);
+    Object.assign(next.issues[index],{resolved:true,resolution:'user-confirmed',resolvedAt:Date.now()});
+    return next;
+  }
+  function correctRecord(record, at, moves, index) {
+    if (!Number.isInteger(index) || !record.issues[index] || record.issues[index].resolved ||
+        at!==issueAnchor(record,record.issues[index])) throw Error('校对起点已更新，请重新打开这处提示。');
+    if (!Array.isArray(moves) || !moves.length) throw Error('先补走缺失走法，或返回提示确认现有棋谱完整。');
+    const next=validate({...record,moves:record.moves.slice(0,at).concat(moves),result:'*'});
+    next.revisions=archiveCorrection(record);
+    // Variations anchored after an edited move may still be legal in a different
+    // position. Archive them instead of silently reattaching them to a new board.
+    next.branches=next.branches.filter(b=>record.moves.slice(0,b.at).join(' ')===next.moves.slice(0,b.at).join(' '));
+    Object.assign(next.issues[index],{resolved:true,resolution:'user-corrected',resolvedAt:Date.now()});
+    const rows=timeline(next);
+    next.issues.forEach((issue,i)=>{
+      if (i!==index && !issue.resolved && issue.placement && !issue.continuationId &&
+          Number.isInteger(issue.at) && issue.at>=at && issue.at<=next.moves.length &&
+          rows.slice(issue.at).some(r=>r.fen.split(' ')[0]===issue.placement))
+        Object.assign(issue,{resolved:true,resolution:'matched-correction',resolvedAt:Date.now()});
+    });
+    return next;
   }
   function create(title = '新的对局') { return validate({title, moves: []}); }
   function importText(text) {
@@ -266,5 +315,5 @@
     if(demoData && JSON.stringify(record.moves)===JSON.stringify(demoData.moves))record.analysis=JSON.parse(JSON.stringify(demoData.analysis));
     return record;
   }
-  return {START, id, uci, move, position, validate, create, importText, toPgn, lineSan, numeric, viewNumeric, displayScore, probabilities, validWdl, assess, timeline, summary, moveFacts, variationRows, evaluationChange, keyMoments, explainMove, shouldStoreBranch, addBranch, compactBranches, fromPlacement, moveSymbol, demo};
+  return {START, id, uci, move, position, validate, terminalResult, issueAnchor, correctRecord, confirmIssue, create, importText, toPgn, lineSan, numeric, viewNumeric, displayScore, probabilities, validWdl, assess, timeline, summary, moveFacts, variationRows, evaluationChange, keyMoments, explainMove, shouldStoreBranch, addBranch, compactBranches, fromPlacement, moveSymbol, demo};
 });

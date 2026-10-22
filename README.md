@@ -7,7 +7,7 @@
     <img alt="Local Stockfish" src="https://img.shields.io/badge/Stockfish-on_device-66899b?style=flat-square" />
     <img alt="GPL v3" src="https://img.shields.io/badge/License-GPL_v3-b29435?style=flat-square" />
   </p>
-  <p><a href="https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.5"><b>下载 Android 安装包</b></a> · <a href="#开始使用">开始使用</a> · <a href="#从源码构建">从源码构建</a></p>
+  <p><a href="https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.6"><b>下载 Android 安装包</b></a> · <a href="#开始使用">开始使用</a> · <a href="#从源码构建">从源码构建</a></p>
 </div>
 
 ---
@@ -16,9 +16,9 @@
 
 把双方的走法留下来，交给本地 Stockfish。看局面变化、找更好的选择，再回到棋盘试自己的想法。
 
-**最新版本：v1.3.5**（2026-10-21） · [直接下载 APK](https://github.com/Nephelium/oscar-youre-done/releases/download/v1.3.5/oscar-youre-done-1.3.5.apk) · [更新说明](docs/oscar-release-1.3.5.md)
+**最新版本：v1.3.6**（2026-10-22） · [直接下载 APK](https://github.com/Nephelium/oscar-youre-done/releases/download/v1.3.6/oscar-youre-done-1.3.6.apk) · [更新说明](docs/oscar-release-1.3.6.md)
 
-本轮录屏导入平均耗时缩短 14.5%，同段测试录像 67 步完整一致。见[性能验证](#性能验证)。
+本轮修复补录后提示不消失、胜负未更新的问题，并兼容旧手记。见[修复验证](docs/oscar-verification-1.3.6.md)。
 
 <p align="center">
   <img src="docs/images/home.png" width="31%" alt="开始记录与最近手记" />
@@ -54,7 +54,7 @@
 
 ## 开始使用
 
-1. 从 [v1.3.5 Release](https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.5) 下载 APK 并安装。最低 Android 8.0，支持 ARM64 与 x86_64。
+1. 从 [v1.3.6 Release](https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.6) 下载 APK 并安装。最低 Android 8.0，支持 ARM64 与 x86_64。
 2. 点 **记录一局**，选棋盘底部颜色，授权本次屏幕采集。整个屏幕与仅共享多邻国都支持，随后点 **回到多邻国**。
 3. 自动定位棋盘后，确认走子会短暂提示，设置中可关闭。返回 App 可查看最近采集画面、调整识别范围。下完从通知栏、悬浮按钮或 App 内结束记录。
 4. 打开手记，点 **分析整盘**。点推荐变化或直接在棋盘走子，开始自己的推演。
@@ -64,6 +64,12 @@
 已内置多邻国日夜棋子识别，无需先录完整对局。可选 **从当前练习局面开始**，也可在 **导入棋谱 → 导入棋盘截图** 中选图。确认棋子位置和先走方后，保存到小练习手记。
 
 截图看不出易位与吃过路兵权利，需要时在高级 FEN 中填写。识别疑点会保留对应棋盘画面，供补走校对。删除手记仅移除该手记与内部裁剪，外部原图保留。
+
+### 处理待校对提示
+
+点 **查看 → 对应疑点 → 从这里补走**，补齐后保存，提示与终局胜负会一起更新。其他尚未处理的疑点继续保留。棋谱已完整时，可选 **现有棋谱已完整 → 确认完整**，不必再补走一步。
+
+升级后旧手记无需重新导入。已有棋谱能确认终局时，会恢复胜负并处理对应的结尾未确认提示。修订前的走法、疑点和分支保留在完整备份中。
 
 ### 看懂分数
 
