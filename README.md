@@ -4,10 +4,11 @@
   <p>给多邻国国际象棋，补上一个复盘搭子。</p>
   <p>
     <img alt="Android 8.0+" src="https://img.shields.io/badge/Android-8.0%2B-507c3e?style=flat-square" />
+    <img alt="iOS Simulator" src="https://img.shields.io/badge/iOS-Simulator-66899b?style=flat-square" />
     <img alt="Local Stockfish" src="https://img.shields.io/badge/Stockfish-on_device-66899b?style=flat-square" />
     <img alt="GPL v3" src="https://img.shields.io/badge/License-GPL_v3-b29435?style=flat-square" />
   </p>
-  <p><a href="https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.6"><b>下载 Android 安装包</b></a> · <a href="#开始使用">开始使用</a> · <a href="#从源码构建">从源码构建</a></p>
+  <p><a href="https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.7"><b>下载 Android 安装包</b></a> · <a href="https://github.com/Nephelium/oscar-youre-done/releases/download/v1.3.7/Oscar-iOS-Simulator-1.3.7.zip"><b>下载 iOS 模拟器版</b></a> · <a href="#开始使用">开始使用</a> · <a href="#从源码构建">从源码构建</a></p>
 </div>
 
 ---
@@ -16,9 +17,22 @@
 
 把双方的走法留下来，交给本地 Stockfish。看局面变化、找更好的选择，再回到棋盘试自己的想法。
 
-**最新版本：v1.3.6**（2026-10-22） · [直接下载 APK](https://github.com/Nephelium/oscar-youre-done/releases/download/v1.3.6/oscar-youre-done-1.3.6.apk) · [更新说明](docs/oscar-release-1.3.6.md)
+**最新版本：v1.3.7**（2026-10-23） · [更新说明](docs/oscar-release-1.3.7.md)
 
-本轮修复补录后提示不消失、胜负未更新的问题，并兼容旧手记。见[修复验证](docs/oscar-verification-1.3.6.md)。
+| 平台 | 下载 | 运行环境 |
+| --- | --- | --- |
+| Android | [下载 APK](https://github.com/Nephelium/oscar-youre-done/releases/download/v1.3.7/oscar-youre-done-1.3.7.apk) | Android 8.0+，ARM64 / x86_64，沿用测试签名 |
+| iOS 模拟器 | [下载 Simulator App](https://github.com/Nephelium/oscar-youre-done/releases/download/v1.3.7/Oscar-iOS-Simulator-1.3.7.zip) | Apple Silicon Mac + Xcode + iOS Simulator；不能直接安装到 iPhone |
+
+这轮加入 **iOS 模拟器基础版**，可以导入截图与棋谱、调用本地 Stockfish 复盘、推演分支、与 AI 下棋。Android 新增 GitHub 自动更新提醒，并修复补录撤回、备份关联和分析保存等问题。
+
+| 能力 | Android | iOS 模拟器 |
+| --- | :---: | :---: |
+| PGN / FEN、截图识别、本地手记 | ✓ | ✓ |
+| Stockfish 复盘、自动分析、分支与 AI 对战 | ✓ | ✓ |
+| 收藏、Elo、棋子棋盘主题、横屏与日夜模式 | ✓ | ✓ |
+| 屏幕实时记谱、录屏导入 | ✓ | 待接入 |
+| GitHub 新版提醒 | ✓ | 暂无 |
 
 <p align="center">
   <img src="docs/images/home.png" width="31%" alt="开始记录与最近手记" />
@@ -47,23 +61,45 @@
 | Elo 成长曲线 | 手动填写当前分数，支持补记日期、备注、修改和删除 |
 | 导入与备份 | PGN / FEN / JSON，完整备份包含分析、分支、收藏夹与 Elo 历史 |
 
-识别、记谱和分析均在手机里完成。App 不申请网络、麦克风或全相册读取权限。
+识别、记谱和分析均在本地完成。Android 的网络权限仅用于检查本仓库的新版发布信息，设置中可关闭；不上传棋谱、截图、录屏或 Elo。图片使用系统选择器，不申请全相册读取权限。
 
 <p align="center"><img src="docs/images/battle-1.3.0.png" width="38%" alt="本地 Stockfish 对战" /> <img src="docs/images/branches-1.3.0.png" width="38%" alt="变化逐步自动分析与保存" /></p>
 <p align="center"><sub>1.3.0 模拟器实际运行：下棋与分支复盘。</sub></p>
 
 ## 开始使用
 
-1. 从 [v1.3.6 Release](https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.6) 下载 APK 并安装。最低 Android 8.0，支持 ARM64 与 x86_64。
+### Android
+
+1. 从 [v1.3.7 Release](https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.7) 下载 APK 并安装。最低 Android 8.0，支持 ARM64 与 x86_64。
 2. 点 **记录一局**，选棋盘底部颜色，授权本次屏幕采集。整个屏幕与仅共享多邻国都支持，随后点 **回到多邻国**。
 3. 自动定位棋盘后，确认走子会短暂提示，设置中可关闭。返回 App 可查看最近采集画面、调整识别范围。下完从通知栏、悬浮按钮或 App 内结束记录。
 4. 打开手记，点 **分析整盘**。点推荐变化或直接在棋盘走子，开始自己的推演。
+
+### iOS 模拟器
+
+下载并解压上方 Simulator App，在 Xcode 中启动一个 iPhone 模拟器，然后在解压目录的终端执行：
+
+```bash
+xcrun simctl install booted Oscar.app
+xcrun simctl launch booted com.jingjing.chesssprout.ios
+```
+
+首页点 **导入一局**，粘贴 PGN / FEN，或选择 **导入棋盘截图**。截图识别后先核对棋子位置、先走方与特殊权利，再保存到小练习。也可以直接打开演示，或从 **下棋** 页面与 Stockfish 对战。
+
+本包为 **arm64 模拟器 App**，已在 Apple M4、Xcode 27.1、iPhone 18 Pro / iOS 27.0 模拟器中验证。iOS 录屏导入与跨应用实时采集尚未接入，真机签名和 TestFlight / App Store 发行待后续处理。
+
+<p align="center"><img src="docs/images/ios-landscape-1.3.7.png" width="100%" alt="iOS 模拟器横屏：左侧棋盘，右侧复盘与评分" /></p>
+<p align="center"><sub>iOS 模拟器实际触摸测试截图。<a href="ios/README.md">构建与测试</a> · <a href="docs/oscar-ios-simulator-verification.md">验收记录</a></sub></p>
+
+### 自动检查更新 · Android
+
+启动后在后台检查 GitHub 正式 Release，成功结果缓存 24 小时。发现新版时，首页与设置提供下载入口。也可在 **设置 → 版本更新** 手动检查或关闭自动检查。下载与安装由用户确认，升级保留已有手记。
 
 ### 记一道练习题
 
 已内置多邻国日夜棋子识别，无需先录完整对局。可选 **从当前练习局面开始**，也可在 **导入棋谱 → 导入棋盘截图** 中选图。确认棋子位置和先走方后，保存到小练习手记。
 
-截图看不出易位与吃过路兵权利，需要时在高级 FEN 中填写。识别疑点会保留对应棋盘画面，供补走校对。删除手记仅移除该手记与内部裁剪，外部原图保留。
+截图看不出易位与吃过路兵权利，需要时在高级 FEN 中填写。识别疑点会保留对应棋盘画面，供补走校对。Android 删除手记时会移除该手记与内部裁剪，外部原图保留。
 
 ### 处理待校对提示
 
@@ -108,7 +144,7 @@
 
 日夜模式默认跟随系统，设置中可手动选择。界面采用统一配色，换棋盘不会改变主界面颜色。棋子大小按风格独立记忆，范围 85%～125%，多邻国默认 100%，其他四套默认 112%。
 
-### 记录时能看见进度
+### 记录时能看见进度 · Android
 
 每次确认走子或撤回会短暂显示中文提示。设置中的 **走子识别提示** 默认开启。授权悬浮窗后可连续显示，未授权时使用 Android 系统文字提示，系统可能[限制后台提示频率](https://developer.android.com/reference/android/widget/Toast)。棋盘自动定位后仍可整体移动选框或拖动四角微调。
 
@@ -139,6 +175,8 @@
 
 ## 验证记录
 
+v1.3.7 的 [代码审查](docs/oscar-audit-1.3.7.md)覆盖补录游标、备份关系、正在导入的记录保护、分析缓存、异常可选字段与更新检查。[iOS 验收](docs/oscar-ios-simulator-verification.md)覆盖真实 Stockfish、WebKit 存储、截图确认、系统相册触摸、日夜与横竖屏。模拟器结果与手机实际表现分别记录。
+
 v1.3.4 复用画面转换内存，并让下一帧解码与当前帧识别交错进行。同一段约 275 秒录屏，旧版本轮两次为 89.8 / 88.6 秒，新版三次为 68.8 / 74.1 / 70.0 秒，每次 67 步完全一致。实时采集合并裁剪与缩放、复用位图。性能数据与设备边界见 [详细验证记录](docs/oscar-verification-1.3.4.md)，此前真实多邻国对局的证据保留在对应版本报告中。
 
 v1.2.1 在 Android 16 模拟器的真实多邻国 6.102.3 中完成执黑全屏记录，70 步以黑方将杀结束，零未解决校对项。中途切回本 App 后继续记录，71 个局面的整盘复盘通过。最终包另验中途局面起录、短提示、关闭与设置持久化。10 项 Android 回归覆盖初始模板污染、黑方朝向、晚起录两步、练习多步撤回、带黑边录屏和升变。物理手机兼容性仍需实际复测。[详细验证记录](docs/oscar-verification-1.2.1.md)。
@@ -159,6 +197,8 @@ v1.1.0 已在 Android 16 x86_64 模拟器、实际安装的多邻国 6.102.3 中
 
 ## 从源码构建
 
+### Android
+
 需要 Android SDK（API 36）、兼容 Gradle 9.2.1 / Android Gradle Plugin 9.0 的 JDK。先在 Android Studio 打开 `android/` 完成 SDK 定位，或在当前终端设置 `ANDROID_HOME` 为本机 SDK 路径。Gradle Wrapper 已包含在仓库中。
 
 ```powershell
@@ -168,7 +208,7 @@ Set-Location android
 
 APK：`android/recorder/build/outputs/apk/debug/recorder-debug.apk`。
 
-界面为原生 HTML / CSS / JavaScript，共享源码在 `review/`。可以直接打开 `review/index.html` 查看、导入和推演，跨应用采集与引擎由 Android 提供。
+界面为原生 HTML / CSS / JavaScript，共享源码在 `review/`。可以直接打开 `review/index.html` 查看、导入和推演，跨应用采集由 Android 提供，本地引擎由 Android / iOS 的原生层提供。
 
 ```powershell
 npm install
@@ -188,12 +228,23 @@ node tests/review-capture-regression-ui.js
 
 日夜及点选棋子验收使用本地自备画面：`official-day.jpg`、`official-night.jpg`、`selected-queen.png`、`unselected-queen.png`，放到测试设备的 `/sdcard/Android/data/com.jingjing.chesssprout/files/`。这些私人画面不随源码或安装包分发。对应测试为 `AppearanceVisionTest` 与 `CapturePerformanceTest` 的选中棋子用例。
 
+### iOS
+
+在已完成 Xcode 初始化的 Mac 上克隆本仓库，然后执行：
+
+```bash
+bash ios/scripts/run_simulator.sh --build
+```
+
+脚本使用 Python 标准库生成 Xcode 工程，同步共享界面，以源码编译 Stockfish 19，并校验官方 NNUE 的 SHA-256。无需 CocoaPods、XcodeGen 或开发者签名。已构建后运行时省略 `--build`。具体要求与测试命令见 [iOS 开发说明](ios/README.md)。
+
 ### 目录
 
 ```text
 review/                  共享界面、棋谱、自动分析策略、收藏与 Elo
 src/controlMap.js        原开局训练项目共享的控制格计算
 android/recorder/        屏幕采集、图片 / 视频识别、存储、引擎与测试
+ios/                    Swift / WKWebView、原生 Stockfish、截图识别与模拟器构建
 vendor/                 规则库、棋子、引擎、NNUE、许可和来源哈希
 tests/                  规则、界面与 Android 链路测试
 docs/                   截图、验证说明与发布记录
@@ -203,7 +254,7 @@ docs/                   截图、验证说明与发布记录
 
 本项目软件源码采用 [GPL-3.0](LICENSE)。第三方组件沿用其各自许可，见 [NOTICE](NOTICE) 与 `vendor/`。
 
-- [Stockfish](https://github.com/official-stockfish/Stockfish)：ARM64 使用官方 Stockfish 19，x86_64 使用 F-Droid DroidFish 1.90 中的 Stockfish 16.1。Release 附对应源码材料，App 设置中也提供许可与源码入口。
+- [Stockfish](https://github.com/official-stockfish/Stockfish)：Android ARM64 使用官方 Stockfish 19，Android x86_64 使用 F-Droid DroidFish 1.90 中的 Stockfish 16.1；iOS 从源码编译 Stockfish 19。Release 附对应源码材料，App 设置中也提供许可与源码入口。
 - [chess.js](https://github.com/jhlywa/chess.js)：BSD-2-Clause。
 - [chesslib](https://github.com/bhlangonijr/chesslib)：Apache-2.0。
 

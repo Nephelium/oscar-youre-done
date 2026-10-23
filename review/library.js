@@ -5,7 +5,7 @@
     if(!input||!Array.isArray(input.folders)||!input.entries||typeof input.entries!=='object')return empty();
     const folders=[],seen=new Set();
     for(const f of input.folders.slice(0,100)){
-      if(typeof f.id!=='string'||!f.id||typeof f.name!=='string'||!f.name.trim()||seen.has(f.id))continue;
+      if(!f||typeof f.id!=='string'||!f.id||f.id.length>100||['favorite','__proto__','constructor','prototype'].includes(f.id)||typeof f.name!=='string'||!f.name.trim()||seen.has(f.id))continue;
       folders.push({id:f.id.slice(0,100),name:f.name.trim().slice(0,40)});seen.add(f.id);
     }
     const entries={};

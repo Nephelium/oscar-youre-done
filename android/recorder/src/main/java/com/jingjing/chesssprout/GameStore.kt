@@ -28,7 +28,9 @@ class GameStore(context: Context) {
     fun mergeAnalysis(id: String, fen: String, result: JSONObject) = synchronized(lock) {
         val game = read(id) ?: return@synchronized
         val analyses = game.optJSONObject("analysis") ?: JSONObject()
-        analyses.put(fen, result); game.put("analysis", analyses); save(game)
+        if (shouldReplaceAnalysis(analyses.optJSONObject(fen),result)) {
+            analyses.put(fen, result); game.put("analysis", analyses); save(game)
+        }
     }
     fun delete(id: String) = synchronized(lock) {
         val target=file(id)
@@ -36,5 +38,19 @@ class GameStore(context: Context) {
         require(!target.exists()) {"删除失败，请重试"}
         evidence.listFiles()?.filter{it.isFile && it.name.startsWith("$id-") && it.name.matches(Regex("[A-Za-z0-9_-]+\\.jpg"))}?.forEach {require(it.delete()){ "校对图片未能删除，请重试" }}
     }
-    companion object { private val lock = Any() }
+    companion object {
+        private val lock = Any()
+        fun requireEditable(id: String, capture: JSONObject?, video: JSONObject) {
+            check(capture?.optString("gameId")!=id) { "请先结束这篇手记的屏幕记录" }
+            check(video.optString("state")!="processing" || video.optString("gameId")=="" || video.optString("gameId")!=id) {
+                "请先停止录屏导入或等待完成，再编辑这篇手记"
+            }
+        }
+        fun shouldReplaceAnalysis(previous: JSONObject?, next: JSONObject): Boolean {
+            if(previous==null || previous.optString("engine")!=next.optString("engine"))return true
+            val oldDepth=previous.optJSONArray("lines")?.optJSONObject(0)?.optInt("depth")?:0
+            val newDepth=next.optJSONArray("lines")?.optJSONObject(0)?.optInt("depth")?:0
+            return newDepth>=oldDepth
+        }
+    }
 }

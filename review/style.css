@@ -211,3 +211,34 @@ input[type=number],input[type=datetime-local]{width:100%;min-width:0;border:1.5p
 .curve [data-saved-branch]:focus-visible circle{stroke:var(--ink);stroke-width:3}
 
 .video-time-entry{display:flex;align-items:center;gap:10px;margin:8px 0 16px}.video-time-entry label{display:flex;align-items:center;gap:6px;flex:1;min-width:0}.video-time-entry input{width:100%;min-width:0;min-height:44px;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--white);color:inherit;font:inherit}.video-time-entry button{min-height:44px;flex:none}
+
+/* A steady reading area, with less empty space below the actions. */
+.review-assessment .analysis-heading{height:44px;margin-bottom:6px}
+.review-assessment .compare-slot{height:40px;margin-top:12px}
+.review-assessment .progress-slot{height:18px;min-height:18px;margin-top:4px;display:flex;align-items:center;gap:8px}
+.review-assessment .progress-slot .analyze-progress{flex:1;margin:0}
+.review-assessment .progress-slot .tiny{display:block;flex:none;font-size:10px;margin:0!important}
+.review-assessment .analysis-depth{height:23px;font-size:10px}
+.review-page .compact-stats .stat{flex-direction:column;align-items:center;gap:2px;line-height:1.3}
+.review-page .compact-stats .stat span{font-size:10px;white-space:normal;text-align:center}
+.review-page .compact-stats .stat strong{font-size:16px}
+.candidates-card{height:198px}
+.candidates-card .candidate{min-height:44px;height:44px;font-size:12px;margin-top:2px}
+.record-card .grow{min-width:0}.record-card h3{overflow-wrap:anywhere}
+.modal-actions{flex-wrap:wrap;align-items:stretch}
+.modal-actions .button{flex:1 1 130px;min-width:0;white-space:normal;line-height:1.45;min-height:44px}
+.modal-actions .button.danger{box-shadow:none}
+.modal-heading h2{overflow-wrap:anywhere}.modal-copy{overflow-wrap:anywhere}
+.control-toggle.active{color:var(--white)}
+[data-appearance=dark] .control-toggle.active{color:#172b12}
+@media(orientation:landscape) and (max-height:600px) and (min-width:600px){
+ .review-page .compact-stats .stat{flex-direction:row;align-items:baseline;gap:4px}
+ .review-page .compact-stats .stat span{font-size:9px}
+ .review-page .compact-stats .stat strong{font-size:14px}
+}
+
+.update-banner{display:flex;gap:12px;align-items:center;padding:12px 14px;margin-bottom:14px;border:1px solid var(--line);border-radius:16px;background:var(--white)}
+.update-banner .grow{min-width:0}.update-banner strong{font-size:14px}.update-banner p{font-size:11px;color:var(--muted);margin:4px 0 0}.update-banner .button{flex-shrink:0}.update-settings .update-banner{margin:4px 0 0}
+
+/* iOS zooms focused form fields below 16px and can retain that zoom on close. */
+html[data-platform=ios] :is(input:not([type=range]):not([type=checkbox]):not([type=radio]),textarea,select){font-size:16px}

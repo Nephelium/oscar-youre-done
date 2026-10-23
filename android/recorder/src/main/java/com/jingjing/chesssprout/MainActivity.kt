@@ -41,6 +41,8 @@ class MainActivity: ComponentActivity() {
     private lateinit var web: WebView
     private lateinit var store: GameStore
     private lateinit var engine: StockfishEngine
+    private lateinit var updates: UpdateChecker
+    @Volatile private var releasePage=ReleasePolicy.PAGE+"/latest"
     private val executor=Executors.newSingleThreadExecutor()
     private var chooser: ValueCallback<Array<Uri>>?=null
     private var captureOptions="{}"
@@ -73,6 +75,7 @@ class MainActivity: ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         store=GameStore(this);engine=StockfishEngine(applicationContext)
+        updates=UpdateChecker(this,packageManager.getPackageInfo(packageName,0).versionName?:"1.3.7")
         captureOptions=savedInstanceState?.getString("captureOptions")?:"{}"
         exporting=savedInstanceState?.getBoolean("exporting")?:false
         if(Build.VERSION.SDK_INT>=30)window.setDecorFitsSystemWindows(false)
@@ -121,9 +124,17 @@ class MainActivity: ComponentActivity() {
         return try {val stream=ByteArrayOutputStream();bitmap.compress(Bitmap.CompressFormat.JPEG,82,stream);"data:image/jpeg;base64,"+Base64.encodeToString(stream.toByteArray(),Base64.NO_WRAP)} finally {bitmap.recycle()}
     }
     private inner class Host {
+        @JavascriptInterface fun checkUpdate(force: Boolean) {updates.check(force) { result ->
+            if(result.optString("state")=="update")releasePage=result.getString("url")
+            emit(JSONObject().put("type","updateCheck").put("result",result))
+        }}
+        @JavascriptInterface fun openRelease() {runOnUiThread {
+            runCatching {startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(releasePage)))}
+                .onFailure {message("未找到可用的浏览器")}
+        }}
         @JavascriptInterface fun listGames(): String=store.list().toString()
         @JavascriptInterface fun deleteGame(id: String): String=runCatching {
-            require(CaptureService.instance?.snapshot()?.optString("gameId")!=id){"请先结束这篇手记的屏幕记录"}
+            GameStore.requireEditable(id,CaptureService.instance?.snapshot(),VideoImporter.state)
             store.delete(id);""
         }.getOrElse{it.message?:"删除失败，请重试"}
         @JavascriptInterface fun readLicense(component: String): String {
@@ -146,7 +157,7 @@ class MainActivity: ComponentActivity() {
             require(content.length<=12*1024*1024)
             val record=JSONObject(content);val moves=record.getJSONArray("moves");require(moves.length()<=6000)
             val active=CaptureService.instance?.snapshot()
-            check(active?.optString("gameId")!=record.getString("id")) { "请先结束记录，再编辑这局棋谱" }
+            GameStore.requireEditable(record.getString("id"),active,VideoImporter.state)
             val board=Board().apply{loadFromFen(record.getString("initialFen"))}
             for(i in 0 until moves.length()) {val input=moves.getString(i);require(input.matches(Regex("[a-h][1-8][a-h][1-8][qrbn]?")));check(board.doMove(Move(input,board.sideToMove),true))}
             store.save(record);""
@@ -304,7 +315,7 @@ class MainActivity: ComponentActivity() {
     override fun onStop() {CaptureService.appVisible=false;super.onStop()}
     override fun onPause() {engine.cancel();if(::web.isInitialized){web.evaluateJavascript("window.App && App.pause()",null);web.onPause()};super.onPause()}
     override fun onResume() {super.onResume();if(::web.isInitialized){web.onResume();web.evaluateJavascript("window.App && App.resume()",null)}}
-    override fun onDestroy() {destroyed=true;ready=false;chooser?.onReceiveValue(null);engine.cancel();executor.shutdownNow();engine.close()
+    override fun onDestroy() {destroyed=true;ready=false;chooser?.onReceiveValue(null);updates.close();engine.cancel();executor.shutdownNow();engine.close()
         web.removeJavascriptInterface("SproutHost");web.destroy();super.onDestroy()}
     companion object {const val URL="https://appassets.androidplatform.net/assets/review/index.html";const val PICK_TEXT=20;const val CAPTURE=21;const val EXPORT=22;const val PICK_VIDEO=23;const val NOTIFY=24;const val PICK_IMAGE=25}
 }

@@ -110,6 +110,7 @@ object VideoImporter {
                 retriever.setDataSource(context,uri)
                 val duration=retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)!!.toLong()
                 pipeline=CapturePipeline(context,captureOptions,"录屏导入")
+                state=JSONObject(state.toString()).put("gameId",pipeline.game.getString("id"))
                 var time=captureOptions.optLong("startMs")
                 reader=runCatching{PrefetchedVideoReader(context,uri,time)}.getOrNull()
                 while(time<duration && !cancelled) {

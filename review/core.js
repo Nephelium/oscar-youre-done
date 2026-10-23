@@ -41,18 +41,18 @@
       Object.entries(raw.analysis).slice(0, 7000).forEach(([fen, value]) => {
         if (check.validate_fen(fen).valid && value && Array.isArray(value.lines)) {
           record.analysis[fen] = {engine: String(value.engine || 'Stockfish').slice(0,80), budget: Number(value.budget) || 0,
-            lines: value.lines.slice(0, 3).map(l => ({cp: Number.isFinite(l.cp) ? l.cp : null, mate: Number.isFinite(l.mate) ? l.mate : null,
+            lines: value.lines.filter(l => l && typeof l === 'object').slice(0, 3).map(l => ({cp: Number.isFinite(l.cp) ? l.cp : null, mate: Number.isFinite(l.mate) ? l.mate : null,
               depth: Math.max(0, Number(l.depth) || 0), terminal: !!l.terminal, ...(validWdl(l.wdl)?{wdl:l.wdl.slice()}:{}),
               pv: Array.isArray(l.pv) ? l.pv.filter(x => /^[a-h][1-8][a-h][1-8][qrbn]?$/.test(x)).slice(0, 80) : []}))};
         }
       });
     }
-    (raw.branches || []).slice(0, 200).forEach(b => {
-      if (!Number.isInteger(b.at) || b.at < 0 || b.at > moves.length || !Array.isArray(b.moves) || !b.moves.length || b.moves.length > 600) return;
+    (Array.isArray(raw.branches) ? raw.branches : []).slice(0, 200).forEach(b => {
+      if (!b || typeof b !== 'object' || !Number.isInteger(b.at) || b.at < 0 || b.at > moves.length || !Array.isArray(b.moves) || !b.moves.length || b.moves.length > 600) return;
       try { const g = position(record, b.at, b.moves); if (g) record.branches.push({id: String(b.id || id()), at: b.at, name: String(b.name || '新的变化').slice(0,80), moves: b.moves.slice()}); } catch (_) { /* Invalid optional variation is not a valid mainline. */ }
     });
     compactBranches(record);
-    record.issues = (raw.issues || []).slice(0, 500).filter(x => x && typeof x === 'object').map(x => ({...x, message: String(x.message || '请核对这段棋谱').slice(0,300)}));
+    record.issues = (Array.isArray(raw.issues) ? raw.issues : []).slice(0, 500).filter(x => x && typeof x === 'object').map(x => ({...x, message: String(x.message || '请核对这段棋谱').slice(0,300)}));
     record.revisions = Array.isArray(raw.revisions) ? raw.revisions : [];
     record.undoEvents = Array.isArray(raw.undoEvents) ? raw.undoEvents : [];
     const terminal = terminalResult(game);
@@ -122,6 +122,21 @@
     const h = g.header();
     return [validate({title: h.Event || '导入的棋谱', source: 'PGN', initialFen: h.FEN || START,
       result: h.Result || '*', notebook:h.Notebook, moves: g.history({verbose: true}).map(uci)})];
+  }
+  function prepareImport(records, existingIds = []) {
+    const occupied=new Set(existingIds), ids=new Map();
+    for(const record of records){
+      if(ids.has(record.id))throw Error('备份中有重复的手记编号，请分别导入对应备份。');
+      let next=record.id;
+      while(occupied.has(next)||next==='oscar-demo-v1')next=id();
+      ids.set(record.id,next);occupied.add(next);
+    }
+    const linked=value=>ids.get(value)||value;
+    return {ids,records:records.map(record=>({...record,id:ids.get(record.id),
+      capture:record.capture?{...record.capture,
+        ...(record.capture.previousId?{previousId:linked(record.capture.previousId)}:{}),
+        ...(record.capture.nextId?{nextId:linked(record.capture.nextId)}:{})}:null,
+      issues:record.issues.map(issue=>({...issue,...(issue.continuationId?{continuationId:linked(issue.continuationId)}:{})}))}))};
   }
   function toPgn(record) {
     const g = position(record);
@@ -315,5 +330,5 @@
     if(demoData && JSON.stringify(record.moves)===JSON.stringify(demoData.moves))record.analysis=JSON.parse(JSON.stringify(demoData.analysis));
     return record;
   }
-  return {START, id, uci, move, position, validate, terminalResult, issueAnchor, correctRecord, confirmIssue, create, importText, toPgn, lineSan, numeric, viewNumeric, displayScore, probabilities, validWdl, assess, timeline, summary, moveFacts, variationRows, evaluationChange, keyMoments, explainMove, shouldStoreBranch, addBranch, compactBranches, fromPlacement, moveSymbol, demo};
+  return {START, id, uci, move, position, validate, terminalResult, issueAnchor, correctRecord, confirmIssue, create, importText, prepareImport, toPgn, lineSan, numeric, viewNumeric, displayScore, probabilities, validWdl, assess, timeline, summary, moveFacts, variationRows, evaluationChange, keyMoments, explainMove, shouldStoreBranch, addBranch, compactBranches, fromPlacement, moveSymbol, demo};
 });

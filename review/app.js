@@ -1,11 +1,30 @@
 (function () {
   'use strict';
   const S = Sprout, host = window.SproutHost, $ = s => document.querySelector(s);
+  const nativeIOS = host?.platform === 'ios';
+  if(nativeIOS)document.documentElement.dataset.platform='ios';
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const markContent = review => review?.book ? icon('book') : S.moveSymbol(review);
   const icon = name => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
   const button = (text, action, cls = '', extra = '') => `<button class="button ${cls}" data-act="${action}" ${extra}>${text}</button>`;
   let legacyDemos = [], demoRecord = null;
+  let updateInfo=null,updateChecking=false,updateManual=false,updateError='';
+  function checkUpdates(manual=false) {
+    if(!host||typeof host.checkUpdate!=='function'){if(manual)toast('请在安卓 App 中检查更新。');return;}
+    if(!manual&&settings.autoUpdate===false)return;
+    if(updateChecking){updateManual=updateManual||manual;return;}
+    updateChecking=true;updateManual=manual;updateError='';
+    if(route==='settings')render();
+    try{host.checkUpdate(manual);}catch(_){updateChecking=false;updateError='暂时无法检查更新，请稍后重试。';if(manual)toast(updateError);if(route==='settings')render();}
+  }
+  function updateBanner() {
+    return updateInfo?.state==='update'?`<section class="update-banner"><div class="grow"><strong>新版 ${esc(updateInfo.version)} 已发布</strong><p>查看更新说明并下载安装包</p></div>${button('下载更新','downloadUpdate','small soft')}</section>`:'';
+  }
+  function updateSettings() {
+    if(nativeIOS)return `<section class="setting-card"><div class="setting-row"><div class="grow"><strong>应用版本</strong><p>奥斯卡你完了 · iOS ${esc(JSON.parse(host.status()).version)}</p></div></div></section>`;
+    const label=updateChecking?'正在检查…':updateError|| (updateInfo?.state==='update'?'可更新至 '+updateInfo.version:updateInfo?.state==='latest'?'当前已是最新版本':'从 GitHub 获取正式版本');
+    return `<section class="setting-card update-settings"><div class="setting-row"><div class="grow"><strong>自动检查更新</strong><p>启动后后台检查，每天一次</p></div><button role="switch" aria-checked="${settings.autoUpdate!==false}" class="toggle ${settings.autoUpdate!==false?'on':''}" data-act="autoUpdate" aria-label="自动检查更新"><span></span></button></div><div class="setting-row"><div class="grow"><strong>应用更新</strong><p role="status">${esc(label)}</p></div>${button('检查更新','checkUpdate','small',updateChecking?'disabled':'')}</div>${updateBanner()}</section>`;
+  }
   let library=NotebookLibrary.empty(),folderFilter='',favoriteId=null,deleteId=null,swipe=null,suppressCardClick=0;
   try{library=NotebookLibrary.validate(JSON.parse(localStorage.getItem('sprout.library.v1')||'null'));}catch(_){}
   const saveLibrary=next=>{localStorage.setItem('sprout.library.v1',JSON.stringify(next));library=next;};
@@ -113,8 +132,15 @@
       records = valid.filter(r=>r.source!=='演示棋谱');
     } catch (_) { toast('棋谱读取失败，请保留当前数据并重新打开应用。'); }
   }
+  function requireEditable(record=current) {
+    if(!record||isDemo(record))return;
+    const state=host?JSON.parse(host.status()):{capture,video};
+    if(state.capture?.running&&state.capture.gameId===record.id)throw Error('请先结束这篇手记的屏幕记录。');
+    if(state.video?.state==='processing'&&state.video.gameId===record.id)throw Error('请先停止录屏导入或等待完成，再编辑这篇手记。');
+  }
   function save(record = current) {
     if (!record || isDemo(record)) return;
+    requireEditable(record);
     record.updatedAt=Date.now();
     if (host) { const error=host.saveGame(JSON.stringify(record)); if(error) throw Error(error); }
     const target=record.source==='演示棋谱'?legacyDemos:records, index=target.findIndex(r=>r.id===record.id);
@@ -146,7 +172,7 @@
   function home() {
     const unresolved=records.filter(r=>r.issues.some(i=>!i.resolved)).length;
     const analyzed=records.filter(r=>{const a=S.summary(r);return a.total>0&&a.analyzed===a.total;}).length;
-    return `${header()}<main class="page">${liveBanner()}<section class="hero"><div class="hero-copy"><div class="eyebrow">A LITTLE BETTER, EVERY GAME</div><h1>下完一局，<br>再进步一点。</h1><p>留住双方的每一步，<br>下完，再慢慢看懂。</p>${button(icon('record')+'记录一局','record','primary')}</div><div class="hero-art" aria-hidden="true"><div class="art-disc"></div><div class="art-tiles"></div><span class="art-star">✧</span><img class="hero-knight" src="${pieceUrl('w','n')}" alt=""><div class="art-leaf">${icon('spark')}</div><div class="art-label">记谱 · 复盘 · 自由推演</div></div></section><div class="quick-actions"><button class="quick-card" data-act="import"><span class="quick-icon">${icon('import')}</span><span><strong>导入棋谱</strong><small>棋谱 / 截图 / 备份</small></span>${icon('next')}</button><button class="quick-card" data-act="video"><span class="quick-icon">${icon('video')}</span><span><strong>从录屏记谱</strong><small>下完再导入，也可以</small></span>${icon('next')}</button></div>${eloHome()}<div class="stats"><div class="stat"><strong>${records.length}</strong><span>已存对局</span></div><div class="stat"><strong>${analyzed}</strong><span>完成分析</span></div><div class="stat"><strong>${unresolved}</strong><span>待校对</span></div></div><div class="section-heading"><h2>最近的棋局</h2><button class="text-button" data-route="games">全部对局 ${icon('next')}</button></div><div class="record-list">${records.length?records.slice(0,3).map(card).join(''):`<div class="empty-card">${icon('book')}<h3>第一局，从这里开始</h3><p>下棋前开启记录，结束后就能回看。</p></div>`}</div><div class="section-heading"><h2>先试一试</h2></div><button class="demo-card" data-act="demo">${icon('spark')}<div class="grow"><h3>18 回合的王翼攻势</h3><p>从开局到将杀，试试复盘与自由推演。</p></div>${icon('next')}</button>${legacyDemos.length?`<button class="text-button legacy-demos" data-act="legacyDemos">旧版演示与变化 · ${legacyDemos.length}</button>`:''}</main>${nav()}`;
+    return `${header()}<main class="page">${liveBanner()}${updateBanner()}<section class="hero"><div class="hero-copy"><div class="eyebrow">A LITTLE BETTER, EVERY GAME</div><h1>下完一局，<br>再进步一点。</h1><p>留住双方的每一步，<br>下完，再慢慢看懂。</p>${host?.capabilities?.capture===false?button(icon('import')+'导入一局','import','primary'):button(icon('record')+'记录一局','record','primary')}</div><div class="hero-art" aria-hidden="true"><div class="art-disc"></div><div class="art-tiles"></div><span class="art-star">✧</span><img class="hero-knight" src="${pieceUrl('w','n')}" alt=""><div class="art-leaf">${icon('spark')}</div><div class="art-label">记谱 · 复盘 · 自由推演</div></div></section><div class="quick-actions"><button class="quick-card" data-act="import"><span class="quick-icon">${icon('import')}</span><span><strong>导入棋谱</strong><small>棋谱 / 截图 / 备份</small></span>${icon('next')}</button>${host?.capabilities?.video===false?`<button class="quick-card" data-route="play"><span class="quick-icon">${icon('spark')}</span><span><strong>和 AI 下棋</strong><small>六档棋力 · 下完复盘</small></span>${icon('next')}</button>`:`<button class="quick-card" data-act="video"><span class="quick-icon">${icon('video')}</span><span><strong>从录屏记谱</strong><small>下完再导入，也可以</small></span>${icon('next')}</button>`}</div>${eloHome()}<div class="stats"><div class="stat"><strong>${records.length}</strong><span>已存对局</span></div><div class="stat"><strong>${analyzed}</strong><span>完成分析</span></div><div class="stat"><strong>${unresolved}</strong><span>待校对</span></div></div><div class="section-heading"><h2>最近的棋局</h2><button class="text-button" data-route="games">全部对局 ${icon('next')}</button></div><div class="record-list">${records.length?records.slice(0,3).map(card).join(''):`<div class="empty-card">${icon('book')}<h3>第一局，从这里开始</h3><p>${host?.capabilities?.capture===false?'导入棋谱或截图，也可以与 AI 下棋。':'下棋前开启记录，结束后就能回看。'}</p></div>`}</div><div class="section-heading"><h2>先试一试</h2></div><button class="demo-card" data-act="demo">${icon('spark')}<div class="grow"><h3>18 回合的王翼攻势</h3><p>从开局到将杀，试试复盘与自由推演。</p></div>${icon('next')}</button>${legacyDemos.length?`<button class="text-button legacy-demos" data-act="legacyDemos">旧版演示与变化 · ${legacyDemos.length}</button>`:''}</main>${nav()}`;
   }
   function gamesPage() {
     const selectedRecords=records.filter(r=>r.notebook===notebook&&(!folderFilter||(folderFilter==='favorite'?library.entries[r.id]?.length:library.entries[r.id]?.includes(folderFilter))));
@@ -161,7 +187,7 @@
   }
   function autoAnalysisSettings(){return `<section class="setting-card auto-analysis-settings"><div class="setting-row"><div class="grow"><strong>变化自动分析</strong><p>每走一步更新兵值、胜率与走法评价</p></div><button role="switch" aria-checked="${settings.autoAnalysis}" class="toggle ${settings.autoAnalysis?'on':''}" data-act="autoAnalysis" aria-label="变化自动分析"><span></span></button></div><div class="setting-row"><div class="grow"><strong>计算速度</strong><p>自适应：先快算，停下来后逐步加深</p></div><select id="auto-speed" aria-label="自动分析速度" ${settings.autoAnalysis?'':'disabled'}>${[['adaptive','自适应'],['fast','快速 · 0.2 秒'],['balanced','均衡 · 0.7 秒'],['deep','深入 · 1.8 秒']].map(([v,t])=>`<option value="${v}" ${v===settings.autoSpeed?'selected':''}>${t}</option>`).join('')}</select></div><div class="setting-row"><div class="grow"><strong>深度上限</strong><p>自适应最多约 7 秒计算量</p></div><select id="auto-depth" aria-label="自动分析深度上限" ${settings.unlimitedAnalysis||!settings.autoAnalysis?'disabled':''}>${[12,16,20,24,28].map(n=>`<option value="${n}" ${n===settings.autoDepth?'selected':''}>${n} 层</option>`).join('')}</select></div><div class="setting-row"><div class="grow"><strong>持续分析，不限深度</strong><p>持续更新当前局面；离开复盘或进入后台即停止</p></div><button role="switch" aria-checked="${settings.unlimitedAnalysis}" class="toggle ${settings.unlimitedAnalysis?'on':''}" data-act="unlimitedAnalysis" aria-label="持续分析，不限深度" ${settings.autoAnalysis?'':'disabled'}><span></span></button></div></section>`;}
   function settingsPage() {
-    return `${header()}<main class="page"><div class="page-heading"><div><h1>按自己的节奏</h1><p>棋谱与分析，保存在这台设备里。</p></div></div>${appearanceSettings()}${autoAnalysisSettings()}<section class="setting-card"><div class="setting-row"><div class="grow"><strong>对战允许悔棋</strong><p>退回自己上一手之前，同时撤回对方应手</p></div><button role="switch" aria-checked="${!!settings.allowUndo}" class="toggle ${settings.allowUndo?'on':''}" data-act="allowUndo" aria-label="对战允许悔棋"><span></span></button></div></section><section class="setting-card"><div class="setting-row"><div class="grow"><strong>走子动画</strong><p>平滑移动棋子，方便看清每一步</p></div><button role="switch" aria-checked="${!!settings.animation}" class="toggle ${settings.animation?'on':''}" data-act="animation" aria-label="走子动画"><span></span></button></div><div class="setting-row"><div class="grow"><strong>走子识别提示</strong><p>每次记到走法或撤回时短暂提示</p>${host&&!JSON.parse(host.status()).overlay?button("开启连续提示权限","overlay","small"):""}</div><button role="switch" aria-checked="${!!settings.moveFeedback}" class="toggle ${settings.moveFeedback?'on':''}" data-act="moveFeedback" aria-label="走子识别提示"><span></span></button></div><div class="setting-row"><div class="grow"><strong>分析用时</strong><p>每个局面的搜索时间，越久越充分</p></div><select id="budget" aria-label="分析用时">${[[600,'轻快 · 0.6 秒'],[1500,'细看 · 1.5 秒'],[3500,'深入 · 3.5 秒']].map(([n,t])=>`<option value="${n}" ${settings.budget===n?'selected':''}>${t}</option>`).join('')}</select></div><div class="setting-row"><div class="grow"><strong>记录时的小悬浮按钮</strong><p>可选，也可以从通知栏暂停与结束</p></div>${button('去设置','overlay','small')}</div><div class="setting-row"><div class="grow"><strong>保存一份棋谱备份</strong><p>包含手记、分析、推演与 Elo 历史</p></div><button class="icon-button" data-act="backup" aria-label="导出备份">${icon('export')}</button></div><div class="setting-row"><div class="grow"><strong>恢复备份 / 导入棋谱</strong><p>导入为副本，保留已有对局</p></div><button class="icon-button" data-act="import" aria-label="导入备份">${icon('import')}</button></div></section><section class="setting-card" style="margin-top:18px"><h3>表现分怎样计算？</h3><p class="analysis-copy" style="margin-top:10px">根据自己每步的局面评价损失计算：100 × exp(−平均损失 / 250)，损失以百分之一兵为单位，每步最多计 2000。它是奥斯卡你完了的复盘指标。尚未分析完整时，会显示已分析手数。</p><p class="analysis-copy" style="margin-top:8px">局面分数随棋盘底部颜色切换视角。正数表示该方占优，负数表示该方落后；M 表示将杀距离。翻转棋盘也会切换该方的表现统计。</p><p class="analysis-copy" style="margin-top:8px">棋子角标与棋谱采用同一套评级：书本表示已收录的开局理论走法，★ 表示引擎首选，! 表示好棋，✓ 表示稳健，?! / ? / ?? 表示逐级增加的评价损失。</p></section><div class="about-mark">${brandMark()}</div><p class="about-copy">奥斯卡你完了 1.3.6 · 离线记谱与复盘<br>chess.js · chesslib · Stockfish<br><button class="text-button" data-act="licenses">开源组件与许可</button></p></main>${nav()}`;
+    return `${header()}<main class="page"><div class="page-heading"><div><h1>按自己的节奏</h1><p>棋谱与分析，保存在这台设备里。</p></div></div>${updateSettings()}${appearanceSettings()}${autoAnalysisSettings()}<section class="setting-card"><div class="setting-row"><div class="grow"><strong>对战允许悔棋</strong><p>退回自己上一手之前，同时撤回对方应手</p></div><button role="switch" aria-checked="${!!settings.allowUndo}" class="toggle ${settings.allowUndo?'on':''}" data-act="allowUndo" aria-label="对战允许悔棋"><span></span></button></div></section><section class="setting-card"><div class="setting-row"><div class="grow"><strong>走子动画</strong><p>平滑移动棋子，方便看清每一步</p></div><button role="switch" aria-checked="${!!settings.animation}" class="toggle ${settings.animation?'on':''}" data-act="animation" aria-label="走子动画"><span></span></button></div>${nativeIOS?'':`<div class="setting-row"><div class="grow"><strong>走子识别提示</strong><p>每次记到走法或撤回时短暂提示</p>${host&&!JSON.parse(host.status()).overlay?button("开启连续提示权限","overlay","small"):""}</div><button role="switch" aria-checked="${!!settings.moveFeedback}" class="toggle ${settings.moveFeedback?'on':''}" data-act="moveFeedback" aria-label="走子识别提示"><span></span></button></div>`}<div class="setting-row"><div class="grow"><strong>分析用时</strong><p>每个局面的搜索时间，越久越充分</p></div><select id="budget" aria-label="分析用时">${[[600,'轻快 · 0.6 秒'],[1500,'细看 · 1.5 秒'],[3500,'深入 · 3.5 秒']].map(([n,t])=>`<option value="${n}" ${settings.budget===n?'selected':''}>${t}</option>`).join('')}</select></div>${nativeIOS?'':`<div class="setting-row"><div class="grow"><strong>记录时的小悬浮按钮</strong><p>可选，也可以从通知栏暂停与结束</p></div>${button('去设置','overlay','small')}</div>`}<div class="setting-row"><div class="grow"><strong>保存一份棋谱备份</strong><p>包含手记、分析、推演与 Elo 历史</p></div><button class="icon-button" data-act="backup" aria-label="导出备份">${icon('export')}</button></div><div class="setting-row"><div class="grow"><strong>恢复备份 / 导入棋谱</strong><p>导入为副本，保留已有对局</p></div><button class="icon-button" data-act="import" aria-label="导入备份">${icon('import')}</button></div></section><section class="setting-card" style="margin-top:18px"><h3>表现分怎样计算？</h3><p class="analysis-copy" style="margin-top:10px">根据自己每步的局面评价损失计算：100 × exp(−平均损失 / 250)，损失以百分之一兵为单位，每步最多计 2000。它是奥斯卡你完了的复盘指标。尚未分析完整时，会显示已分析手数。</p><p class="analysis-copy" style="margin-top:8px">局面分数随棋盘底部颜色切换视角。正数表示该方占优，负数表示该方落后；M 表示将杀距离。翻转棋盘也会切换该方的表现统计。</p><p class="analysis-copy" style="margin-top:8px">棋子角标与棋谱采用同一套评级：书本表示已收录的开局理论走法，★ 表示引擎首选，! 表示好棋，✓ 表示稳健，?! / ? / ?? 表示逐级增加的评价损失。</p></section><div class="about-mark">${brandMark()}</div><p class="about-copy">奥斯卡你完了 1.3.7 · 离线记谱与复盘<br>chess.js · chesslib · Stockfish<br><button class="text-button" data-act="licenses">开源组件与许可</button></p></main>${nav()}`;
   }
   const levels=[[0,'轻松'],[3,'入门'],[7,'进阶'],[12,'挑战'],[17,'高手'],[20,'全力']];
   let battle=null,battleThinking=false,battleToken=0,battleError='',lastClockSave=0;
@@ -393,6 +419,7 @@
   function goTo(n) {stopPlayback();pauseForNavigation();branchActive=false;correcting=false;selected=null;ply=Math.max(0,Math.min(current.moves.length,n));render();}
   function applyMove(input) {
     if(route==='play'){if(!battle||battle.ended||!battle.clock.active||battleThinking||viewGame().turn()!==battle.side)return;commitBattleMove(input);requestBattleMove();return;}
+    requireEditable();
     const g=viewGame(),m=S.move(g,input);if(!m){toast('这一步不符合当前局面的规则。');return;}
     const value=S.uci(m);selected=null;
     if(current.source==='手动录入'&&!branchActive&&ply===current.moves.length) {
@@ -417,19 +444,22 @@
     selected=p&&p.color===g.turn()?(selected===square?null:square):null;renderBoard();
   }
   async function analyzeFen(fen,token,options=null) {
-    if(!host)throw Error('请在安卓 App 中使用本地 Stockfish 分析。');
+    if(!host)throw Error('请在 App 中使用本地 Stockfish 分析。');
     if(token!==analysisToken)throw Error('分析已暂停');
     const request='a'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
     const record=current;
     const result=await new Promise((resolve,reject)=>{
       const timer=options?.infinite?null:setTimeout(()=>{pending.delete(request);reject(Error('分析响应超时，请重试。'));},50000);
-      const update=value=>{if(token!==analysisToken)return;if(!options||AnalysisPolicy.accept(record.analysis[fen],value)){record.analysis[fen]=value;if(route==='review'&&current===record)render();}};
-      pending.set(request,{resolve,reject,timer,update,flush:()=>{if(options)save(record);}});
+      const update=value=>{if(token!==analysisToken)return;if(AnalysisPolicy.accept(record.analysis[fen],value)){record.analysis[fen]=value;if(route==='review'&&current===record)render();}};
+      pending.set(request,{resolve,reject,timer,update,flush:()=>save(record)});
       if(options&&typeof host.analyzeLive==='function')host.analyzeLive(request,isDemo(record)?'':record.id,fen,JSON.stringify(options));
       else host.analyze(request,isDemo(record)?'':record.id,fen,options?.budget||Number(settings.budget));
     });
-    if(token===analysisToken&&(!options||AnalysisPolicy.accept(record.analysis[fen],result)))record.analysis[fen]=result;
+    if(token===analysisToken&&AnalysisPolicy.accept(record.analysis[fen],result))record.analysis[fen]=result;
     if(options&&token===analysisToken&&route==='review'&&current===record)render();
+    // Live analysis also pauses between stages, when there is no pending request to flush.
+    // Manual analysis is already persisted by the native bridge for each completed position.
+    if(options&&token===analysisToken)save(record);
     return result;
   }
   function pauseAnalysis() {
@@ -460,12 +490,14 @@
   function importRecords(text) {
     let data;try{data=JSON.parse(text);}catch(_){/* PGN and FEN are plain text. */}
     const importedRatings=data?.elo===undefined?null:Growth.merge(ratings,data.elo);
-    const list=S.importText(text);
+    const prepared=S.prepareImport(S.importText(text),allStored().map(r=>r.id));
+    const list=prepared.records;
     if(importedRatings)saveRatings(importedRatings);
-    const importedIds=new Map();list.forEach(r=>{const oldId=r.id;if(isDemo(r)){r.id=S.id();r.source='演示推演';}else if(allStored().some(x=>x.id===r.id))r.id=S.id();save(r);importedIds.set(oldId,r.id);});if(data?.library)saveLibrary(NotebookLibrary.merge(library,data.library,importedIds,S.id));
+    const importedIds=prepared.ids;list.forEach(r=>{if(r.source==='演示棋谱')r.source='演示推演';save(r);});if(data?.library)saveLibrary(NotebookLibrary.merge(library,data.library,importedIds,S.id));
     closeModal();if(list.length)openRecord(list[0].id);else{route='growth';render();}toast('已导入 '+list.length+' 篇手记'+(importedRatings?'和 Elo 记录。':'。'));
   }
   function recordDialog() {
+    if(host?.capabilities?.capture===false){toast('此版本暂不支持屏幕记录。');return;}
     if(capture.running){captureControl();return;}
     modal('让这一局，留下棋谱',`<p class="modal-copy">先开启记录，再进入多邻国。等奥斯卡你完了准备好后再走子。</p><label class="field" for="capture-mode">从哪里开始？</label><select id="capture-mode" class="full"><option value="game">完整对局 · 从初始棋盘开始</option><option value="position">练习题 · 从当前局面开始</option></select><p class="notice">已内置多邻国棋子识别。练习题可从当前局面开始，识别后确认棋子和先走方。</p><label class="field">棋盘底部是哪一方？</label>${sideOptions()}<label class="check-label"><input type="checkbox" id="overlay-check">显示小悬浮按钮（可选）</label><p class="notice">若未自动定位，可以返回本应用手动框选。录制过程无需声音。</p>`,button(icon('record')+'开启屏幕记录','startCapture','primary'));
   }
@@ -507,11 +539,14 @@
     openRecord(demoRecord.id);toast('已附整盘深度分析，试试下一步查看走法评价。');
   }
   const actions={
+    autoUpdate:()=>{settings.autoUpdate=settings.autoUpdate===false;localStorage.setItem('sprout.settings.v1',JSON.stringify(settings));render();if(settings.autoUpdate)checkUpdates();},
+    checkUpdate:()=>checkUpdates(true),
+    downloadUpdate:()=>{if(host&&typeof host.openRelease==='function')host.openRelease();},
     allowUndo:()=>{settings.allowUndo=!settings.allowUndo;localStorage.setItem('sprout.settings.v1',JSON.stringify(settings));render();},
     suspendBattle:()=>{pauseBattle();render();},resumeBattle:()=>{if(battle&&!battle.ended){battleError='';BattleClock.start(battle.clock,viewGame().turn(),performance.now());storeBattle();render();requestBattleMove();}},undoBattle:()=>undoBattle(),
     autoAnalysis:()=>{settings.autoAnalysis=!settings.autoAnalysis;pauseAnalysis();localStorage.setItem('sprout.settings.v1',JSON.stringify(settings));render();},
     unlimitedAnalysis:()=>{settings.unlimitedAnalysis=!settings.unlimitedAnalysis;pauseAnalysis();localStorage.setItem('sprout.settings.v1',JSON.stringify(settings));render();},
-    startBattle:()=>{if(!host||typeof host.playMove!=='function'){toast('请在更新后的安卓 App 中使用本地人机对战。');return;}if(capture.running||video.state==='processing')throw Error('请先结束记录或等待导入完成。');const skill=Number($('input[name=play-level]:checked').value),side=$('input[name=play-side]:checked').value;const r=S.create('与 Stockfish · '+levels.find(x=>x[0]===skill)[1]+' 的对局');r.source='Stockfish 对战';r.side=side;save(r);battle={id:r.id,side,skill,ended:false,clock:BattleClock.create($('#play-time').value)};storeBattle();enterPlay();},
+    startBattle:()=>{if(!host||typeof host.playMove!=='function'){toast('请在 App 中使用本地人机对战。');return;}if(capture.running||video.state==='processing')throw Error('请先结束记录或等待导入完成。');const skill=Number($('input[name=play-level]:checked').value),side=$('input[name=play-side]:checked').value;const r=S.create('与 Stockfish · '+levels.find(x=>x[0]===skill)[1]+' 的对局');r.source='Stockfish 对战';r.side=side;save(r);battle={id:r.id,side,skill,ended:false,clock:BattleClock.create($('#play-time').value)};storeBattle();enterPlay();},
     pauseBattle:()=>{pauseBattle();route='home';render();},retryBattle:()=>requestBattleMove(),
     battleReview:()=>openRecord(battle.id),newBattle:()=>{pauseBattle();battle=null;storeBattle();render();},
     resignBattle:()=>modal('结束这盘对局？','<p class="modal-copy">认输后棋谱会留在完整对局手记里，随时可以复盘。</p>',button('继续下棋','close')+button('认输并保存','confirmResign','danger')),
@@ -531,7 +566,7 @@
     confirmDeleteRating:()=>{saveRatings(ratings.filter(r=>r.id!==ratingEditId));closeModal();render();toast('这条 Elo 记录已删除。');},
     curveScale:e=>{curveRange=Number(e.dataset.scale);localStorage.setItem('sprout.curveRange',curveRange);render();},
     notebook:e=>{notebook=e.dataset.book==='practice'?'practice':'game';localStorage.setItem('sprout.notebook',notebook);render();},
-    image:()=>{if(!host){toast('截图识别请在安卓 App 中使用。');return;}pauseAnalysis();closeModal();host.selectImage();},
+    image:()=>{if(host?.capabilities?.image===false){toast('此版本暂不支持截图识别。');return;}if(!host){toast('截图识别请在安卓 App 中使用。');return;}pauseAnalysis();closeModal();host.selectImage();},
     confirmImage:()=>{
       const fields=$('#position-fen').value.trim().split(/\s+/);fields[1]=$('#position-turn').value;
       const fen=fields.join(' ');S.validate({initialFen:fen,moves:[]});
@@ -557,7 +592,7 @@
       video={state:'processing',progress:0,plies:0};videoProgress();host.runVideo(JSON.stringify({confirmFen:fen}));poll();
     },
     videoProgress,openVideo:()=>{if(video.gameId){localStorage.setItem('sprout.lastVideo',video.gameId);refresh();openRecord(video.gameId);}},
-    video:()=>host?host.selectVideo():toast('请在安卓 App 中导入录屏。'),
+    video:()=>host?.capabilities?.video===false?toast('此版本暂不支持录屏识别。'):host?host.selectVideo():toast('请在 App 中导入录屏。'),
     pickFile:()=>$('#file-input').click(),importText:()=>importRecords($('#import-text').value),
     new:()=>{const r=S.create(notebook==='practice'?'手动记录的练习':'手动记录的对局');r.notebook=notebook;save(r);openRecord(r.id);},
     curveBranch:e=>{const id=e.dataset.id;if(curveBranches.has(id))curveBranches.delete(id);else if(curveBranches.size<6)curveBranches.add(id);branchPickerOpen=true;render();},
@@ -580,7 +615,7 @@
     },
     saveBranch:()=>{storeBranch(true);render();toast(isDemo(current)?'变化已留在本次演示中。':'变化已保存。');},
     rename:()=>modal('对局信息',`<label class="field" for="game-title">对局名称</label><input type="text" id="game-title" maxlength="100" value="${esc(current.title)}"><label class="field" for="game-notebook">放在哪本手记？</label><select id="game-notebook"><option value="game" ${current.notebook==='game'?'selected':''}>完整对局</option><option value="practice" ${current.notebook==='practice'?'selected':''}>小练习</option></select><label class="field" for="game-side">你执哪一方？</label><select id="game-side"><option value="w" ${current.side==='w'?'selected':''}>白方</option><option value="b" ${current.side==='b'?'selected':''}>黑方</option></select><label class="field" for="game-result">对局结果</label><select id="game-result">${[['*','未标记'],['1-0','白方胜'],['0-1','黑方胜'],['1/2-1/2','和棋']].map(([v,t])=>`<option value="${v}" ${current.result===v?'selected':''}>${t}</option>`).join('')}</select>`,button('删除这篇手记','deleteRecord','danger')+(current.source==='演示棋谱'?button('保留为手记','keepLegacy','soft'):'')+button('保存','saveTitle','primary')),
-    saveTitle:()=>{current.title=$('#game-title').value.trim()||'新的对局';current.side=$('#game-side').value;current.result=$('#game-result').value;current.notebook=$('#game-notebook').value;notebook=current.notebook;localStorage.setItem('sprout.notebook',notebook);save();closeModal();render();},
+    saveTitle:()=>{const next=S.validate({...current,title:$('#game-title').value.trim()||'新的对局',side:$('#game-side').value,result:$('#game-result').value,notebook:$('#game-notebook').value});save(next);current=next;notebook=current.notebook;localStorage.setItem('sprout.notebook',notebook);closeModal();render();},
     export:()=>modal('带走这局棋',`<p class="modal-copy">PGN 方便在其他棋类软件打开。完整备份还会保留分析结果、校对信息和推演变化。</p>`,button('导出 PGN','exportPgn','soft')+button('完整备份','exportGame','primary')),
     exportPgn:()=>{exportText(current.title+'.pgn',S.toPgn(current));closeModal();},
     exportGame:()=>{exportText(current.title+'.json',JSON.stringify({schema:1,games:[current]},null,2),'application/json');closeModal();},
@@ -616,7 +651,7 @@
       if(cropMode==='capture')closeModal();toast(cropMode==='video'?'正在识别起始局面。':cropMode==='image'?'正在识别图片里的局面。':'已更新棋盘范围，请切回多邻国稍候。');
     },cancelVideo:()=>host&&host.cancelVideo(),overlay:()=>host?host.overlayPermission():toast('安卓 App 可设置悬浮窗。'),
     issues:issuesDialog,issue:e=>issueDetail(Number(e.dataset.index)),
-    beginCorrection:e=>{correctionIssueIndex=Number(e.dataset.index);const issue=current.issues[correctionIssueIndex];pauseAnalysis();branchAt=S.issueAnchor(current,issue);ply=branchAt;branch=[];branchPly=0;branchId=null;branchActive=true;correcting=true;selected=null;closeModal();window.scrollTo(0,0);render();},
+    beginCorrection:e=>{requireEditable();correctionIssueIndex=Number(e.dataset.index);const issue=current.issues[correctionIssueIndex];pauseAnalysis();branchAt=S.issueAnchor(current,issue);ply=branchAt;branch=[];branchPly=0;branchId=null;branchActive=true;correcting=true;selected=null;closeModal();window.scrollTo(0,0);render();},
     reviewIssueComplete:e=>{
       const index=Number(e.dataset.index);pauseAnalysis();
       modal('确认这一处棋谱完整？',`<p class="modal-copy">请确认缺失走法已经补齐，或该提示来自结算动画。只关闭这一处提示，其他待校对项会保留，原记录可在完整备份中查看。</p>`,button('再检查一下','close')+button('确认完整','confirmIssueComplete','primary',`data-index="${index}"`));
@@ -626,11 +661,11 @@
       closeModal();render();toast(current.issues.some(i=>!i.resolved)?'这一处已确认，其他提示仍保留。':'已确认，校对完成。');
     },
     saveCorrection:()=>{
-      if(!branch.length)throw Error('先在棋盘上补走缺失的走法。');
-      modal('保存这段补录？',`<p class="modal-copy">保留前 ${branchAt} 步，以补录的 ${branch.length} 步替换后续 ${current.moves.length-branchAt} 步。原稿会保留在完整备份的修订记录里。</p>`,button('继续补录','close')+button('保存校对','confirmCorrection','primary'));
+      if(!branchPly)throw Error('先在棋盘上补走缺失的走法。');
+      modal('保存这段补录？',`<p class="modal-copy">保留前 ${branchAt} 步，以补录的 ${branchPly} 步替换后续 ${current.moves.length-branchAt} 步。原稿会保留在完整备份的修订记录里。</p>`,button('继续补录','close')+button('保存校对','confirmCorrection','primary'));
     },
     confirmCorrection:()=>{
-      const next=S.correctRecord(current,branchAt,branch,correctionIssueIndex);
+      const next=S.correctRecord(current,branchAt,branch.slice(0,branchPly),correctionIssueIndex);
       save(next);current=next;branchActive=false;correcting=false;correctionIssueIndex=null;branch=[];branchPly=0;ply=current.moves.length;closeModal();render();
       const remaining=current.issues.filter(i=>!i.resolved).length;
       toast(remaining?'补录已保存，还有 '+remaining+' 处需要核对。':'补录已保存，校对完成。');
@@ -852,6 +887,15 @@
   }
   window.App={
     hostEvent(event){
+      if(event.type==='nativeError'){toast(event.message||'操作未完成，请重试。');return;}
+      if(event.type==='updateCheck'){
+        updateChecking=false;const result=event.result||{};
+        if(result.state==='error')updateError=result.message||'检查失败，请稍后重试。';
+        else {updateInfo=result;updateError='';}
+        if(route==='home'||route==='settings')render();
+        if(updateManual){if(result.state==='update')modal('发现新版本 '+esc(result.version),'<p class="modal-copy">查看 GitHub 上的更新说明，并下载安装包。</p>',button('稍后再说','close')+button('前往 GitHub 下载','downloadUpdate','primary'));else toast(updateError||'当前已是最新版本。');}
+        updateManual=false;
+      }
       if(event.type==='appearance')updateSystemAppearance(event.nightMode);
       if(event.type==='analysisUpdate'){pending.get(event.id)?.update?.(event.result);}
       if(event.type==='analysis'||event.type==='playMove'){const task=pending.get(event.id);if(task){clearTimeout(task.timer);pending.delete(event.id);event.error?task.reject(Error(event.error)):task.resolve(event.result);}}
@@ -872,5 +916,5 @@
   };
   refresh();
   try {const saved=JSON.parse(localStorage.getItem('sprout.view.v1')||'{}');if(saved.route==='review'&&allStored().some(r=>r.id===saved.id)){current=allStored().find(r=>r.id===saved.id);route='review';ply=Math.min(saved.ply||0,current.moves.length);branchAt=saved.branchAt||0;branch=saved.branch||[];branchId=saved.branchId||null;branchPly=Number.isInteger(saved.branchPly)?Math.min(branch.length,saved.branchPly):branch.length;branchActive=!!saved.branchActive;correcting=!!saved.correcting;correctionIssueIndex=Number.isInteger(saved.correctionIssueIndex)?saved.correctionIssueIndex:null;if(correcting&&correctionIssueIndex===null){const candidates=current.issues.map((issue,index)=>({issue,index})).filter(x=>!x.issue.resolved&&S.issueAnchor(current,x.issue)===branchAt);if(candidates.length===1)correctionIssueIndex=candidates[0].index;}flip=!!saved.flip;tab=saved.tab||'analysis';viewGame();if(branchActive&&branchPly===0&&!correcting){storeBranch();ply=branchAt;branchActive=false;branch=[];branchId=null;}}}catch(_){route='home';branchActive=false;}
-  render();poll();setInterval(poll,1500);setInterval(tickBattle,100);
+  render();poll();setTimeout(()=>checkUpdates(),1200);setInterval(poll,1500);setInterval(tickBattle,100);
 })();

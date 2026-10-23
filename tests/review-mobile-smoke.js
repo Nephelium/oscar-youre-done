@@ -19,7 +19,7 @@ async function main(){
   await page.reload();assert.equal(await page.evaluate(()=>App.state.branch.length),2);await action('mainline');await action('next');assert.equal(await page.locator('[data-square="e4"] img').count(),1);
   await page.locator('.review-tab[data-tab="moves"]').click();await page.locator('[data-ply="4"]').first().click();assert.equal(await page.evaluate(()=>App.state.ply),4);
   await page.locator('[data-tab="branches"]').click();await page.locator('[data-branch="0"]').click();assert.equal(await page.locator('[data-square="d4"] img').count(),1);await screenshot('sprout-variation-390');
-  await action('mainline');await page.locator('[data-tab="analysis"]').click();await action('analyzeHere');await page.waitForFunction(()=>!App.state.busy);assert.match(await page.locator('#toast').textContent(),/安卓/);
+  await action('mainline');await page.locator('[data-tab="analysis"]').click();await action('analyzeHere');await page.waitForFunction(()=>!App.state.busy);assert.match(await page.locator('#toast').textContent(),/App.*Stockfish/);
   await page.evaluate(()=>{const r=App.state.current;const target={...r,moves:['e2e4','e7e5','f1c4','g8f6']};r.issues.push({at:2,placement:Sprout.position(target).fen().split(' ')[0],message:'测试漏步校对',resolved:false});});
   await page.locator('.review-tab[data-tab="moves"]').click();await page.locator('.review-tab[data-tab="analysis"]').click();await action('issues');await action('issue');await action('beginCorrection');
   await move('f1','c4');await move('g8','f6');await action('saveCorrection');await action('confirmCorrection');

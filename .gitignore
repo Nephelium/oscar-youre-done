@@ -8,3 +8,9 @@ node_modules/
 *.keystore
 .env*
 **/.kotlin/
+
+**/.build/
+**/__pycache__/
+.DS_Store
+*.xcuserstate
+**/xcuserdata/
