@@ -4,11 +4,11 @@
   <p>给多邻国国际象棋，补上一个复盘搭子。</p>
   <p>
     <img alt="Android 8.0+" src="https://img.shields.io/badge/Android-8.0%2B-507c3e?style=flat-square" />
-    <img alt="iOS Simulator" src="https://img.shields.io/badge/iOS-Simulator-66899b?style=flat-square" />
+    <img alt="iOS 17+ IPA" src="https://img.shields.io/badge/iOS-17%2B_IPA-66899b?style=flat-square" />
     <img alt="Local Stockfish" src="https://img.shields.io/badge/Stockfish-on_device-66899b?style=flat-square" />
     <img alt="GPL v3" src="https://img.shields.io/badge/License-GPL_v3-b29435?style=flat-square" />
   </p>
-  <p><a href="https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.7"><b>下载 Android 安装包</b></a> · <a href="https://github.com/Nephelium/oscar-youre-done/releases/download/v1.3.7/Oscar-iOS-Simulator-1.3.7.zip"><b>下载 iOS 模拟器版</b></a> · <a href="#开始使用">开始使用</a> · <a href="#从源码构建">从源码构建</a></p>
+  <p><a href="https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.7"><b>下载 Android 安装包</b></a> · <a href="https://github.com/Nephelium/oscar-youre-done/releases/download/v1.3.7/Oscar-iOS-1.3.7-build2-unsigned.ipa"><b>下载 iPhone IPA（需自行签名）</b></a> · <a href="#开始使用">开始使用</a> · <a href="#从源码构建">从源码构建</a></p>
 </div>
 
 ---
@@ -22,11 +22,11 @@
 | 平台 | 下载 | 运行环境 |
 | --- | --- | --- |
 | Android | [下载 APK](https://github.com/Nephelium/oscar-youre-done/releases/download/v1.3.7/oscar-youre-done-1.3.7.apk) | Android 8.0+，ARM64 / x86_64，沿用测试签名 |
-| iOS 模拟器 | [下载 Simulator App](https://github.com/Nephelium/oscar-youre-done/releases/download/v1.3.7/Oscar-iOS-Simulator-1.3.7.zip) | Apple Silicon Mac + Xcode + iOS Simulator；不能直接安装到 iPhone |
+| iPhone / iPad | [下载 IPA](https://github.com/Nephelium/oscar-youre-done/releases/download/v1.3.7/Oscar-iOS-1.3.7-build2-unsigned.ipa) | iOS 17.0+，arm64；使用电脑与自己的 Apple 账号签名安装 |
 
-这轮加入 **iOS 模拟器基础版**，可以导入截图与棋谱、调用本地 Stockfish 复盘、推演分支、与 AI 下棋。Android 新增 GitHub 自动更新提醒，并修复补录撤回、备份关联和分析保存等问题。
+这轮加入 **iOS 基础版**，提供真机 IPA（构建 2，需自行签名），可以导入截图与棋谱、调用本地 Stockfish 复盘、推演分支、与 AI 下棋。Android 新增 GitHub 自动更新提醒，并修复补录撤回、备份关联和分析保存等问题。
 
-| 能力 | Android | iOS 模拟器 |
+| 能力 | Android | iOS（模拟器已验证） |
 | --- | :---: | :---: |
 | PGN / FEN、截图识别、本地手记 | ✓ | ✓ |
 | Stockfish 复盘、自动分析、分支与 AI 对战 | ✓ | ✓ |
@@ -75,18 +75,17 @@
 3. 自动定位棋盘后，确认走子会短暂提示，设置中可关闭。返回 App 可查看最近采集画面、调整识别范围。下完从通知栏、悬浮按钮或 App 内结束记录。
 4. 打开手记，点 **分析整盘**。点推荐变化或直接在棋盘走子，开始自己的推演。
 
-### iOS 模拟器
+### iPhone / iPad
 
-下载并解压上方 Simulator App，在 Xcode 中启动一个 iPhone 模拟器，然后在解压目录的终端执行：
+1. 下载上方 **未签名 IPA**，在 Windows / Mac 安装 [Sideloadly](https://sideloadly.io/) 或 AltStore Classic。
+2. 连接 iPhone，用自己的免费 Apple 账号签名安装。根据系统提示开启开发者模式并信任自己的签名。
+3. 免费签名 7 天后到期，需定期刷新；满足连接条件时可使用工具的自动刷新功能。
 
-```bash
-xcrun simctl install booted Oscar.app
-xcrun simctl launch booted com.jingjing.chesssprout.ios
-```
+**无需购买开发者会员，但需要电脑完成签名。** 详细步骤见 [iPhone 安装说明](docs/oscar-ios-installation.md)。直接在手机上点开 IPA 不会安装。
 
-首页点 **导入一局**，粘贴 PGN / FEN，或选择 **导入棋盘截图**。截图识别后先核对棋子位置、先走方与特殊权利，再保存到小练习。也可以直接打开演示，或从 **下棋** 页面与 Stockfish 对战。
+首页点 **导入一局**，粘贴 PGN / FEN，或选择 **导入棋盘截图**。截图识别后先核对棋子位置、先走方与特殊权利，再保存到小练习。也可以打开演示，或从 **下棋** 页面与 Stockfish 对战。
 
-本包为 **arm64 模拟器 App**，已在 Apple M4、Xcode 27.1、iPhone 18 Pro / iOS 27.0 模拟器中验证。iOS 录屏导入与跨应用实时采集尚未接入，真机签名和 TestFlight / App Store 发行待后续处理。
+真机包已通过 iPhoneOS / arm64 编译和包体检查，功能已在模拟器验证，**尚未进行 iPhone 真机安装与运行测试**。iOS 录屏导入与跨应用实时采集尚未接入。模拟器仍可[从源码构建](ios/README.md#在-mac-上启动)，本次 Release 附件改为真机 IPA。
 
 <p align="center"><img src="docs/images/ios-landscape-1.3.7.png" width="100%" alt="iOS 模拟器横屏：左侧棋盘，右侧复盘与评分" /></p>
 <p align="center"><sub>iOS 模拟器实际触摸测试截图。<a href="ios/README.md">构建与测试</a> · <a href="docs/oscar-ios-simulator-verification.md">验收记录</a></sub></p>

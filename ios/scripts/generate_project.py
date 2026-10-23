@@ -21,6 +21,9 @@ def quoted(value):
 
 
 def generate():
+    build_number = os.environ.get('OSCAR_BUILD_NUMBER', '1')
+    if not re.fullmatch(r'[1-9][0-9]{0,8}', build_number):
+        raise ValueError('OSCAR_BUILD_NUMBER must be a positive integer of at most 9 digits')
     source, network = prepare()
     resources = BUILD / 'resources'
     web = resources / 'web'
@@ -44,12 +47,16 @@ def generate():
     (resources / 'Assets.xcassets/Contents.json').write_text(json.dumps({'info':{'author':'xcode','version':1}}))
     info = dict(CFBundleDisplayName='奥斯卡你完了', CFBundleName='Oscar', CFBundleIdentifier='$(PRODUCT_BUNDLE_IDENTIFIER)',
                 CFBundleExecutable='$(EXECUTABLE_NAME)', CFBundlePackageType='APPL',
-                CFBundleShortVersionString='1.3.7', CFBundleVersion='1',
+                CFBundleShortVersionString='1.3.7', CFBundleVersion=build_number,
                 LSRequiresIPhoneOS=True, UILaunchScreen={},
                 UIApplicationSceneManifest={'UIApplicationSupportsMultipleScenes':False,'UISceneConfigurations':{'UIWindowSceneSessionRoleApplication':[{'UISceneConfigurationName':'Oscar','UISceneDelegateClassName':'$(PRODUCT_MODULE_NAME).OscarSceneDelegate'}]}},
                 UISupportedInterfaceOrientations=['UIInterfaceOrientationPortrait','UIInterfaceOrientationLandscapeLeft','UIInterfaceOrientationLandscapeRight'],
                 UIRequiresFullScreen=False, LSApplicationQueriesSchemes=['duolingo'],
-                NSPhotoLibraryUsageDescription='选择棋盘截图或录屏用于本地记谱。')
+                ITSAppUsesNonExemptEncryption=False,
+                NSPhotoLibraryUsageDescription='选择棋盘截图用于本地识别与复盘。')
+    info['UISupportedInterfaceOrientations~ipad'] = [
+        'UIInterfaceOrientationPortrait', 'UIInterfaceOrientationPortraitUpsideDown',
+        'UIInterfaceOrientationLandscapeLeft', 'UIInterfaceOrientationLandscapeRight']
     (resources / 'Info.plist').write_bytes(plistlib.dumps(info))
 
     objects = {}
@@ -66,7 +73,8 @@ def generate():
     cpp = [source / name for name in names if name != 'main.cpp'] + [ROOT / 'ios/Engine/OscarEngine.cpp']
     source_refs = [file(path,'sourcecode.swift' if path.suffix == '.swift' else 'sourcecode.cpp.cpp') for path in swift + cpp]
     resource_refs = [file(web,'folder'),file(licenses,'folder'),file(resources/'Assets.xcassets','folder.assetcatalog'),
-                     file(network,'file'),file(ROOT/'ios/App/NativeBridge.js','sourcecode.javascript')]
+                     file(network,'file'),file(ROOT/'ios/App/NativeBridge.js','sourcecode.javascript'),
+                     file(ROOT/'ios/App/PrivacyInfo.xcprivacy','text.xml')]
     product = add('product','PBXFileReference',explicitFileType='wrapper.application',path='Oscar.app',sourceTree='BUILT_PRODUCTS_DIR')
     products = add('products','PBXGroup',children=[product],name='Products',sourceTree='<group>')
     group = add('group','PBXGroup',children=source_refs+resource_refs+[products],sourceTree='<group>')

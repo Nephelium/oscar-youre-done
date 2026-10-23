@@ -1,26 +1,23 @@
-# 奥斯卡你完了 1.3.7 · iOS 模拟器版与复盘修复
+# 奥斯卡你完了 1.3.7 · iPhone IPA 与复盘修复
 
 ## 下载
 
-- **Android**：安装 `oscar-youre-done-1.3.7.apk`，可覆盖升级并保留已有手记。Android 8.0+，ARM64 / x86_64，沿用测试签名。
-- **iOS 模拟器**：下载 `Oscar-iOS-Simulator-1.3.7.zip`，解压得到 `Oscar.app`，在 Apple Silicon Mac 的 iPhone 模拟器安装。此包不能直接安装到 iPhone。
+- **Android**：安装 `oscar-youre-done-1.3.7.apk`。Android 8.0+，ARM64 / x86_64，可覆盖升级并保留已有手记，沿用测试签名。此附件未更改。
+- **iPhone / iPad**：下载 `Oscar-iOS-1.3.7-build2-unsigned.ipa`。iOS 17.0+、真机 arm64，使用 Windows / Mac 与自己的免费 Apple 账号签名安装。此 IPA 未签名，不能在手机中直接点开安装。
 
-## iOS 模拟器基础版
+[iPhone 免费侧载安装说明](https://github.com/Nephelium/oscar-youre-done/blob/ios-v1.3.7-build2/docs/oscar-ios-installation.md)
 
-- PGN / FEN 导入、本地保存、系统相册选图、棋盘识别与局面确认。
+## iOS 构建 2
+
+- 将本 Release 的模拟器 ZIP 替换为真机 IPA。模拟器仍可从源码构建。
+- 支持 PGN / FEN、本地手记、系统相册选图、截图识别与局面确认。
 - 本地 Stockfish 19 复盘、推荐变化、逐步自动分析、分支、AI 对战和时钟。
-- 复用 Android 的界面、棋子棋盘、收藏、Elo 与备份格式，适配安全区域、日夜和横竖屏。
-- 解决输入 PGN 后的系统自动缩放造成棋盘右侧被裁切的问题。
-- 同步 Swift / C++ 源码及可复现的 Xcode 工程生成脚本。
+- 保留棋子棋盘、收藏、Elo 与备份格式，以及日夜、横竖屏适配。
+- 补齐隐私清单、iPad 方向配置和构建编号，增加独立真机归档、IPA 打包与包体核查脚本。
 
-模拟器中启动：
+安装者无需付费开发者会员，可使用 Sideloadly 或 AltStore Classic。免费签名 7 天后需刷新。此包尚未经过 iPhone 真机安装与运行验证，iOS 录屏导入和跨应用实时采集尚未接入，未发布 TestFlight。
 
-```bash
-xcrun simctl install booted Oscar.app
-xcrun simctl launch booted com.jingjing.chesssprout.ios
-```
-
-当前尚未接入 iOS 录屏导入或 ReplayKit 跨应用实时采集，未提供真机签名安装包。已测试 Apple M4、Xcode 27.1、iPhone 18 Pro / iOS 27.0 模拟器。
+[iOS 构建 2 对应源码](https://github.com/Nephelium/oscar-youre-done/tree/ios-v1.3.7-build2) · [iOS 构建说明](https://github.com/Nephelium/oscar-youre-done/blob/ios-v1.3.7-build2/ios/README.md)
 
 ## Android 与共享复盘
 
@@ -34,13 +31,15 @@ xcrun simctl launch booted com.jingjing.chesssprout.ios
 
 ## 验证
 
-共享业务与界面回归、Android 两模块的单元测试 / lint / 构建、已安装 APK 的引擎与校对流程通过。iOS Swift 核心 6 项、实际 WebKit / Stockfish 集成 5 项、触摸与系统相册流程 2 项通过。发布快照另通过 38 项核心测试、12 组界面脚本和 Android 原生测试 / lint / 构建。最终 APK 实际安装后，引擎、补录及在线检查通过；199 个关键包内文件与发布源码 / 引擎一致。iOS 端另外核对了 204 个源码及资源文件，保留实际已测的安装包。
+Android 1.3.7 沿用已发布并验证的 APK，原有核心、界面、原生与安装验证见审查记录。iOS 构建 2 本轮通过：52 项共享核心测试、3 项打包测试、6 项 Swift 核心测试，以及 4 项模拟器原生集成测试（引擎、取消、WebKit 保存与外观、分支及 AI 对战）。iPhoneOS arm64 Release 归档和 IPA CRC 通过，隐私清单、资源哈希、调试符号及私有样本隔离已检查。没有执行 iPhone 真机签名安装与运行验证。
 
 识别采样、解码与分类算法本轮没有更改，也没有重新测试完整私有视频的速度。iOS 的 19 张画面样本恢复出 37 个半回合，与参考棋谱完全一致；这不包含视频解码，也不代表 iPhone 实时采集性能。
 
-[Android 审查与验证](https://github.com/Nephelium/oscar-youre-done/blob/v1.3.7/docs/oscar-audit-1.3.7.md) · [iOS 模拟器验收](https://github.com/Nephelium/oscar-youre-done/blob/v1.3.7/docs/oscar-ios-simulator-verification.md) · [源码](https://github.com/Nephelium/oscar-youre-done/tree/v1.3.7)
+[Android 审查与验证](https://github.com/Nephelium/oscar-youre-done/blob/v1.3.7/docs/oscar-audit-1.3.7.md) · [iOS 模拟器验收](https://github.com/Nephelium/oscar-youre-done/blob/v1.3.7/docs/oscar-ios-simulator-verification.md) · [Android 对应源码](https://github.com/Nephelium/oscar-youre-done/tree/v1.3.7)
 
 附件提供 `SHA256SUMS.txt` 及所用 Stockfish 的对应源码材料。Android APK 的最终哈希以本次 Release 附件为准，早期本地候选的哈希保留在审查记录中。
 
 Android APK SHA-256：`4b97235dabbbdd9b22ab870c0f6a7aa30830865e78ffddba42ad62b6832b98c5`。
-iOS Simulator ZIP SHA-256：`d25ff6de43c80d43e6786f137d989a42e3423c1e89a9929d9b1bf875cdf33ce8`。
+iOS 构建 2 未签名 IPA SHA-256：`cd925a08b3bb5391db3829166e597cdc063c06f74488af9fcbadc920329f2579`。
+
+本次 IPA 构建补充验证见 [iOS 真机包检查](https://github.com/Nephelium/oscar-youre-done/blob/ios-v1.3.7-build2/docs/oscar-ios-ipa-verification.md)。真机归档成功、签名安装成功、App Store 校验成功是三个独立状态，本次仅完成第一项及离线结构检查。

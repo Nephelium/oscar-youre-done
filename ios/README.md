@@ -1,8 +1,33 @@
 # 奥斯卡你完了 · iOS
 
-Swift / WKWebView 模拟器基础版。网页资源来自项目根目录 `review/`，不在此目录维护副本。本地 Stockfish 19 由 C++ 源码编译进 App。
+Swift / WKWebView 基础版，支持模拟器与 iPhoneOS 构建。网页资源来自项目根目录 `review/`，不在此目录维护副本。本地 Stockfish 19 由 C++ 源码编译进 App。
 
-当前提供棋谱与 FEN 导入、本地保存、截图识别和起始局面确认、复盘与分支、自动分析、六档 AI 对战、时钟和日夜主题。视频导入及 ReplayKit 跨应用实时记录尚未接入，首页按能力显示入口。这轮不包含 iPhone 签名安装或 App Store 发行。
+当前提供棋谱与 FEN 导入、本地保存、截图识别和起始局面确认、复盘与分支、自动分析、六档 AI 对战、时钟和日夜主题。视频导入及 ReplayKit 跨应用实时记录尚未接入，首页按能力显示入口。公开 IPA 供用户自行签名侧载，尚未经过 iPhone 真机运行测试，也未发布 TestFlight / App Store。
+
+## 在 iPhone 上安装
+
+需要 iOS 17.0+，使用 Windows / Mac 与免费 Apple 账号签名安装。详见 [iPhone 安装说明](../docs/oscar-ios-installation.md)。现有 IPA 是真机 arm64 构建，名称中的 `unsigned` 表示尚未签名，不能直接点开安装。
+
+## 构建真机 IPA
+
+在 Mac 项目根目录执行，无需付费账号或连接 iPhone：
+
+```bash
+python3 ios/scripts/test_device_packaging.py
+python3 ios/scripts/archive_device.py --unsigned --package-for-resigning --build-number 2
+```
+
+脚本在 `ios/build/device/build-2-<UTC时间>/` 生成独立 `.xcarchive`、未签名 IPA、SHA-256、编译日志与 `verification.json`。核查 iPhoneOS / arm64、最低系统版本、隐私清单、NNUE 哈希、dSYM 匹配和私有样本隔离。已存在产物不会被覆盖。不会登录账号、上传或创建证书。
+
+可单独重新检查归档：
+
+```bash
+python3 ios/scripts/verify_device_archive.py ios/build/device/<本次目录>/Oscar.xcarchive
+```
+
+有付费团队且在 Xcode 完成证书准备后，使用 `--team-id <团队编号>` 替换 `--unsigned`，去掉 `--package-for-resigning`，即可生成签名归档。随后在 Xcode Organizer 中验证和分发到 App Store Connect。脚本不自动更新开发者门户。每次上传使用新的 `--build-number`；直接调用工程生成器时可设置 `OSCAR_BUILD_NUMBER`，默认保留为 1。
+
+`PrivacyInfo.xcprivacy` 声明本地偏好、应用容器内文件信息及引擎计算计时。应用不跟踪、不上传用户数据。导出加密声明基于当前应用只使用系统提供的通信能力，新增独立加密实现后需重新核对。
 
 ## 在 Mac 上启动
 

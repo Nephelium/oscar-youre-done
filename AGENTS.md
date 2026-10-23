@@ -23,3 +23,9 @@ Presentation scores follow the board orientation; stored engine scores remain wh
 1.3.1: battle-clock.js owns paused/active clocks and increments. Whole-game analysis captures its queue independently of browsing. Multi-step transport playback uses a 1.2-second wall clock. Five approved raster sets each have day/night sprites, plus eight boards; per-style size is persisted. System/manual appearance changes preserve WebView and active position. Numeric vision profiles select by board brightness and retain the other calibration. Run review-session*, review-navigation-smoke.js, review-theme-smoke.js and review-night*. AppearanceVisionTest requires separately provided private official-day.jpg and official-night.jpg in the test app external files directory; never commit these screenshots.
 
 1.3.7: Shared review remains the only UI source. ios/ contains Swift/WKWebView, native C++ Stockfish, screenshot recognition, project generation and simulator tests. Build assets and private fixtures stay under ios/build/. ReplayKit and video import are not implemented. Use ios/README.md for reproducible generation and testing. Android adds UpdateChecker and record/import ownership checks; run review-audit tests, StorePolicyTest and ReleasePolicyTest. Preserve deeper analysis, current correction cursor and backup linkage. Do not commit certificates, tokens, personal paths or private fixtures.
+
+## iPhone IPA 构建 2
+
+- `python3 ios/scripts/archive_device.py --unsigned --package-for-resigning --build-number 2` 构建 iPhoneOS arm64 IPA；输出在 `ios/build/device/`，归档不覆盖已有产物。
+- 未签名 IPA 需要用户自行签名，真机运行尚未验证。发布时同时更新安装说明和 SHA-256，不能将模拟器包标为真机包。
+- `ios/App/PrivacyInfo.xcprivacy` 随原生 App 打包。验证脚本为 `ios/scripts/verify_device_archive.py`，构建检查见 `docs/oscar-ios-ipa-verification.md`。
