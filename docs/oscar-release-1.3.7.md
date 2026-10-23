@@ -5,7 +5,30 @@
 - **Android**：安装 `oscar-youre-done-1.3.7.apk`。Android 8.0+，ARM64 / x86_64，可覆盖升级并保留已有手记，沿用测试签名。此附件未更改。
 - **iPhone / iPad**：下载 `Oscar-iOS-1.3.7-build2-unsigned.ipa`。iOS 17.0+、真机 arm64，使用 Windows / Mac 与自己的免费 Apple 账号签名安装。此 IPA 未签名，不能在手机中直接点开安装。
 
-[iPhone 免费侧载安装说明](https://github.com/Nephelium/oscar-youre-done/blob/ios-v1.3.7-build2/docs/oscar-ios-installation.md)
+## iPhone / iPad 安装教程（免费签名）
+
+准备一台 **Windows 或 Mac 电脑**、一根数据线、运行 **iOS / iPadOS 17 或更新版本**的设备，以及安装者自己的 Apple 账号。无需购买开发者会员。首次安装推荐使用 **Sideloadly**：
+
+1. **在电脑上下载 IPA**：[Oscar-iOS-1.3.7-build2-unsigned.ipa](https://github.com/Nephelium/oscar-youre-done/releases/download/v1.3.7/Oscar-iOS-1.3.7-build2-unsigned.ipa)。保留 `.ipa` 后缀，不需要解压。
+2. **安装 Sideloadly**：前往 [Sideloadly 官网](https://sideloadly.io/)下载 Windows 或 macOS 版本。Windows 用户按官网提示安装其提供链接的 iTunes、iCloud 桌面版，官网要求使用非 Microsoft Store 版本。
+3. **连接手机或平板**：用数据线连接电脑，解锁设备，在设备上点击“信任此电脑”，然后在 Sideloadly 中选中自己的设备。
+4. **导入并签名安装**：将 IPA 拖入 Sideloadly，输入自己的 Apple 账号，点击 **Start**，按提示完成登录和验证，等待安装结束。密码和验证码由安装者在自己的电脑上输入，无需发送给项目作者。
+5. **完成设备授权**：如果打开 App 时提示“未受信任的开发者”，进入 **设置 → 通用 → VPN 与设备管理**，找到自己的 Apple 账号并点击信任。再按系统提示，在 **设置 → 隐私与安全性 → 开发者模式** 中开启开发者模式，重启后确认。
+6. **打开奥斯卡你完了**：先体验演示棋谱、Stockfish 分析和 AI 对战，也可以导入棋盘截图或 PGN 棋谱。
+
+### 7 天后如何继续使用？
+
+**免费签名有效期为 7 天，需要定期刷新签名。** 安装时可开启 Sideloadly 自动刷新。电脑上的刷新程序需运行，设备需能通过 USB 或已配置的 Wi-Fi 连接到电脑。
+
+也可以用 **同一个 Apple 账号、同一个应用标识（Bundle ID）**再次安装 IPA，覆盖刷新。**不要先删除 App**，以免丢失本地手记；升级前建议先导出完整备份。
+
+### 常见问题
+
+- **手机里点开 IPA 没反应？** 本附件未签名，需要先按上述步骤使用电脑签名安装。
+- **Sideloadly 找不到设备？** 先确认设备已解锁并信任电脑。Windows 用户检查官网要求的 iTunes / iCloud 组件，也可更换数据线或 USB 接口。
+- **已经在用 AltStore Classic？** 可以通过 AltStore 的 My Apps 导入本 IPA，详见 [完整安装说明](https://github.com/Nephelium/oscar-youre-done/blob/ios-v1.3.7-build2/docs/oscar-ios-installation.md)。
+
+[Sideloadly 官方常见问题与刷新说明](https://sideloadly.io/faq) · [Apple 免费账号说明](https://developer.apple.com/help/account/basics/about-your-developer-account)
 
 ## iOS 构建 2
 
