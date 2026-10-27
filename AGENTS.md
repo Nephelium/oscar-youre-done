@@ -1,5 +1,7 @@
 # Project guide
 
+1.3.8: Single-game export offers PGN and SAN, each as file or clipboard text; remove the single-game JSON button while retaining global backups. `review/core.js` owns SAN formatting through chess.js; native clipboard bridges must report errors before success. Run `tests/review-export-options-smoke.js`, `tests/review-export-native-smoke.js` and Android `ClipboardExportTest`. Android 1.3.8 is packaged; iOS source is updated without a new iOS binary or device validation.
+
 1.3.6: core.js owns correctRecord/confirmIssue and terminal result recovery. Keep unrelated gaps and archive corrected mainlines. Legacy tail warnings resolve only with a legal terminal mainline; other issues require explicit confirmation. CapturePipeline freezes completed ordinary games while retaining exercise undo. Run review-correction.test.js, review-correction-smoke.js (CORRECTION_ANDROID=1 for installed APK), and TerminalCaptureTest.
 
 1.3.5: BoardRecognizer copies only the exact sampling ROI and reuses coordinate/color buffers. YuvFrameConverter uses pixel-equivalent lookup tables; ScreenFrameConverter skips redundant same-size drawing. RecognizerSamplingTest compares the frozen ReferenceBoardRecognizer. ExperimentalVideoFrameReader is androidTest-only and is not the production importer. Keep original sampling/thresholds; benchmark and private fixtures stay separate.

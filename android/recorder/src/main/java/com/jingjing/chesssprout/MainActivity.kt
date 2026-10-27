@@ -3,6 +3,8 @@ package com.jingjing.chesssprout
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.res.Configuration
 import android.content.pm.ApplicationInfo
 import android.graphics.Bitmap
@@ -263,6 +265,13 @@ class MainActivity: ComponentActivity() {
             if(!name.matches(Regex("[A-Za-z0-9_-]+\\.jpg")))return ""
             val file=File(filesDir,"evidence/$name")
             return if(file.isFile)"data:image/jpeg;base64,"+Base64.encodeToString(file.readBytes(),Base64.NO_WRAP) else ""
+        }
+        @JavascriptInterface fun copyText(content: String): String {
+            if(!ready || content.length>12*1024*1024)return "无法复制棋谱，请重新打开导出。"
+            return runCatching {
+                getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText("棋谱",content))
+                ""
+            }.getOrElse {"无法复制到剪贴板，请重试或导出文件。"}
         }
         @JavascriptInterface fun exportDocument(filename: String,content: String,mime: String) {runOnUiThread {
             if(!ready || exporting || content.length>12*1024*1024)return@runOnUiThread

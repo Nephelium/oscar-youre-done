@@ -1,6 +1,28 @@
 const test = require('node:test'), assert = require('node:assert/strict');
 const S = require('../review/core.js');
 const ev = (cp, pv=[]) => ({lines:[{cp,pv,depth:12}]});
+test('SAN export includes numbered mainline and result without PGN headers or private data',()=>{
+ const r=S.importText('[Event "代数记谱"]\n\n1. e4 e5 2. Nf3 Nc6 *')[0];
+ r.branches=[{at:2,moves:['f1c4'],name:'private variation'}];r.issues=[{message:'private evidence'}];
+ assert.equal(S.toSan(r),'1. e4 e5 2. Nf3 Nc6 *');
+ assert.equal(S.toSan(S.create()),'*');
+ assert.deepEqual(S.importText(S.toSan(r))[0].moves,r.moves);
+ assert.throws(()=>S.toSan({...r,moves:['e2e5']}),/无法重放/);
+});
+test('SAN export preserves a black-to-move start, real move number and PGN start roundtrip',()=>{
+ const r=S.validate({initialFen:'4k3/8/8/8/8/8/4K3/7R b - - 0 23',moves:['e8d7','h1h7']});
+ assert.equal(S.toSan(r),'23. ... Kd7 24. Rh7+ *');
+ const copy=S.importText(S.toPgn(r))[0];assert.equal(copy.initialFen,r.initialFen);assert.deepEqual(copy.moves,r.moves);
+});
+test('SAN export preserves castling, en passant, promotion, check, mate and disambiguation',()=>{
+ const castle=S.importText('1. e4 a6 2. e5 d5 3. exd6 cxd6 4. Nf3 Nf6 5. Be2 e6 6. O-O *')[0];
+ assert.equal(S.toSan(castle),'1. e4 a6 2. e5 d5 3. exd6 cxd6 4. Nf3 Nf6 5. Be2 e6 6. O-O *');
+ const promotion=S.validate({initialFen:'7k/P7/8/8/8/8/8/7K w - - 0 17',moves:['a7a8q']});
+ assert.equal(S.toSan(promotion),'17. a8=Q+ *');
+ const knight=S.validate({initialFen:'4k3/8/8/8/8/8/8/1N2KN2 w - - 0 9',moves:['b1d2']});
+ assert.equal(S.toSan(knight),'9. Nbd2 *');
+ assert.equal(S.toSan(S.importText('1. f3 e5 2. g4 Qh4# 0-1')[0]),'1. f3 e5 2. g4 Qh4# 0-1');
+});
 test('notebooks classify old records without rewriting history and survive PGN and backup',()=>{
  const game=S.validate({id:'oldgame',moves:['e2e4']});assert.equal(game.notebook,'game');
  const practice=S.validate({id:'oldpractice',initialFen:'7k/P7/8/8/8/8/8/7K w - - 0 1',moves:['a7a8n']});assert.equal(practice.notebook,'practice');

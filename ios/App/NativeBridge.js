@@ -11,7 +11,7 @@
   };
   const send = (method, args) => window.webkit.messageHandlers.oscar.postMessage({method, args});
   const host = {platform:'ios', capabilities:{capture:false, video:false, image:true, overlay:false}};
-  for (const name of ['status','listGames','readLicense','evidence','capturePreview','imagePreview','videoPreview','confirmImage'])
+  for (const name of ['status','listGames','readLicense','evidence','capturePreview','imagePreview','videoPreview','confirmImage','copyText'])
     host[name] = (...args) => sync(name, args);
   for (const name of ['saveGame','deleteGame']) host[name] = (...args) => {
     try { sync(name, args); return ''; } catch (error) { return error.message; }

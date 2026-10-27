@@ -8,7 +8,7 @@
     <img alt="Local Stockfish" src="https://img.shields.io/badge/Stockfish-on_device-66899b?style=flat-square" />
     <img alt="GPL v3" src="https://img.shields.io/badge/License-GPL_v3-b29435?style=flat-square" />
   </p>
-  <p><a href="https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.7"><b>下载 Android 安装包</b></a> · <a href="https://github.com/Nephelium/oscar-youre-done/releases/download/v1.3.7/Oscar-iOS-1.3.7-build2-unsigned.ipa"><b>下载 iPhone IPA（需自行签名）</b></a> · <a href="#开始使用">开始使用</a> · <a href="#从源码构建">从源码构建</a></p>
+  <p><a href="https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.8"><b>下载 Android 安装包</b></a> · <a href="https://github.com/Nephelium/oscar-youre-done/releases/download/v1.3.7/Oscar-iOS-1.3.7-build2-unsigned.ipa"><b>下载 iPhone IPA（需自行签名）</b></a> · <a href="#开始使用">开始使用</a> · <a href="#从源码构建">从源码构建</a></p>
 </div>
 
 ---
@@ -17,14 +17,14 @@
 
 把双方的走法留下来，交给本地 Stockfish。看局面变化、找更好的选择，再回到棋盘试自己的想法。
 
-**最新版本：v1.3.7**（2026-10-23） · [更新说明](docs/oscar-release-1.3.7.md)
+**Android 最新版本：v1.3.8**（2026-10-27） · [更新说明](docs/oscar-release-1.3.8.md)
 
 | 平台 | 下载 | 运行环境 |
 | --- | --- | --- |
-| Android | [下载 APK](https://github.com/Nephelium/oscar-youre-done/releases/download/v1.3.7/oscar-youre-done-1.3.7.apk) | Android 8.0+，ARM64 / x86_64，沿用测试签名 |
+| Android | [下载 APK](https://github.com/Nephelium/oscar-youre-done/releases/download/v1.3.8/oscar-youre-done-1.3.8.apk) | Android 8.0+，ARM64 / x86_64，沿用测试签名 |
 | iPhone / iPad | [下载 IPA](https://github.com/Nephelium/oscar-youre-done/releases/download/v1.3.7/Oscar-iOS-1.3.7-build2-unsigned.ipa) | iOS 17.0+，arm64；使用电脑与自己的 Apple 账号签名安装 |
 
-这轮加入 **iOS 基础版**，提供真机 IPA（构建 2，需自行签名），可以导入截图与棋谱、调用本地 Stockfish 复盘、推演分支、与 AI 下棋。Android 新增 GitHub 自动更新提醒，并修复补录撤回、备份关联和分析保存等问题。
+本轮更新棋谱导出：**PGN 与代数记谱（SAN）均可导出文件或复制**，移除单局完整备份按钮，保留全局备份。Android 1.3.8 APK 已构建验证；iOS 共享界面和原生剪贴板桥接同步修改，本轮未编译、打包或进行设备验证。上方 iOS 下载仍为 1.3.7 构建 2，不包含本次改动。
 
 | 能力 | Android | iOS（模拟器已验证） |
 | --- | :---: | :---: |
@@ -59,6 +59,7 @@
 | 开箱演示 | 18 回合完整对局，内置 Stockfish 19 深度 20、三候选与胜和负概率，逐步回看即见角标 |
 | 手记与收藏 | 完整对局 / 小练习分开，左滑收藏或删除，删除前确认，自建收藏夹 |
 | Elo 成长曲线 | 手动填写当前分数，支持补记日期、备注、修改和删除 |
+| 导出棋谱 | PGN（含对局信息和起始 FEN）或代数记谱 SAN（纯走法），均可保存文件或复制 |
 | 导入与备份 | PGN / FEN / JSON，完整备份包含分析、分支、收藏夹与 Elo 历史 |
 
 识别、记谱和分析均在本地完成。Android 的网络权限仅用于检查本仓库的新版发布信息，设置中可关闭；不上传棋谱、截图、录屏或 Elo。图片使用系统选择器，不申请全相册读取权限。
@@ -70,7 +71,7 @@
 
 ### Android
 
-1. 从 [v1.3.7 Release](https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.7) 下载 APK 并安装。最低 Android 8.0，支持 ARM64 与 x86_64。
+1. 从 [v1.3.8 Release](https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.8) 下载 APK 并安装。最低 Android 8.0，支持 ARM64 与 x86_64。
 2. 点 **记录一局**，选棋盘底部颜色，授权本次屏幕采集。整个屏幕与仅共享多邻国都支持，随后点 **回到多邻国**。
 3. 自动定位棋盘后，确认走子会短暂提示，设置中可关闭。返回 App 可查看最近采集画面、调整识别范围。下完从通知栏、悬浮按钮或 App 内结束记录。
 4. 打开手记，点 **分析整盘**。点推荐变化或直接在棋盘走子，开始自己的推演。

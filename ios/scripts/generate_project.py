@@ -47,7 +47,7 @@ def generate():
     (resources / 'Assets.xcassets/Contents.json').write_text(json.dumps({'info':{'author':'xcode','version':1}}))
     info = dict(CFBundleDisplayName='奥斯卡你完了', CFBundleName='Oscar', CFBundleIdentifier='$(PRODUCT_BUNDLE_IDENTIFIER)',
                 CFBundleExecutable='$(EXECUTABLE_NAME)', CFBundlePackageType='APPL',
-                CFBundleShortVersionString='1.3.7', CFBundleVersion=build_number,
+                CFBundleShortVersionString='1.3.8', CFBundleVersion=build_number,
                 LSRequiresIPhoneOS=True, UILaunchScreen={},
                 UIApplicationSceneManifest={'UIApplicationSupportsMultipleScenes':False,'UISceneConfigurations':{'UIWindowSceneSessionRoleApplication':[{'UISceneConfigurationName':'Oscar','UISceneDelegateClassName':'$(PRODUCT_MODULE_NAME).OscarSceneDelegate'}]}},
                 UISupportedInterfaceOrientations=['UIInterfaceOrientationPortrait','UIInterfaceOrientationLandscapeLeft','UIInterfaceOrientationLandscapeRight'],

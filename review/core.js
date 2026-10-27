@@ -149,6 +149,11 @@
     if (incomplete) g.header('Annotator', 'Chess Sprout: capture requires correction');
     return g.pgn({max_width: 80}) + (incomplete ? '\n{ Capture has unresolved positions; this is the confirmed segment. }' : '');
   }
+  function toSan(record) {
+    const g = position(record);
+    g.header('Result', record.result);
+    return g.pgn({max_width:80}).replace(/^\[[^\r\n]*\]\r?\n/gm, '').trim();
+  }
   function lineSan(fen, moves, limit = 8) {
     const g = new Chess(fen), out = [];
     for (const input of (moves || []).slice(0, limit)) { const m = move(g, input); if (!m) break; out.push(m.san); }
@@ -330,5 +335,5 @@
     if(demoData && JSON.stringify(record.moves)===JSON.stringify(demoData.moves))record.analysis=JSON.parse(JSON.stringify(demoData.analysis));
     return record;
   }
-  return {START, id, uci, move, position, validate, terminalResult, issueAnchor, correctRecord, confirmIssue, create, importText, prepareImport, toPgn, lineSan, numeric, viewNumeric, displayScore, probabilities, validWdl, assess, timeline, summary, moveFacts, variationRows, evaluationChange, keyMoments, explainMove, shouldStoreBranch, addBranch, compactBranches, fromPlacement, moveSymbol, demo};
+  return {START, id, uci, move, position, validate, terminalResult, issueAnchor, correctRecord, confirmIssue, create, importText, prepareImport, toPgn, toSan, lineSan, numeric, viewNumeric, displayScore, probabilities, validWdl, assess, timeline, summary, moveFacts, variationRows, evaluationChange, keyMoments, explainMove, shouldStoreBranch, addBranch, compactBranches, fromPlacement, moveSymbol, demo};
 });

@@ -4,6 +4,8 @@ Swift / WKWebView 基础版，支持模拟器与 iPhoneOS 构建。网页资源�
 
 当前提供棋谱与 FEN 导入、本地保存、截图识别和起始局面确认、复盘与分支、自动分析、六档 AI 对战、时钟和日夜主题。视频导入及 ReplayKit 跨应用实时记录尚未接入，首页按能力显示入口。公开 IPA 供用户自行签名侧载，尚未经过 iPhone 真机运行测试，也未发布 TestFlight / App Store。
 
+1.3.8 源码同步加入 PGN 与代数记谱（SAN）的文件导出和系统剪贴板复制，移除单局完整备份按钮，保留全局备份。本轮按 Android 发布范围执行，未编译、打包或验证 iOS 设备。现有可下载 IPA 仍为 [1.3.7 构建 2](https://github.com/Nephelium/oscar-youre-done/releases/tag/v1.3.7)，不包含这些导出更新。
+
 ## 在 iPhone 上安装
 
 需要 iOS 17.0+，使用 Windows / Mac 与免费 Apple 账号签名安装。详见 [iPhone 安装说明](../docs/oscar-ios-installation.md)。现有 IPA 是真机 arm64 构建，名称中的 `unsigned` 表示尚未签名，不能直接点开安装。

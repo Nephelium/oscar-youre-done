@@ -7,7 +7,7 @@ async function main(){
  try {
   await page.waitForFunction(()=>window.App&&window.SproutHost);await page.evaluate(()=>{while(App.back()){};});await page.screenshot({path:path.join(out,'android-home.png'),animations:'disabled'});
   const id=await page.evaluate(()=>{const r=Sprout.importText('[Event "Android 本地引擎验证"]\n\n1. f3 e5 2. g4 Qh4# 0-1')[0];const error=SproutHost.saveGame(JSON.stringify(r));if(error)throw Error(error);App.resume();return r.id;});
-  await page.locator('[data-route="games"]').first().click();await page.locator(`[data-open="${id}"]`).click();await page.getByRole('button',{name:'分析整盘',exact:true}).click();
+  await page.locator('[data-route="games"]').first().click();await page.locator('[data-act="notebook"][data-book="game"]').click();await page.locator(`[data-open="${id}"]`).click();await page.getByRole('button',{name:'分析整盘',exact:true}).click();
   await page.waitForFunction(()=>!App.state.busy,{},{timeout:120000});
   const result=await page.evaluate(()=>({record:App.state.current,summary:Sprout.summary(App.state.current),status:JSON.parse(SproutHost.status())}));
   assert.equal(Object.keys(result.record.analysis).length,5,JSON.stringify(result));assert.equal(result.summary.analyzed,2);assert.match(result.status.engine,/Stockfish/);

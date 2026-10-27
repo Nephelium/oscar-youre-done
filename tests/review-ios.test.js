@@ -14,3 +14,8 @@ test('iOS bridge preserves serialized records and asynchronous request identity'
  host.cancelAnalysis();assert.equal(sent[1].method,'cancelAnalysis');
  assert.equal(host.capabilities.overlay,false);
 });
+test('iOS clipboard bridge synchronously preserves notation and propagates native errors',()=>{
+ const calls=[],text='23. ... Kd7 24. Rh7 *', {host,sent}=setup(prompt=>{calls.push(JSON.parse(prompt.slice('oscar-native:'.length)));return JSON.stringify({value:''});});
+ assert.equal(host.copyText(text),'');assert.equal(calls[0].method,'copyText');assert.deepEqual(Array.from(calls[0].args),[text]);assert.equal(sent.length,0);
+ assert.throws(()=>setup(()=>JSON.stringify({error:'无法复制'})).host.copyText(text),/无法复制/);
+});

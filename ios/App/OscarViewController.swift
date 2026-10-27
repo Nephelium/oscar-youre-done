@@ -90,7 +90,7 @@ final class OscarViewController: UIViewController, WKNavigationDelegate, WKUIDel
         return result
     }
     private func status() -> [String:Any] {
-        ["platform":"ios","engine":"Stockfish 19","version":"1.3.7",
+        ["platform":"ios","engine":"Stockfish 19","version":"1.3.8",
          "nightMode":traitCollection.userInterfaceStyle == .dark,"themeReady":true,
          "moveFeedback":UserDefaults.standard.object(forKey:"moveFeedback") as? Bool ?? true,
          "overlay":false,"capture":["running":false],"video":["state":"idle"]]
@@ -99,6 +99,10 @@ final class OscarViewController: UIViewController, WKNavigationDelegate, WKUIDel
         switch method {
         case "status": return try json(status())
         case "listGames": return try json(store.list())
+        case "copyText":
+            guard let content = args.first as? String, content.utf8.count <= 12 * 1024 * 1024 else { throw OscarError("无法复制棋谱，请重新打开导出。") }
+            UIPasteboard.general.string = content
+            return ""
         case "saveGame": try store.save(object(args.first)); return ""
         case "deleteGame": guard let id = args.first as? String else { throw OscarError("手记编号缺失") }; try store.delete(id); return ""
         case "readLicense":
